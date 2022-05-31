@@ -1,7 +1,15 @@
 
+#' Decomposition based on conditional ignorability
+#'
+#' @param Y The name of a continuous variable.
+#' @param W The name of a binary factor variable.
+#'
+#' @return A list of two vectors. The first is the point estimates, the second is standard errors.
+#' @export
+#'
+#' @examples
 
-
-caudec <-  function(Y,W,G1,G2,Q,X,data,alpha=0.05,weight=NULL,k=500,t=0.05,algorithm) {
+cdgd <-  function(Y,W,G1,G2,Q,X,data,alpha=0.05,weight=NULL,k=500,t=0.05,algorithm) {
 
   if (is.null(weight)) {
     data$weight=rep(1, nrow(data))
