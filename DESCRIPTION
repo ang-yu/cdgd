@@ -1,12 +1,16 @@
 Package: cdgd
-Title: What the Package Does (One Line, Title Case)
+Title: Implement the Causal Decomposition of Group Disparities of Yu and Elwert (2022)
 Version: 0.0.0.9000
 Authors@R: 
-    person("First", "Last", , "first.last@example.com", role = c("aut", "cre"),
-           comment = c(ORCID = "YOUR-ORCID-ID"))
-Description: What the package does (one paragraph).
-License: `use_mit_license()`, `use_gpl3_license()` or friends to pick a
-    license
+    person("Ang", "Yu", , "ang_yu@outlook.com", role = c("aut", "cre"),
+           comment = c(ORCID = "0000-0002-1828-0165"))
+Description: This package implements the causal decomposition of group disparities of Yu and Elwert (2022).
+License: MIT + file LICENSE
 Encoding: UTF-8
 Roxygen: list(markdown = TRUE)
 RoxygenNote: 7.2.0
+Imports: 
+    caret,
+    nnet,
+    randomForest,
+    utils
