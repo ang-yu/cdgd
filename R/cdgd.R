@@ -30,86 +30,86 @@ cdgd <-  function(Y,W,G1,G2,Q,X,data,alpha=0.05,weight=NULL,k=500,t=0.05,algorit
     YgivenX.Pred_W0 <- YgivenX.Pred_W1 <- WgivenX.Pred <- rep(NA, nrow(data))
 
     if (algorithm=="nnet") {
-      message <- capture.output( YgivenX.Model.Aux_G1 <- train(as.formula(paste(Y, paste(W,paste(X,collapse="+"),sep="+"), sep="~")), data=data[G1_index,][mainsample_G1,], method="nnet",
-                                                               preProc=c("center","scale"), trControl=trainControl(method="none"), linout=TRUE,
+      message <- utils::capture.output( YgivenX.Model.Aux_G1 <- caret::train(stats::as.formula(paste(Y, paste(W,paste(X,collapse="+"),sep="+"), sep="~")), data=data[G1_index,][mainsample_G1,], method="nnet",
+                                                               preProc=c("center","scale"), trControl=caret::trainControl(method="none"), linout=TRUE,
                                                                tuneGrid=expand.grid(size=2,decay=0.02)) )
-      message <- capture.output( YgivenX.Model.Main_G1 <- train(as.formula(paste(Y, paste(W,paste(X,collapse="+"),sep="+"), sep="~")), data=data[G1_index,][auxsample_G1,], method="nnet",
-                                                                preProc=c("center","scale"), trControl=trainControl(method="none"), linout=TRUE,
+      message <- utils::capture.output( YgivenX.Model.Main_G1 <- caret::train(stats::as.formula(paste(Y, paste(W,paste(X,collapse="+"),sep="+"), sep="~")), data=data[G1_index,][auxsample_G1,], method="nnet",
+                                                                preProc=c("center","scale"), trControl=caret::trainControl(method="none"), linout=TRUE,
                                                                 tuneGrid=expand.grid(size=2,decay=0.02)) )
-      message <- capture.output( YgivenX.Model.Aux_G2 <- train(as.formula(paste(Y, paste(W,paste(X,collapse="+"),sep="+"), sep="~")), data=data[G2_index,][mainsample_G2,], method="nnet",
-                                                               preProc=c("center","scale"), trControl=trainControl(method="none"), linout=TRUE,
+      message <- utils::capture.output( YgivenX.Model.Aux_G2 <- caret::train(stats::as.formula(paste(Y, paste(W,paste(X,collapse="+"),sep="+"), sep="~")), data=data[G2_index,][mainsample_G2,], method="nnet",
+                                                               preProc=c("center","scale"), trControl=caret::trainControl(method="none"), linout=TRUE,
                                                                tuneGrid=expand.grid(size=2,decay=0.02)) )
-      message <- capture.output( YgivenX.Model.Main_G2 <- train(as.formula(paste(Y, paste(W,paste(X,collapse="+"),sep="+"), sep="~")), data=data[G2_index,][auxsample_G2,], method="nnet",
-                                                                preProc=c("center","scale"), trControl=trainControl(method="none"), linout=TRUE,
+      message <- utils::capture.output( YgivenX.Model.Main_G2 <- caret::train(stats::as.formula(paste(Y, paste(W,paste(X,collapse="+"),sep="+"), sep="~")), data=data[G2_index,][auxsample_G2,], method="nnet",
+                                                                preProc=c("center","scale"), trControl=caret::trainControl(method="none"), linout=TRUE,
                                                                 tuneGrid=expand.grid(size=2,decay=0.02)) )
     }
     if (algorithm=="ranger") {
-      message <- capture.output( YgivenX.Model.Aux_G1 <- train(as.formula(paste(Y, paste(W,paste(X,collapse="+"),sep="+"), sep="~")), data=data[G1_index,][mainsample_G1,], method="ranger",
-                                                               trControl=trainControl(method="cv"),
+      message <- utils::capture.output( YgivenX.Model.Aux_G1 <- caret::train(stats::as.formula(paste(Y, paste(W,paste(X,collapse="+"),sep="+"), sep="~")), data=data[G1_index,][mainsample_G1,], method="ranger",
+                                                               trControl=caret::trainControl(method="cv"),
                                                                tuneGrid=expand.grid(mtry=floor(sqrt(length(X))),splitrule="variance",min.node.size=c(5,10,100))) )
-      message <- capture.output( YgivenX.Model.Main_G1 <- train(as.formula(paste(Y, paste(W,paste(X,collapse="+"),sep="+"), sep="~")), data=data[G1_index,][auxsample_G1,], method="ranger",
-                                                                trControl=trainControl(method="cv"),
+      message <- utils::capture.output( YgivenX.Model.Main_G1 <- caret::train(stats::as.formula(paste(Y, paste(W,paste(X,collapse="+"),sep="+"), sep="~")), data=data[G1_index,][auxsample_G1,], method="ranger",
+                                                                trControl=caret::trainControl(method="cv"),
                                                                 tuneGrid=expand.grid(mtry=floor(sqrt(length(X))),splitrule="variance",min.node.size=c(5,10,100))) )
-      message <- capture.output( YgivenX.Model.Aux_G2 <- train(as.formula(paste(Y, paste(W,paste(X,collapse="+"),sep="+"), sep="~")), data=data[G2_index,][mainsample_G2,], method="ranger",
-                                                               trControl=trainControl(method="cv"),
+      message <- utils::capture.output( YgivenX.Model.Aux_G2 <- caret::train(stats::as.formula(paste(Y, paste(W,paste(X,collapse="+"),sep="+"), sep="~")), data=data[G2_index,][mainsample_G2,], method="ranger",
+                                                               trControl=caret::trainControl(method="cv"),
                                                                tuneGrid=expand.grid(mtry=floor(sqrt(length(X))),splitrule="variance",min.node.size=c(5,10,100))) )
-      message <- capture.output( YgivenX.Model.Main_G2 <- train(as.formula(paste(Y, paste(W,paste(X,collapse="+"),sep="+"), sep="~")), data=data[G2_index,][auxsample_G2,], method="ranger",
-                                                                trControl=trainControl(method="cv"),
+      message <- utils::capture.output( YgivenX.Model.Main_G2 <- caret::train(stats::as.formula(paste(Y, paste(W,paste(X,collapse="+"),sep="+"), sep="~")), data=data[G2_index,][auxsample_G2,], method="ranger",
+                                                                trControl=caret::trainControl(method="cv"),
                                                                 tuneGrid=expand.grid(mtry=floor(sqrt(length(X))),splitrule="variance",min.node.size=c(5,10,100))) )
     }
 
 
     pred_data <- data
     pred_data[,colnames(pred_data)%in%W] <- 0
-    YgivenX.Pred_W0[G1_index][mainsample_G1] <- predict(YgivenX.Model.Aux_G1, newdata = pred_data[G1_index,][mainsample_G1,])
-    YgivenX.Pred_W0[G1_index][auxsample_G1] <- predict(YgivenX.Model.Main_G1, newdata = pred_data[G1_index,][auxsample_G1,])
-    YgivenX.Pred_W0[G2_index][mainsample_G2] <- predict(YgivenX.Model.Aux_G2, newdata = pred_data[G2_index,][mainsample_G2,])
-    YgivenX.Pred_W0[G2_index][auxsample_G2] <- predict(YgivenX.Model.Main_G2, newdata = pred_data[G2_index,][auxsample_G2,])
+    YgivenX.Pred_W0[G1_index][mainsample_G1] <- caret::predit(YgivenX.Model.Aux_G1, newdata = pred_data[G1_index,][mainsample_G1,])
+    YgivenX.Pred_W0[G1_index][auxsample_G1] <- caret::predit(YgivenX.Model.Main_G1, newdata = pred_data[G1_index,][auxsample_G1,])
+    YgivenX.Pred_W0[G2_index][mainsample_G2] <- caret::predit(YgivenX.Model.Aux_G2, newdata = pred_data[G2_index,][mainsample_G2,])
+    YgivenX.Pred_W0[G2_index][auxsample_G2] <- caret::predit(YgivenX.Model.Main_G2, newdata = pred_data[G2_index,][auxsample_G2,])
 
     pred_data <- data
     pred_data[,colnames(pred_data)%in%W] <- 1
-    YgivenX.Pred_W1[G1_index][mainsample_G1] <- predict(YgivenX.Model.Aux_G1, newdata = pred_data[G1_index,][mainsample_G1,])
-    YgivenX.Pred_W1[G1_index][auxsample_G1] <- predict(YgivenX.Model.Main_G1, newdata = pred_data[G1_index,][auxsample_G1,])
-    YgivenX.Pred_W1[G2_index][mainsample_G2] <- predict(YgivenX.Model.Aux_G2, newdata = pred_data[G2_index,][mainsample_G2,])
-    YgivenX.Pred_W1[G2_index][auxsample_G2] <- predict(YgivenX.Model.Main_G2, newdata = pred_data[G2_index,][auxsample_G2,])
+    YgivenX.Pred_W1[G1_index][mainsample_G1] <- caret::predit(YgivenX.Model.Aux_G1, newdata = pred_data[G1_index,][mainsample_G1,])
+    YgivenX.Pred_W1[G1_index][auxsample_G1] <- caret::predit(YgivenX.Model.Main_G1, newdata = pred_data[G1_index,][auxsample_G1,])
+    YgivenX.Pred_W1[G2_index][mainsample_G2] <- caret::predit(YgivenX.Model.Aux_G2, newdata = pred_data[G2_index,][mainsample_G2,])
+    YgivenX.Pred_W1[G2_index][auxsample_G2] <- caret::predit(YgivenX.Model.Main_G2, newdata = pred_data[G2_index,][auxsample_G2,])
 
 
     data[,W] <- as.factor(data[,W])
     levels(data[,W]) <- c("W0","W1")  # necessary for caret implementation of ranger
 
     if (algorithm=="nnet") {
-      message <- capture.output( WgivenX.Model.Aux_G1 <- train(as.formula(paste(W, paste(X,collapse="+"), sep="~")), data=data[G1_index,][auxsample_G1,], method="nnet",
-                                                               preProc=c("center","scale"), trControl=trainControl(method="none"), linout=FALSE,
+      message <- utils::capture.output( WgivenX.Model.Aux_G1 <- caret::train(stats::as.formula(paste(W, paste(X,collapse="+"), sep="~")), data=data[G1_index,][auxsample_G1,], method="nnet",
+                                                               preProc=c("center","scale"), trControl=caret::trainControl(method="none"), linout=FALSE,
                                                                tuneGrid=expand.grid(size=2,decay=0.02)) )
-      message <- capture.output( WgivenX.Model.Main_G1 <- train(as.formula(paste(W, paste(X,collapse="+"), sep="~")), data=data[G1_index,][mainsample_G1,], method="nnet",
-                                                                preProc=c("center","scale"), trControl=trainControl(method="none"), linout=FALSE,
+      message <- utils::capture.output( WgivenX.Model.Main_G1 <- caret::train(stats::as.formula(paste(W, paste(X,collapse="+"), sep="~")), data=data[G1_index,][mainsample_G1,], method="nnet",
+                                                                preProc=c("center","scale"), trControl=caret::trainControl(method="none"), linout=FALSE,
                                                                 tuneGrid=expand.grid(size=2,decay=0.02)) )
-      message <- capture.output( WgivenX.Model.Aux_G2 <- train(as.formula(paste(W, paste(X,collapse="+"), sep="~")), data=data[G2_index,][auxsample_G2,], method="nnet",
-                                                               preProc=c("center","scale"), trControl=trainControl(method="none"), linout=FALSE,
+      message <- utils::capture.output( WgivenX.Model.Aux_G2 <- caret::train(stats::as.formula(paste(W, paste(X,collapse="+"), sep="~")), data=data[G2_index,][auxsample_G2,], method="nnet",
+                                                               preProc=c("center","scale"), trControl=caret::trainControl(method="none"), linout=FALSE,
                                                                tuneGrid=expand.grid(size=2,decay=0.02)) )
-      message <- capture.output( WgivenX.Model.Main_G2 <- train(as.formula(paste(W, paste(X,collapse="+"), sep="~")), data=data[G2_index,][mainsample_G2,], method="nnet",
-                                                                preProc=c("center","scale"), trControl=trainControl(method="none"), linout=FALSE,
+      message <- utils::capture.output( WgivenX.Model.Main_G2 <- caret::train(stats::as.formula(paste(W, paste(X,collapse="+"), sep="~")), data=data[G2_index,][mainsample_G2,], method="nnet",
+                                                                preProc=c("center","scale"), trControl=caret::trainControl(method="none"), linout=FALSE,
                                                                 tuneGrid=expand.grid(size=2,decay=0.02)) )
     }
     if (algorithm=="ranger") {
-      message <- capture.output( WgivenX.Model.Aux_G1 <- train(as.formula(paste(W, paste(X,collapse="+"), sep="~")), data=data[G1_index,][auxsample_G1,], method="ranger",
-                                                               trControl=trainControl(method="cv", classProbs=TRUE),
+      message <- utils::capture.output( WgivenX.Model.Aux_G1 <- caret::train(stats::as.formula(paste(W, paste(X,collapse="+"), sep="~")), data=data[G1_index,][auxsample_G1,], method="ranger",
+                                                               trControl=caret::trainControl(method="cv", classProbs=TRUE),
                                                                tuneGrid=expand.grid(mtry=floor(sqrt(length(X))),splitrule="gini",min.node.size=c(1,10,100))) )
-      message <- capture.output( WgivenX.Model.Main_G1 <- train(as.formula(paste(W, paste(X,collapse="+"), sep="~")), data=data[G1_index,][mainsample_G1,], method="ranger",
-                                                                trControl=trainControl(method="cv", classProbs=TRUE),
+      message <- utils::capture.output( WgivenX.Model.Main_G1 <- caret::train(stats::as.formula(paste(W, paste(X,collapse="+"), sep="~")), data=data[G1_index,][mainsample_G1,], method="ranger",
+                                                                trControl=caret::trainControl(method="cv", classProbs=TRUE),
                                                                 tuneGrid=expand.grid(mtry=floor(sqrt(length(X))),splitrule="gini",min.node.size=c(1,10,100))) )
-      message <- capture.output( WgivenX.Model.Aux_G2 <- train(as.formula(paste(W, paste(X,collapse="+"), sep="~")), data=data[G2_index,][auxsample_G2,], method="ranger",
-                                                               trControl=trainControl(method="cv", classProbs=TRUE),
+      message <- utils::capture.output( WgivenX.Model.Aux_G2 <- caret::train(stats::as.formula(paste(W, paste(X,collapse="+"), sep="~")), data=data[G2_index,][auxsample_G2,], method="ranger",
+                                                               trControl=caret::trainControl(method="cv", classProbs=TRUE),
                                                                tuneGrid=expand.grid(mtry=floor(sqrt(length(X))),splitrule="gini",min.node.size=c(1,10,100))) )
-      message <- capture.output( WgivenX.Model.Main_G2 <- train(as.formula(paste(W, paste(X,collapse="+"), sep="~")), data=data[G2_index,][mainsample_G2,], method="ranger",
-                                                                trControl=trainControl(method="cv", classProbs=TRUE),
+      message <- utils::capture.output( WgivenX.Model.Main_G2 <- caret::train(stats::as.formula(paste(W, paste(X,collapse="+"), sep="~")), data=data[G2_index,][mainsample_G2,], method="ranger",
+                                                                trControl=caret::trainControl(method="cv", classProbs=TRUE),
                                                                 tuneGrid=expand.grid(mtry=floor(sqrt(length(X))),splitrule="gini",min.node.size=c(1,10,100))) )
     }
 
-    WgivenX.Pred[G1_index][mainsample_G1] <- predict(WgivenX.Model.Aux_G1, newdata=data[G1_index,][mainsample_G1,], type="prob")[,2]
-    WgivenX.Pred[G1_index][auxsample_G1] <- predict(WgivenX.Model.Main_G1, newdata=data[G1_index,][auxsample_G1,], type="prob")[,2]
-    WgivenX.Pred[G2_index][mainsample_G2] <- predict(WgivenX.Model.Aux_G2, newdata=data[G2_index,][mainsample_G2,], type="prob")[,2]
-    WgivenX.Pred[G2_index][auxsample_G2] <- predict(WgivenX.Model.Main_G2, newdata=data[G2_index,][auxsample_G2,], type="prob")[,2]
+    WgivenX.Pred[G1_index][mainsample_G1] <- caret::predit(WgivenX.Model.Aux_G1, newdata=data[G1_index,][mainsample_G1,], type="prob")[,2]
+    WgivenX.Pred[G1_index][auxsample_G1] <- caret::predit(WgivenX.Model.Main_G1, newdata=data[G1_index,][auxsample_G1,], type="prob")[,2]
+    WgivenX.Pred[G2_index][mainsample_G2] <- caret::predit(WgivenX.Model.Aux_G2, newdata=data[G2_index,][mainsample_G2,], type="prob")[,2]
+    WgivenX.Pred[G2_index][auxsample_G2] <- caret::predit(WgivenX.Model.Main_G2, newdata=data[G2_index,][auxsample_G2,], type="prob")[,2]
 
     data[,W] <- as.numeric(data[,W])-1
 
@@ -149,57 +149,57 @@ cdgd <-  function(Y,W,G1,G2,Q,X,data,alpha=0.05,weight=NULL,k=500,t=0.05,algorit
     TaugivenQ.Pred_G1_G2 <- TaugivenQ.Pred_G2_G2 <- WgivenQ.Pred_G1_G2 <- WgivenQ.Pred_G2_G2 <- rep(NA, sum(G2_index))
 
     if (algorithm=="nnet") {
-      message <- capture.output( TaugivenQ.Model_G1 <- train(as.formula(paste("tau", paste(Q_names,sep="+"), sep="~")), data=data_cond[G1_index,], method="nnet",
-                                                             preProc=c("center","scale"), trControl=trainControl(method="none"), linout=TRUE,
+      message <- utils::capture.output( TaugivenQ.Model_G1 <- caret::train(stats::as.formula(paste("tau", paste(Q_names,sep="+"), sep="~")), data=data_cond[G1_index,], method="nnet",
+                                                             preProc=c("center","scale"), trControl=caret::trainControl(method="none"), linout=TRUE,
                                                              tuneGrid=expand.grid(size=2,decay=0.02)) )
 
-      message <- capture.output( TaugivenQ.Model_G2 <- train(as.formula(paste("tau", paste(Q_names,sep="+"), sep="~")), data=data_cond[G2_index,], method="nnet",
-                                                             preProc=c("center","scale"), trControl=trainControl(method="none"), linout=TRUE,
+      message <- utils::capture.output( TaugivenQ.Model_G2 <- caret::train(stats::as.formula(paste("tau", paste(Q_names,sep="+"), sep="~")), data=data_cond[G2_index,], method="nnet",
+                                                             preProc=c("center","scale"), trControl=caret::trainControl(method="none"), linout=TRUE,
                                                              tuneGrid=expand.grid(size=2,decay=0.02)) )
     }
     if (algorithm=="ranger") {
-      message <- capture.output( TaugivenQ.Model_G1 <- train(as.formula(paste("tau", paste(Q_names,sep="+"), sep="~")), data=data_cond[G1_index,], method="ranger",
-                                                             trControl=trainControl(method="cv"),
+      message <- utils::capture.output( TaugivenQ.Model_G1 <- caret::train(stats::as.formula(paste("tau", paste(Q_names,sep="+"), sep="~")), data=data_cond[G1_index,], method="ranger",
+                                                             trControl=caret::trainControl(method="cv"),
                                                              tuneGrid=expand.grid(mtry=floor(sqrt(length(Q_names))),splitrule="variance",min.node.size=c(5,10,100))) )
 
-      message <- capture.output( TaugivenQ.Model_G2 <- train(as.formula(paste("tau", paste(Q_names,sep="+"), sep="~")), data=data_cond[G2_index,], method="ranger",
-                                                             trControl=trainControl(method="cv"),
+      message <- utils::capture.output( TaugivenQ.Model_G2 <- caret::train(stats::as.formula(paste("tau", paste(Q_names,sep="+"), sep="~")), data=data_cond[G2_index,], method="ranger",
+                                                             trControl=caret::trainControl(method="cv"),
                                                              tuneGrid=expand.grid(mtry=floor(sqrt(length(Q_names))),splitrule="variance",min.node.size=c(5,10,100))) )
     }
 
 
-    TaugivenQ.Pred_G1_G1 <- predict(TaugivenQ.Model_G1, newdata = data_cond[G1_index,])
-    TaugivenQ.Pred_G2_G1 <- predict(TaugivenQ.Model_G2, newdata = data_cond[G1_index,])
-    TaugivenQ.Pred_G1_G2 <- predict(TaugivenQ.Model_G1, newdata = data_cond[G2_index,])
-    TaugivenQ.Pred_G2_G2 <- predict(TaugivenQ.Model_G2, newdata = data_cond[G2_index,])
+    TaugivenQ.Pred_G1_G1 <- caret::predit(TaugivenQ.Model_G1, newdata = data_cond[G1_index,])
+    TaugivenQ.Pred_G2_G1 <- caret::predit(TaugivenQ.Model_G2, newdata = data_cond[G1_index,])
+    TaugivenQ.Pred_G1_G2 <- caret::predit(TaugivenQ.Model_G1, newdata = data_cond[G2_index,])
+    TaugivenQ.Pred_G2_G2 <- caret::predit(TaugivenQ.Model_G2, newdata = data_cond[G2_index,])
 
     #plotLowess(data_cond[G2_index,]$tau ~ data_cond[G2_index,]$V3)
     #plot(data_cond[G2_index,]$V3, TaugivenQ.Pred_G2_G2)
 
     if (algorithm=="nnet") {
-      message <- capture.output( WaugivenQ.Model_G1 <- train(as.formula(paste("W", paste(Q_names,sep="+"), sep="~")), data=data_cond[G1_index,], method="nnet",
-                                                             preProc=c("center","scale"), trControl=trainControl(method="none"), linout=FALSE,
+      message <- utils::capture.output( WaugivenQ.Model_G1 <- caret::train(stats::as.formula(paste("W", paste(Q_names,sep="+"), sep="~")), data=data_cond[G1_index,], method="nnet",
+                                                             preProc=c("center","scale"), trControl=caret::trainControl(method="none"), linout=FALSE,
                                                              tuneGrid=expand.grid(size=2,decay=0.02)), weights=wht[G1_index] )
 
-      message <- capture.output( WaugivenQ.Model_G2 <- train(as.formula(paste("W", paste(Q_names,sep="+"), sep="~")), data=data_cond[G2_index,], method="nnet",
-                                                             preProc=c("center","scale"), trControl=trainControl(method="none"), linout=FALSE,
+      message <- utils::capture.output( WaugivenQ.Model_G2 <- caret::train(stats::as.formula(paste("W", paste(Q_names,sep="+"), sep="~")), data=data_cond[G2_index,], method="nnet",
+                                                             preProc=c("center","scale"), trControl=caret::trainControl(method="none"), linout=FALSE,
                                                              tuneGrid=expand.grid(size=2,decay=0.02)), weights=wht[G2_index] )
     }
     if (algorithm=="ranger") {
-      message <- capture.output( WaugivenQ.Model_G1 <- train(as.formula(paste("W", paste(Q_names,sep="+"), sep="~")), data=data_cond[G1_index,], method="ranger",
-                                                             trControl=trainControl(method="cv", classProbs=TRUE),
+      message <- utils::capture.output( WaugivenQ.Model_G1 <- caret::train(stats::as.formula(paste("W", paste(Q_names,sep="+"), sep="~")), data=data_cond[G1_index,], method="ranger",
+                                                             trControl=caret::trainControl(method="cv", classProbs=TRUE),
                                                              tuneGrid=expand.grid(mtry=floor(sqrt(length(Q_names))),splitrule="gini",min.node.size=c(1,10,100))), weights=wht[G1_index] )
 
-      message <- capture.output( WaugivenQ.Model_G2 <- train(as.formula(paste("W", paste(Q_names,sep="+"), sep="~")), data=data_cond[G2_index,], method="ranger",
-                                                             trControl=trainControl(method="cv", classProbs=TRUE),
+      message <- utils::capture.output( WaugivenQ.Model_G2 <- caret::train(stats::as.formula(paste("W", paste(Q_names,sep="+"), sep="~")), data=data_cond[G2_index,], method="ranger",
+                                                             trControl=caret::trainControl(method="cv", classProbs=TRUE),
                                                              tuneGrid=expand.grid(mtry=floor(sqrt(length(Q_names))),splitrule="gini",min.node.size=c(1,10,100))), weights=wht[G2_index] )
     }
 
 
-    WgivenQ.Pred_G1_G1 <- predict(WaugivenQ.Model_G1, newdata = data_cond[G1_index,], type="prob")[,2]
-    WgivenQ.Pred_G2_G1 <- predict(WaugivenQ.Model_G2, newdata = data_cond[G1_index,], type="prob")[,2]
-    WgivenQ.Pred_G1_G2 <- predict(WaugivenQ.Model_G1, newdata = data_cond[G2_index,], type="prob")[,2]
-    WgivenQ.Pred_G2_G2 <- predict(WaugivenQ.Model_G2, newdata = data_cond[G2_index,], type="prob")[,2]
+    WgivenQ.Pred_G1_G1 <- caret::predit(WaugivenQ.Model_G1, newdata = data_cond[G1_index,], type="prob")[,2]
+    WgivenQ.Pred_G2_G1 <- caret::predit(WaugivenQ.Model_G2, newdata = data_cond[G1_index,], type="prob")[,2]
+    WgivenQ.Pred_G1_G2 <- caret::predit(WaugivenQ.Model_G1, newdata = data_cond[G2_index,], type="prob")[,2]
+    WgivenQ.Pred_G2_G2 <- caret::predit(WaugivenQ.Model_G2, newdata = data_cond[G2_index,], type="prob")[,2]
 
     cond_prevalence <- mean((WgivenQ.Pred_G1_G2-WgivenQ.Pred_G2_G2)*TaugivenQ.Pred_G2_G2*wht[G2_index])
     cond_effect <- mean((TaugivenQ.Pred_G1_G1-TaugivenQ.Pred_G2_G1)*WgivenQ.Pred_G1_G1*wht[G1_index])

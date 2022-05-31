@@ -12,7 +12,7 @@ RoxygenNote: 7.2.0
 Imports: 
     caret,
     nnet,
-    randomForest,
+    ranger,
     utils
 URL: https://github.com/ang-yu/cdgd
 BugReports: https://github.com/ang-yu/cdgd/issues
