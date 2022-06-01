@@ -4,7 +4,20 @@
 \alias{cdgd}
 \title{Decomposition based on conditional ignorability}
 \usage{
-cdgd(Y, W, G1, G2, Q, X, data, weight = NULL, k = 500, t = 0.05, algorithm)
+cdgd(
+  Y,
+  W,
+  G1,
+  G2,
+  Q,
+  X,
+  data,
+  weight = NULL,
+  alpha = 0.05,
+  k = 500,
+  t = 0.05,
+  algorithm
+)
 }
 \arguments{
 \item{Y}{Outcome. The name of a continuous variable.}
@@ -23,6 +36,8 @@ cdgd(Y, W, G1, G2, Q, X, data, weight = NULL, k = 500, t = 0.05, algorithm)
 
 \item{weight}{Survey weights. The name of a numeric variable.}
 
+\item{alpha}{For (1-alpha) confidence intervals.}
+
 \item{k}{Number of monte carlo simulation.}
 
 \item{t}{Threshold of propensity score censoring. Propensity scores larger than 1-t or smaller than t will be censored.}
@@ -30,7 +45,7 @@ cdgd(Y, W, G1, G2, Q, X, data, weight = NULL, k = 500, t = 0.05, algorithm)
 \item{algorithm}{The ML alogorithm for modelling. "nnet" for neural network and "ranger" for random forests.}
 }
 \value{
-A list of two vectors. The first is the point estimates, the second is standard errors.
+A dataframe of results.
 }
 \description{
 Decomposition based on conditional ignorability

@@ -9,16 +9,17 @@
 #' @param X Confounders. The vector of the names of numeric variables.
 #' @param data A data frame.
 #' @param weight Survey weights. The name of a numeric variable.
+#' @param alpha For (1-alpha) confidence intervals.
 #' @param k Number of monte carlo simulation.
 #' @param t Threshold of propensity score censoring. Propensity scores larger than 1-t or smaller than t will be censored.
 #' @param algorithm The ML alogorithm for modelling. "nnet" for neural network and "ranger" for random forests.
 #'
-#' @return A list of two vectors. The first is the point estimates, the second is standard errors.
+#' @return A dataframe of results.
 #' @export
 #'
 #' @examples
 
-cdgd <-  function(Y,W,G1,G2,Q,X,data,weight=NULL,k=500,t=0.05,algorithm) {
+cdgd <-  function(Y,W,G1,G2,Q,X,data,weight=NULL,alpha=0.05,k=500,t=0.05,algorithm) {
 
   if (is.null(weight)) {
     data$weight=rep(1, nrow(data))
@@ -246,15 +247,47 @@ cdgd <-  function(Y,W,G1,G2,Q,X,data,weight=NULL,k=500,t=0.05,algorithm) {
     return(output)
   }
 
-  output_point <- core(data=data)
+
+  point <- core(data=data)
 
   data_boot <- replicate(k, data[sample(1:nrow(data), nrow(data), replace=TRUE),], simplify=FALSE)
-  output_boot <- lapply(data_boot, function (x) core(data=x))
+  output_boot <- sapply(data_boot, function (x) core(data=x))
   output_boot <- as.data.frame(output_boot)
 
-  output_se <- sqrt( (1/k)*rowSums(  (output_boot-rowMeans(output_boot))^2  ) )
+  se <- sqrt( (1/k)*rowSums(  (output_boot-rowMeans(output_boot))^2  ) )
 
-  return(list(output_point, output_se))
+  upper <- sapply(1:nrow(output_boot), function(x) output_boot[x,][order(output_boot[x,])][floor(k*(1-alpha/2))])
+  lower <- sapply(1:nrow(output_boot), function(x) output_boot[x,][order(output_boot[x,])][ceiling(k*(alpha/2))])
+
+  item <- c(
+    "mean(data[,Y][G1_index]*wht[G1_index])",
+    "mean(data[,Y][G2_index]*wht[G2_index])",
+    "mean(Y0_i[G1_index])",
+    "mean(Y0_i[G2_index])",
+    "mean(data[,W][G1_index]*wht[G1_index])",
+    "mean(data[,W][G2_index]*wht[G2_index])",
+    "mean(ATE_i[G1_index])",
+    "mean(ATE_i[G2_index])",
+    "mean(ATT_i[G1_index])",
+    "mean(ATT_i[G2_index])",
+    "total",
+    "baseline",
+    "mean(data[,W][G1_index]*wht[G1_index])-mean(data[,W][G2_index]*wht[G2_index])",
+    "mean(ATE_i[G1_index])-mean(ATE_i[G2_index])",
+    "mean(ATT_i[G1_index])-mean(ATT_i[G2_index])",
+    "total",
+    "baseline",
+    "prevalence",
+    "effect",
+    "selection",
+    "cond_prevalence",
+    "cond_effect",
+    "cond_selection",
+    "Q_dist")
+
+  output_df <- cbind(item, point, se, upper, lower)
+
+  return(output_df)
 
 }
 
