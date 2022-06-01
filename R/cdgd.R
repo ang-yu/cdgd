@@ -1,15 +1,24 @@
 
 #' Decomposition based on conditional ignorability
 #'
-#' @param Y The name of a continuous variable.
-#' @param W The name of a binary factor variable.
+#' @param Y Outcome. The name of a continuous variable.
+#' @param W Treatment status. The name of a binary numeric variable taking values of 0 and 1.
+#' @param G1 Group 1 membership. The name of a binary factor variable taking values of 0 and 1.
+#' @param G2 Group 2 membership. The name of a binary factor variable taking values of 0 and 1.
+#' @param Q Conditional set. The vector of the names of numeric variables.
+#' @param X Confounders. The vector of the names of numeric variables.
+#' @param data A data frame.
+#' @param weight Survey weights. The name of a numeric variable.
+#' @param k Number of monte carlo simulation.
+#' @param t Threshold of propensity score censoring. Propensity scores larger than 1-t or smaller than t will be censored.
+#' @param algorithm The ML alogorithm for modelling. "nnet" for neural network and "ranger" for random forests.
 #'
 #' @return A list of two vectors. The first is the point estimates, the second is standard errors.
 #' @export
 #'
 #' @examples
 
-cdgd <-  function(Y,W,G1,G2,Q,X,data,alpha=0.05,weight=NULL,k=500,t=0.05,algorithm) {
+cdgd <-  function(Y,W,G1,G2,Q,X,data,weight=NULL,k=500,t=0.05,algorithm) {
 
   if (is.null(weight)) {
     data$weight=rep(1, nrow(data))

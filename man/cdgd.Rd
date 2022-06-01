@@ -4,25 +4,30 @@
 \alias{cdgd}
 \title{Decomposition based on conditional ignorability}
 \usage{
-cdgd(
-  Y,
-  W,
-  G1,
-  G2,
-  Q,
-  X,
-  data,
-  alpha = 0.05,
-  weight = NULL,
-  k = 500,
-  t = 0.05,
-  algorithm
-)
+cdgd(Y, W, G1, G2, Q, X, data, weight = NULL, k = 500, t = 0.05, algorithm)
 }
 \arguments{
-\item{Y}{The name of a continuous variable.}
+\item{Y}{Outcome. The name of a continuous variable.}
 
-\item{W}{The name of a binary factor variable.}
+\item{W}{Treatment status. The name of a binary numeric variable taking values of 0 and 1.}
+
+\item{G1}{Group 1 membership. The name of a binary factor variable taking values of 0 and 1.}
+
+\item{G2}{Group 2 membership. The name of a binary factor variable taking values of 0 and 1.}
+
+\item{Q}{Conditional set. The vector of the names of numeric variables.}
+
+\item{X}{Confounders. The vector of the names of numeric variables.}
+
+\item{data}{A data frame.}
+
+\item{weight}{Survey weights. The name of a numeric variable.}
+
+\item{k}{Number of monte carlo simulation.}
+
+\item{t}{Threshold of propensity score censoring. Propensity scores larger than 1-t or smaller than t will be censored.}
+
+\item{algorithm}{The ML alogorithm for modelling. "nnet" for neural network and "ranger" for random forests.}
 }
 \value{
 A list of two vectors. The first is the point estimates, the second is standard errors.
