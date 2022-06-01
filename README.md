@@ -6,7 +6,8 @@
 <!-- badges: start -->
 <!-- badges: end -->
 
-The goal of cdgd is to …
+The goal of cdgd is to implement the causal decomposition of group
+disparities of Yu and Elwert (2022).
 
 ## Installation
 
