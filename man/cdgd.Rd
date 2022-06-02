@@ -36,7 +36,7 @@ cdgd(
 
 \item{weight}{Survey weights. The name of a numeric variable.}
 
-\item{alpha}{For (1-alpha) confidence intervals.}
+\item{alpha}{(1-alpha) confidence intervals.}
 
 \item{k}{Number of monte carlo simulation.}
 
@@ -45,7 +45,7 @@ cdgd(
 \item{algorithm}{The ML alogorithm for modelling. "nnet" for neural network and "ranger" for random forests.}
 }
 \value{
-A dataframe of results.
+A data frame of results.
 }
 \description{
 Decomposition based on conditional ignorability

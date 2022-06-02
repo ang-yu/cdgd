@@ -9,12 +9,12 @@
 #' @param X Confounders. The vector of the names of numeric variables.
 #' @param data A data frame.
 #' @param weight Survey weights. The name of a numeric variable.
-#' @param alpha For (1-alpha) confidence intervals.
+#' @param alpha (1-alpha) confidence intervals.
 #' @param k Number of monte carlo simulation.
 #' @param t Threshold of propensity score censoring. Propensity scores larger than 1-t or smaller than t will be censored.
 #' @param algorithm The ML alogorithm for modelling. "nnet" for neural network and "ranger" for random forests.
 #'
-#' @return A dataframe of results.
+#' @return A data frame of results.
 #' @export
 #'
 #' @examples
@@ -71,17 +71,17 @@ cdgd <-  function(Y,W,G1,G2,Q,X,data,weight=NULL,alpha=0.05,k=500,t=0.05,algorit
 
     pred_data <- data
     pred_data[,colnames(pred_data)%in%W] <- 0
-    YgivenX.Pred_W0[G1_index][mainsample_G1] <- caret::predit(YgivenX.Model.Aux_G1, newdata = pred_data[G1_index,][mainsample_G1,])
-    YgivenX.Pred_W0[G1_index][auxsample_G1] <- caret::predit(YgivenX.Model.Main_G1, newdata = pred_data[G1_index,][auxsample_G1,])
-    YgivenX.Pred_W0[G2_index][mainsample_G2] <- caret::predit(YgivenX.Model.Aux_G2, newdata = pred_data[G2_index,][mainsample_G2,])
-    YgivenX.Pred_W0[G2_index][auxsample_G2] <- caret::predit(YgivenX.Model.Main_G2, newdata = pred_data[G2_index,][auxsample_G2,])
+    YgivenX.Pred_W0[G1_index][mainsample_G1] <- caret::predict(YgivenX.Model.Aux_G1, newdata = pred_data[G1_index,][mainsample_G1,])
+    YgivenX.Pred_W0[G1_index][auxsample_G1] <- caret::predict(YgivenX.Model.Main_G1, newdata = pred_data[G1_index,][auxsample_G1,])
+    YgivenX.Pred_W0[G2_index][mainsample_G2] <- caret::predict(YgivenX.Model.Aux_G2, newdata = pred_data[G2_index,][mainsample_G2,])
+    YgivenX.Pred_W0[G2_index][auxsample_G2] <- caret::predict(YgivenX.Model.Main_G2, newdata = pred_data[G2_index,][auxsample_G2,])
 
     pred_data <- data
     pred_data[,colnames(pred_data)%in%W] <- 1
-    YgivenX.Pred_W1[G1_index][mainsample_G1] <- caret::predit(YgivenX.Model.Aux_G1, newdata = pred_data[G1_index,][mainsample_G1,])
-    YgivenX.Pred_W1[G1_index][auxsample_G1] <- caret::predit(YgivenX.Model.Main_G1, newdata = pred_data[G1_index,][auxsample_G1,])
-    YgivenX.Pred_W1[G2_index][mainsample_G2] <- caret::predit(YgivenX.Model.Aux_G2, newdata = pred_data[G2_index,][mainsample_G2,])
-    YgivenX.Pred_W1[G2_index][auxsample_G2] <- caret::predit(YgivenX.Model.Main_G2, newdata = pred_data[G2_index,][auxsample_G2,])
+    YgivenX.Pred_W1[G1_index][mainsample_G1] <- caret::predict(YgivenX.Model.Aux_G1, newdata = pred_data[G1_index,][mainsample_G1,])
+    YgivenX.Pred_W1[G1_index][auxsample_G1] <- caret::predict(YgivenX.Model.Main_G1, newdata = pred_data[G1_index,][auxsample_G1,])
+    YgivenX.Pred_W1[G2_index][mainsample_G2] <- caret::predict(YgivenX.Model.Aux_G2, newdata = pred_data[G2_index,][mainsample_G2,])
+    YgivenX.Pred_W1[G2_index][auxsample_G2] <- caret::predict(YgivenX.Model.Main_G2, newdata = pred_data[G2_index,][auxsample_G2,])
 
 
     data[,W] <- as.factor(data[,W])
@@ -116,10 +116,10 @@ cdgd <-  function(Y,W,G1,G2,Q,X,data,weight=NULL,alpha=0.05,k=500,t=0.05,algorit
                                                                 tuneGrid=expand.grid(mtry=floor(sqrt(length(X))),splitrule="gini",min.node.size=c(1,10,100))) )
     }
 
-    WgivenX.Pred[G1_index][mainsample_G1] <- caret::predit(WgivenX.Model.Aux_G1, newdata=data[G1_index,][mainsample_G1,], type="prob")[,2]
-    WgivenX.Pred[G1_index][auxsample_G1] <- caret::predit(WgivenX.Model.Main_G1, newdata=data[G1_index,][auxsample_G1,], type="prob")[,2]
-    WgivenX.Pred[G2_index][mainsample_G2] <- caret::predit(WgivenX.Model.Aux_G2, newdata=data[G2_index,][mainsample_G2,], type="prob")[,2]
-    WgivenX.Pred[G2_index][auxsample_G2] <- caret::predit(WgivenX.Model.Main_G2, newdata=data[G2_index,][auxsample_G2,], type="prob")[,2]
+    WgivenX.Pred[G1_index][mainsample_G1] <- caret::predict(WgivenX.Model.Aux_G1, newdata=data[G1_index,][mainsample_G1,], type="prob")[,2]
+    WgivenX.Pred[G1_index][auxsample_G1] <- caret::predict(WgivenX.Model.Main_G1, newdata=data[G1_index,][auxsample_G1,], type="prob")[,2]
+    WgivenX.Pred[G2_index][mainsample_G2] <- caret::predict(WgivenX.Model.Aux_G2, newdata=data[G2_index,][mainsample_G2,], type="prob")[,2]
+    WgivenX.Pred[G2_index][auxsample_G2] <- caret::predict(WgivenX.Model.Main_G2, newdata=data[G2_index,][auxsample_G2,], type="prob")[,2]
 
     data[,W] <- as.numeric(data[,W])-1
 
@@ -178,10 +178,10 @@ cdgd <-  function(Y,W,G1,G2,Q,X,data,weight=NULL,alpha=0.05,k=500,t=0.05,algorit
     }
 
 
-    TaugivenQ.Pred_G1_G1 <- caret::predit(TaugivenQ.Model_G1, newdata = data_cond[G1_index,])
-    TaugivenQ.Pred_G2_G1 <- caret::predit(TaugivenQ.Model_G2, newdata = data_cond[G1_index,])
-    TaugivenQ.Pred_G1_G2 <- caret::predit(TaugivenQ.Model_G1, newdata = data_cond[G2_index,])
-    TaugivenQ.Pred_G2_G2 <- caret::predit(TaugivenQ.Model_G2, newdata = data_cond[G2_index,])
+    TaugivenQ.Pred_G1_G1 <- caret::predict(TaugivenQ.Model_G1, newdata = data_cond[G1_index,])
+    TaugivenQ.Pred_G2_G1 <- caret::predict(TaugivenQ.Model_G2, newdata = data_cond[G1_index,])
+    TaugivenQ.Pred_G1_G2 <- caret::predict(TaugivenQ.Model_G1, newdata = data_cond[G2_index,])
+    TaugivenQ.Pred_G2_G2 <- caret::predict(TaugivenQ.Model_G2, newdata = data_cond[G2_index,])
 
     #plotLowess(data_cond[G2_index,]$tau ~ data_cond[G2_index,]$V3)
     #plot(data_cond[G2_index,]$V3, TaugivenQ.Pred_G2_G2)
@@ -206,10 +206,10 @@ cdgd <-  function(Y,W,G1,G2,Q,X,data,weight=NULL,alpha=0.05,k=500,t=0.05,algorit
     }
 
 
-    WgivenQ.Pred_G1_G1 <- caret::predit(WaugivenQ.Model_G1, newdata = data_cond[G1_index,], type="prob")[,2]
-    WgivenQ.Pred_G2_G1 <- caret::predit(WaugivenQ.Model_G2, newdata = data_cond[G1_index,], type="prob")[,2]
-    WgivenQ.Pred_G1_G2 <- caret::predit(WaugivenQ.Model_G1, newdata = data_cond[G2_index,], type="prob")[,2]
-    WgivenQ.Pred_G2_G2 <- caret::predit(WaugivenQ.Model_G2, newdata = data_cond[G2_index,], type="prob")[,2]
+    WgivenQ.Pred_G1_G1 <- caret::predict(WaugivenQ.Model_G1, newdata = data_cond[G1_index,], type="prob")[,2]
+    WgivenQ.Pred_G2_G1 <- caret::predict(WaugivenQ.Model_G2, newdata = data_cond[G1_index,], type="prob")[,2]
+    WgivenQ.Pred_G1_G2 <- caret::predict(WaugivenQ.Model_G1, newdata = data_cond[G2_index,], type="prob")[,2]
+    WgivenQ.Pred_G2_G2 <- caret::predict(WaugivenQ.Model_G2, newdata = data_cond[G2_index,], type="prob")[,2]
 
     cond_prevalence <- mean((WgivenQ.Pred_G1_G2-WgivenQ.Pred_G2_G2)*TaugivenQ.Pred_G2_G2*wht[G2_index])
     cond_effect <- mean((TaugivenQ.Pred_G1_G1-TaugivenQ.Pred_G2_G1)*WgivenQ.Pred_G1_G1*wht[G1_index])
