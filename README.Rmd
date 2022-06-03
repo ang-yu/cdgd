@@ -2,8 +2,6 @@
 output: github_document
 ---
 
-<!-- README.md is generated from README.Rmd. Please edit that file -->
-
 ```{r, include = FALSE}
 knitr::opts_chunk$set(
   collapse = TRUE,
@@ -24,7 +22,25 @@ The goal of cdgd is to implement the causal decomposition of group disparities o
 
 You can install the development version of cdgd from [GitHub](https://github.com/) with:
 
-``` r
+``` {r}
 # install.packages("devtools")
 devtools::install_github("ang-yu/cdgd")
 ```
+
+## Example 
+
+This is a basic example which shows you how to solve a common problem:
+  
+```{r example}
+library(cdgd)
+
+head(exp_data)
+
+set.seed(1)
+results0 <- cdgd0(Y="outcome",D="treatment",G1="group_a",G2="group_b",X=c("confounder","Q"),Q="Q",data=exp_data,t=0.05,algorithm="nnet")
+
+results0
+```
+
+
+
