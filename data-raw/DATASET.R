@@ -1,6 +1,6 @@
 ## code to prepare `DATASET` dataset goes here
 
-set.seed(100)
+set.seed(3)
 X_a <- rnorm(500, 2, 1)
 Q_a <- rnorm(500, 2, 1)
 Y_0_a <- (1/4)*sqrt(abs(X_a)) + (1/4)*sqrt(abs(Q_a))
@@ -21,7 +21,10 @@ colnames(exp_data) <- c("outcome","treatment","confounder","Q")
 exp_data$group_a <- c(rep(1,500),rep(0,500))
 exp_data$group_b <- c(rep(0,500),rep(1,500))
 
-set.seed(36)
+cov(D_a, tau_a)-cov(D_b, tau_b)
+
 exp_data <- exp_data[sample(1:1000, 1000, replace = FALSE),]
+
+head(exp_data)
 
 usethis::use_data(exp_data, overwrite = TRUE, internal = FALSE, version=3)
