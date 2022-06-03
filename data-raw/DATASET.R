@@ -21,4 +21,4 @@ colnames(exp_data) <- c("outcome","treatment","confounder","Q")
 exp_data$group_a <- c(rep(1,500),rep(0,500))
 exp_data$group_b <- c(rep(0,500),rep(1,500))
 
-usethis::use_data(exp_data, overwrite = TRUE)
+usethis::use_data(exp_data, overwrite = TRUE, internal = FALSE)
