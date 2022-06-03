@@ -43,6 +43,8 @@ cdgd0 <- function(Y,D,G1,G2,Q=NULL,X,data,weight=NULL,t=0.05,algorithm) {
     weight <- "weight"
   }
 
+  data <- as.data.frame(data)
+
   # estimate the nuisance functions within each group, so that the final estimates are independent across groups
   G1_index <- data[,G1]==1
   G2_index <- data[,G2]==1

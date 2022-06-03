@@ -38,7 +38,7 @@
 #' results
 
 
-cdgd <-  function(Y,D,G1,G2,Q,X,data,weight=NULL,alpha=0.05,k=500,t=0.05,algorithm) {
+cdgd <-  function(Y,D,G1,G2,Q=NULL,X,data,weight=NULL,alpha=0.05,k=500,t=0.05,algorithm) {
 
   item_point <- cdgd0(Y=Y,D=D,G1=G1,G2=G2,Q=Q,X=X,data=data,weight=weight,t=t,algorithm=algorithm)
 
