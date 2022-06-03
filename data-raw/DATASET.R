@@ -24,4 +24,4 @@ exp_data$group_b <- c(rep(0,500),rep(1,500))
 set.seed(36)
 exp_data <- exp_data[sample(1:1000, 1000, replace = FALSE),]
 
-usethis::use_data(exp_data, overwrite = TRUE, internal = FALSE)
+usethis::use_data(exp_data, overwrite = TRUE, internal = FALSE, version=3)
