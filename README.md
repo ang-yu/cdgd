@@ -9,21 +9,8 @@ disparities of Yu and Elwert (2022).
 
 ## Installation
 
-You can install the development version of cdgd from
-[GitHub](https://github.com/) with:
-
 ``` r
 devtools::install_github("ang-yu/cdgd")
-#> Downloading GitHub repo ang-yu/cdgd@HEAD
-#> 
-#> * checking for file ‘/private/var/folders/0q/j5fgjmvn167f9h6g2mrdv91c0000gn/T/RtmppvmStN/remotes178b179a94480/ang-yu-cdgd-27b425b/DESCRIPTION’ ... OK
-#> * preparing ‘cdgd’:
-#> * checking DESCRIPTION meta-information ... OK
-#> * checking for LF line-endings in source and make files and shell scripts
-#> * checking for empty or unneeded directories
-#> * building ‘cdgd_0.0.0.9000.tar.gz’
-#> Installing package into '/private/var/folders/0q/j5fgjmvn167f9h6g2mrdv91c0000gn/T/Rtmppqng7D/temp_libpatha6b06166a1cd'
-#> (as 'lib' is unspecified)
 ```
 
 ## Example
@@ -32,17 +19,18 @@ devtools::install_github("ang-yu/cdgd")
 library(cdgd)
 
 # simulated example data
+data(exp_data)
 head(exp_data)
-#>    outcome treatment confounder         Q group_a group_b
-#> 1 1.318643         1   1.497808 0.5537125       1       0
-#> 2 2.054619         1   2.131531 2.3158558       1       0
-#> 3 1.803570         1   1.921083 1.6572525       1       0
-#> 4 1.668810         1   2.886785 0.0686469       1       0
-#> 5 2.030661         1   2.116971 2.2428210       1       0
-#> 6 1.955015         1   2.318630 1.6372321       1       0
+#>       outcome treatment  confounder          Q group_a group_b
+#> 748 0.2723801         0  0.17537909  0.4498887       0       1
+#> 221 1.9326514         1  2.20197596  1.7280341       1       0
+#> 24  1.3544340         1  0.33352516  2.4196218       1       0
+#> 497 0.4056452         0  0.55186921  0.7738751       1       0
+#> 249 2.4310022         1  2.47860586  3.3031311       1       0
+#> 547 0.1561152         0 -0.01625638 -0.2469696       0       1
 ```
 
-# Use cdgd0 to get point estimates
+### Use cdgd0 to get point estimates
 
 ``` r
 set.seed(1)
@@ -50,33 +38,33 @@ results0 <- cdgd0(Y="outcome",D="treatment",G1="group_a",G2="group_b",X=c("confo
 
 results0
 #>               item      point
-#> 1        mean_Y_G1 1.82626302
-#> 2        mean_Y_G2 0.51487709
-#> 3       mean_Y0_G1 0.80204650
-#> 4       mean_Y0_G2 0.41296185
-#> 5        mean_D_G1 0.86800000
-#> 6        mean_D_G2 0.14600000
-#> 7           ATE_G1 1.12179482
-#> 8           ATE_G2 0.86344271
-#> 9           ATT_G1 1.17997295
-#> 10          ATT_G2 0.69804959
-#> 11     diff_mean_Y 1.31138593
-#> 12    diff_mean_Y0 0.38908465
-#> 13     diff_mean_D 0.72200000
-#> 14        diff_ATE 0.25835211
-#> 15         dff_ATT 0.48192337
-#> 16           total 1.31138593
-#> 17        baseline 0.38908465
-#> 18      prevalence 0.62340564
-#> 19          effect 0.22424963
-#> 20       selection 0.07464602
-#> 21 cond_prevalence 0.44547350
-#> 22     cond_effect 0.36366893
-#> 23  cond_selection 0.06141283
-#> 24          Q_dist 0.05174603
+#> 1        mean_Y_G1 1.80749942
+#> 2        mean_Y_G2 0.52328423
+#> 3       mean_Y0_G1 0.78431665
+#> 4       mean_Y0_G2 0.41323307
+#> 5        mean_D_G1 0.84400000
+#> 6        mean_D_G2 0.15800000
+#> 7           ATE_G1 1.14177258
+#> 8           ATE_G2 0.90254558
+#> 9           ATT_G1 1.21230186
+#> 10          ATT_G2 0.69652631
+#> 11     diff_mean_Y 1.28421519
+#> 12    diff_mean_Y0 0.37108358
+#> 13     diff_mean_D 0.68600000
+#> 14        diff_ATE 0.23922700
+#> 15         dff_ATT 0.51577555
+#> 16           total 1.28421519
+#> 17        baseline 0.37108358
+#> 18      prevalence 0.61914627
+#> 19          effect 0.20190759
+#> 20       selection 0.09207776
+#> 21 cond_prevalence 0.43522769
+#> 22     cond_effect 0.22579569
+#> 23  cond_selection 0.08103174
+#> 24          Q_dist 0.17107650
 ```
 
-# Use cdgd to get point estimates and confidence intervals. Will take a minute or so.
+### Use cdgd to get point estimates and confidence intervals. Will take a minute or so.
 
 ``` r
 set.seed(1)
@@ -84,28 +72,28 @@ results <- cdgd(Y="outcome",D="treatment",G1="group_a",G2="group_b",X=c("confoun
 
 results
 #>               item      point          se       lower      upper
-#> 1        mean_Y_G1 1.82626302 0.028601434  1.78001565 1.86099860
-#> 2        mean_Y_G2 0.51487709 0.009368193  0.49267817 0.52674606
-#> 3       mean_Y0_G1 0.80204650 0.036528592  0.76695783 0.86922163
-#> 4       mean_Y0_G2 0.41296185 0.006388473  0.40108986 0.41989096
-#> 5        mean_D_G1 0.86800000 0.014778835  0.84265010 0.88932806
-#> 6        mean_D_G2 0.14600000 0.011798501  0.11627907 0.16194332
-#> 7           ATE_G1 1.12179482 0.035175873  1.03549622 1.16847126
-#> 8           ATE_G2 0.86344271 0.054719465  0.71362095 0.91581147
-#> 9           ATT_G1 1.17997295 0.035738735  1.09401099 1.22648759
-#> 10          ATT_G2 0.69804959 0.047109306  0.53556758 0.74062652
-#> 11     diff_mean_Y 1.31138593 0.029575160  1.25205620 1.35656478
-#> 12    diff_mean_Y0 0.38908465 0.034230003  0.35670965 0.45820574
-#> 13     diff_mean_D 0.72200000 0.018343084  0.68801277 0.74851162
-#> 14        diff_ATE 0.25835211 0.058365332  0.16195366 0.36909519
-#> 15         dff_ATT 0.48192337 0.039894640  0.41861227 0.55704602
-#> 16           total 1.31138593 0.029575160  1.25205620 1.35656478
-#> 17        baseline 0.38908465 0.034230003  0.35670965 0.45820574
-#> 18      prevalence 0.62340564 0.043007047  0.50534449 0.66606421
-#> 19          effect 0.22424963 0.051233810  0.14033833 0.31892798
-#> 20       selection 0.07464602 0.008519691  0.05276401 0.07995860
-#> 21 cond_prevalence 0.44547350 0.085080809  0.20947097 0.54425993
-#> 22     cond_effect 0.36366893 0.085220461  0.18388420 0.50795542
-#> 23  cond_selection 0.06141283 0.009109305  0.04066190 0.07116794
-#> 24          Q_dist 0.05174603 0.086608148 -0.14695387 0.17040513
+#> 1        mean_Y_G1 1.80749942 0.036099772  1.74561513 1.85644092
+#> 2        mean_Y_G2 0.52328423 0.011003712  0.49540941 0.52796277
+#> 3       mean_Y0_G1 0.78431665 0.027520347  0.74979367 0.83108238
+#> 4       mean_Y0_G2 0.41323307 0.007348987  0.38790382 0.41203214
+#> 5        mean_D_G1 0.84400000 0.016761562  0.80830040 0.87265136
+#> 6        mean_D_G2 0.15800000 0.012218882  0.13552361 0.16700611
+#> 7           ATE_G1 1.14177258 0.027771683  1.06941747 1.17170515
+#> 8           ATE_G2 0.90254558 0.041319786  0.83097975 0.97990939
+#> 9           ATT_G1 1.21230186 0.028229266  1.13432462 1.23330626
+#> 10          ATT_G2 0.69652631 0.039727746  0.68841183 0.81120702
+#> 11     diff_mean_Y 1.28421519 0.038215434  1.21797808 1.34424089
+#> 12    diff_mean_Y0 0.37108358 0.027131041  0.34559965 0.42606636
+#> 13     diff_mean_D 0.68600000 0.020923182  0.65040566 0.72601890
+#> 14        diff_ATE 0.23922700 0.049704942  0.13963678 0.29331293
+#> 15         dff_ATT 0.51577555 0.041181987  0.34582055 0.49618313
+#> 16           total 1.28421519 0.038215434  1.21797808 1.34424089
+#> 17        baseline 0.37108358 0.027131041  0.34559965 0.42606636
+#> 18      prevalence 0.61914627 0.032832889  0.56583509 0.66375856
+#> 19          effect 0.20190759 0.043695607  0.11714127 0.25447088
+#> 20       selection 0.09207776 0.009267851  0.06034112 0.09313772
+#> 21 cond_prevalence 0.43522769 0.067125567  0.29041768 0.48077095
+#> 22     cond_effect 0.22579569 0.116696517 -0.07777706 0.40401287
+#> 23  cond_selection 0.08103174 0.008604817  0.04970048 0.07713673
+#> 24          Q_dist 0.17107650 0.130527796 -0.06887207 0.33492071
 ```
