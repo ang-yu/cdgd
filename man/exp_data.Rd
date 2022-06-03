@@ -8,7 +8,7 @@
 An object of class \code{data.frame} with 1000 rows and 6 columns.
 }
 \usage{
-exp_data
+data(exp_data)
 }
 \description{
 Simulated example data

@@ -33,3 +33,9 @@ A data frame of point estimates.
 \description{
 Only produce point estimates of cdgd
 }
+\examples{
+set.seed(1)
+results0 <- cdgd0(Y="outcome",D="treatment",G1="group_a",G2="group_b",X=c("confounder","Q"),Q="Q",
+data=exp_data,t=0.05,algorithm="nnet")
+results0
+}

@@ -15,6 +15,14 @@
 #' @return A data frame of point estimates.
 #'
 #' @export
+#'
+#' @examples
+#' set.seed(1)
+#' results0 <- cdgd0(Y="outcome",D="treatment",G1="group_a",G2="group_b",X=c("confounder","Q"),Q="Q",
+#' data=exp_data,t=0.05,algorithm="nnet")
+#' results0
+
+
 
 cdgd0 <- function(Y,D,G1,G2,Q=NULL,X,data,weight=NULL,t=0.05,algorithm) {
 
@@ -66,17 +74,17 @@ cdgd0 <- function(Y,D,G1,G2,Q=NULL,X,data,weight=NULL,t=0.05,algorithm) {
 
   pred_data <- data
   pred_data[,colnames(pred_data)%in%D] <- 0
-  YgivenX.Pred_D0[G1_index][mainsample_G1] <- predict(YgivenX.Model.Aux_G1, newdata = pred_data[G1_index,][mainsample_G1,])
-  YgivenX.Pred_D0[G1_index][auxsample_G1] <- predict(YgivenX.Model.Main_G1, newdata = pred_data[G1_index,][auxsample_G1,])
-  YgivenX.Pred_D0[G2_index][mainsample_G2] <- predict(YgivenX.Model.Aux_G2, newdata = pred_data[G2_index,][mainsample_G2,])
-  YgivenX.Pred_D0[G2_index][auxsample_G2] <- predict(YgivenX.Model.Main_G2, newdata = pred_data[G2_index,][auxsample_G2,])
+  YgivenX.Pred_D0[G1_index][mainsample_G1] <- stats::predict(YgivenX.Model.Aux_G1, newdata = pred_data[G1_index,][mainsample_G1,])
+  YgivenX.Pred_D0[G1_index][auxsample_G1] <- stats::predict(YgivenX.Model.Main_G1, newdata = pred_data[G1_index,][auxsample_G1,])
+  YgivenX.Pred_D0[G2_index][mainsample_G2] <- stats::predict(YgivenX.Model.Aux_G2, newdata = pred_data[G2_index,][mainsample_G2,])
+  YgivenX.Pred_D0[G2_index][auxsample_G2] <- stats::predict(YgivenX.Model.Main_G2, newdata = pred_data[G2_index,][auxsample_G2,])
 
   pred_data <- data
   pred_data[,colnames(pred_data)%in%D] <- 1
-  YgivenX.Pred_D1[G1_index][mainsample_G1] <- predict(YgivenX.Model.Aux_G1, newdata = pred_data[G1_index,][mainsample_G1,])
-  YgivenX.Pred_D1[G1_index][auxsample_G1] <- predict(YgivenX.Model.Main_G1, newdata = pred_data[G1_index,][auxsample_G1,])
-  YgivenX.Pred_D1[G2_index][mainsample_G2] <- predict(YgivenX.Model.Aux_G2, newdata = pred_data[G2_index,][mainsample_G2,])
-  YgivenX.Pred_D1[G2_index][auxsample_G2] <- predict(YgivenX.Model.Main_G2, newdata = pred_data[G2_index,][auxsample_G2,])
+  YgivenX.Pred_D1[G1_index][mainsample_G1] <- stats::predict(YgivenX.Model.Aux_G1, newdata = pred_data[G1_index,][mainsample_G1,])
+  YgivenX.Pred_D1[G1_index][auxsample_G1] <- stats::predict(YgivenX.Model.Main_G1, newdata = pred_data[G1_index,][auxsample_G1,])
+  YgivenX.Pred_D1[G2_index][mainsample_G2] <- stats::predict(YgivenX.Model.Aux_G2, newdata = pred_data[G2_index,][mainsample_G2,])
+  YgivenX.Pred_D1[G2_index][auxsample_G2] <- stats::predict(YgivenX.Model.Main_G2, newdata = pred_data[G2_index,][auxsample_G2,])
 
 
   data[,D] <- as.factor(data[,D])
@@ -111,10 +119,10 @@ cdgd0 <- function(Y,D,G1,G2,Q=NULL,X,data,weight=NULL,t=0.05,algorithm) {
                                                                             tuneGrid=expand.grid(mtry=floor(sqrt(length(X))),splitrule="gini",min.node.size=c(1,10,100))) )
   }
 
-  DgivenX.Pred[G1_index][mainsample_G1] <- predict(DgivenX.Model.Aux_G1, newdata=data[G1_index,][mainsample_G1,], type="prob")[,2]
-  DgivenX.Pred[G1_index][auxsample_G1] <- predict(DgivenX.Model.Main_G1, newdata=data[G1_index,][auxsample_G1,], type="prob")[,2]
-  DgivenX.Pred[G2_index][mainsample_G2] <- predict(DgivenX.Model.Aux_G2, newdata=data[G2_index,][mainsample_G2,], type="prob")[,2]
-  DgivenX.Pred[G2_index][auxsample_G2] <- predict(DgivenX.Model.Main_G2, newdata=data[G2_index,][auxsample_G2,], type="prob")[,2]
+  DgivenX.Pred[G1_index][mainsample_G1] <- stats::predict(DgivenX.Model.Aux_G1, newdata=data[G1_index,][mainsample_G1,], type="prob")[,2]
+  DgivenX.Pred[G1_index][auxsample_G1] <- stats::predict(DgivenX.Model.Main_G1, newdata=data[G1_index,][auxsample_G1,], type="prob")[,2]
+  DgivenX.Pred[G2_index][mainsample_G2] <- stats::predict(DgivenX.Model.Aux_G2, newdata=data[G2_index,][mainsample_G2,], type="prob")[,2]
+  DgivenX.Pred[G2_index][auxsample_G2] <- stats::predict(DgivenX.Model.Main_G2, newdata=data[G2_index,][auxsample_G2,], type="prob")[,2]
 
   data[,D] <- as.numeric(data[,D])-1
 
@@ -174,10 +182,10 @@ cdgd0 <- function(Y,D,G1,G2,Q=NULL,X,data,weight=NULL,t=0.05,algorithm) {
     }
 
 
-    TaugivenQ.Pred_G1_G1 <- predict(TaugivenQ.Model_G1, newdata = data_cond[G1_index,])
-    TaugivenQ.Pred_G2_G1 <- predict(TaugivenQ.Model_G2, newdata = data_cond[G1_index,])
-    TaugivenQ.Pred_G1_G2 <- predict(TaugivenQ.Model_G1, newdata = data_cond[G2_index,])
-    TaugivenQ.Pred_G2_G2 <- predict(TaugivenQ.Model_G2, newdata = data_cond[G2_index,])
+    TaugivenQ.Pred_G1_G1 <- stats::predict(TaugivenQ.Model_G1, newdata = data_cond[G1_index,])
+    TaugivenQ.Pred_G2_G1 <- stats::predict(TaugivenQ.Model_G2, newdata = data_cond[G1_index,])
+    TaugivenQ.Pred_G1_G2 <- stats::predict(TaugivenQ.Model_G1, newdata = data_cond[G2_index,])
+    TaugivenQ.Pred_G2_G2 <- stats::predict(TaugivenQ.Model_G2, newdata = data_cond[G2_index,])
 
     #plotLowess(data_cond[G2_index,]$tau ~ data_cond[G2_index,]$V3)
     #plot(data_cond[G2_index,]$V3, TaugivenQ.Pred_G2_G2)
@@ -202,10 +210,10 @@ cdgd0 <- function(Y,D,G1,G2,Q=NULL,X,data,weight=NULL,t=0.05,algorithm) {
     }
 
 
-    DgivenQ.Pred_G1_G1 <- predict(DaugivenQ.Model_G1, newdata = data_cond[G1_index,], type="prob")[,2]
-    DgivenQ.Pred_G2_G1 <- predict(DaugivenQ.Model_G2, newdata = data_cond[G1_index,], type="prob")[,2]
-    DgivenQ.Pred_G1_G2 <- predict(DaugivenQ.Model_G1, newdata = data_cond[G2_index,], type="prob")[,2]
-    DgivenQ.Pred_G2_G2 <- predict(DaugivenQ.Model_G2, newdata = data_cond[G2_index,], type="prob")[,2]
+    DgivenQ.Pred_G1_G1 <- stats::predict(DaugivenQ.Model_G1, newdata = data_cond[G1_index,], type="prob")[,2]
+    DgivenQ.Pred_G2_G1 <- stats::predict(DaugivenQ.Model_G2, newdata = data_cond[G1_index,], type="prob")[,2]
+    DgivenQ.Pred_G1_G2 <- stats::predict(DaugivenQ.Model_G1, newdata = data_cond[G2_index,], type="prob")[,2]
+    DgivenQ.Pred_G2_G2 <- stats::predict(DaugivenQ.Model_G2, newdata = data_cond[G2_index,], type="prob")[,2]
 
     cond_prevalence <- mean((DgivenQ.Pred_G1_G2-DgivenQ.Pred_G2_G2)*TaugivenQ.Pred_G2_G2*wht[G2_index])
     cond_effect <- mean((TaugivenQ.Pred_G1_G1-TaugivenQ.Pred_G2_G1)*DgivenQ.Pred_G1_G1*wht[G1_index])

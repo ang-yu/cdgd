@@ -13,7 +13,8 @@ Imports:
     caret,
     nnet,
     ranger,
-    utils
+    utils,
+    stats
 URL: https://github.com/ang-yu/cdgd
 BugReports: https://github.com/ang-yu/cdgd/issues
 Depends: 

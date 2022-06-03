@@ -2,6 +2,6 @@
 #'
 #' @docType data
 #'
-#' @usage data(grav)
+#' @usage data(exp_data)
 
 "exp_data"
