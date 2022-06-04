@@ -1,5 +1,5 @@
 Package: cdgd
-Title: Implement the Causal Decomposition of Group Disparities of Yu and Elwert (2022)
+Title: Causal Decomposition of Group Disparities
 Version: 0.1.0
 Authors@R: 
     person("Ang", "Yu", , "ang_yu@outlook.com", role = c("aut", "cre"),
