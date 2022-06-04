@@ -64,9 +64,11 @@ results0
 #> 24          Q_dist 0.17107650
 ```
 
-### Use cdgd to get point estimates and confidence intervals. Will take a minute or so.
+### Use cdgd to get point estimates and confidence intervals.
 
 ``` r
+# This may take a minute or so.
+
 set.seed(1)
 results <- cdgd(Y="outcome",D="treatment",G1="group_a",G2="group_b",X=c("confounder","Q"),Q="Q",data=exp_data,t=0.05,algorithm="nnet",alpha=0.05,k=20)
 
