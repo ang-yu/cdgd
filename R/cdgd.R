@@ -18,6 +18,7 @@
 #' @export
 #'
 #' @examples
+#' # If you run this example, it may take a minute or so before you see the results.
 #' data(exp_data)
 #'
 #' set.seed(1)
