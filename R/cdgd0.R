@@ -164,8 +164,8 @@ cdgd0 <- function(Y,D,G1,G2,Q=NULL,X,data,weight=NULL,t=0.025,algorithm) {
   data[,D] <- as.numeric(data[,D])-1
 
 
-  DgivenX.Pred[DgivenX.Pred<=quantile(DgivenX.Pre, probs=t)] <- quantile(DgivenX.Pre, probs=t)
-  DgivenX.Pred[DgivenX.Pred>=quantile(DgivenX.Pre, probs=1-t)] <- quantile(DgivenX.Pre, probs=1-t)
+  DgivenX.Pred[DgivenX.Pred<=quantile(DgivenX.Pred, probs=t)] <- quantile(DgivenX.Pred, probs=t)
+  DgivenX.Pred[DgivenX.Pred>=quantile(DgivenX.Pred, probs=1-t)] <- quantile(DgivenX.Pred, probs=1-t)
 
   Y0_i <- ATT_i <- ATE_i <- wht <- rep(NA, nrow(data))
 
