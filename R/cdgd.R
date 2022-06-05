@@ -11,7 +11,7 @@
 #' @param weight Survey weights. The name of a numeric variable.
 #' @param alpha (1-alpha) confidence intervals.
 #' @param k Number of monte carlo simulation.
-#' @param t Threshold of propensity score censoring. Propensity scores larger than 1-t or smaller than t will be censored.
+#' @param t Threshold of propensity score censoring. Propensity scores larger than (1-t)th quantile or smaller than tth quantile are censored.
 #' @param algorithm The ML algorithm for modelling. "nnet" for neural network and "ranger" for random forests.
 #'
 #' @return A data frame of point estimates and confidence intervals
@@ -39,7 +39,7 @@
 #' results
 
 
-cdgd <-  function(Y,D,G1,G2,Q=NULL,X,data,weight=NULL,alpha=0.05,k=500,t=0.05,algorithm) {
+cdgd <-  function(Y,D,G1,G2,Q=NULL,X,data,weight=NULL,alpha=0.05,k=500,t=0.025,algorithm) {
 
   item_point <- cdgd0(Y=Y,D=D,G1=G1,G2=G2,Q=Q,X=X,data=data,weight=weight,t=t,algorithm=algorithm)
 

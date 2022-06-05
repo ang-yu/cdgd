@@ -9,7 +9,7 @@
 #' @param X Confounders. The vector of the names of numeric variables.
 #' @param data A data frame.
 #' @param weight Survey weights. The name of a numeric variable.
-#' @param t Threshold of propensity score censoring. Propensity scores larger than 1-t or smaller than t will be censored.
+#' @param t Threshold of propensity score censoring. Propensity scores larger than (1-t)th quantile or smaller than tth quantile are censored.
 #' @param algorithm The ML algorithm for modelling. "nnet" for neural network and "ranger" for random forests.
 #'
 #' @return A data frame of point estimates.
@@ -36,7 +36,7 @@
 
 
 
-cdgd0 <- function(Y,D,G1,G2,Q=NULL,X,data,weight=NULL,t=0.05,algorithm) {
+cdgd0 <- function(Y,D,G1,G2,Q=NULL,X,data,weight=NULL,t=0.025,algorithm) {
 
   if (is.null(weight)) {
     data$weight=rep(1, nrow(data))
@@ -163,8 +163,9 @@ cdgd0 <- function(Y,D,G1,G2,Q=NULL,X,data,weight=NULL,t=0.05,algorithm) {
 
   data[,D] <- as.numeric(data[,D])-1
 
-  DgivenX.Pred[DgivenX.Pred<=t] <- t
-  DgivenX.Pred[DgivenX.Pred>=1-t] <- 1-t
+
+  DgivenX.Pred[DgivenX.Pred<=quantile(DgivenX.Pre, probs=t)] <- quantile(DgivenX.Pre, probs=t)
+  DgivenX.Pred[DgivenX.Pred>=quantile(DgivenX.Pre, probs=1-t)] <- quantile(DgivenX.Pre, probs=1-t)
 
   Y0_i <- ATT_i <- ATE_i <- wht <- rep(NA, nrow(data))
 
