@@ -43,6 +43,13 @@ cdgd0 <- function(Y,D,G1,G2,Q=NULL,X,data,weight=NULL,t=0.05,algorithm) {
     weight <- "weight"
   }
 
+  if (!requireNamespace("caret", quietly=TRUE)) {
+    stop(
+      "Package \"caret\" must be installed to use this function.",
+      call. = FALSE
+    )
+  }
+
   data <- as.data.frame(data)
 
   # estimate the nuisance functions within each group, so that the final estimates are independent across groups
@@ -57,6 +64,14 @@ cdgd0 <- function(Y,D,G1,G2,Q=NULL,X,data,weight=NULL,t=0.05,algorithm) {
   YgivenX.Pred_D0 <- YgivenX.Pred_D1 <- DgivenX.Pred <- rep(NA, nrow(data))
 
   if (algorithm=="nnet") {
+
+    if (!requireNamespace("nnet", quietly=TRUE)) {
+      stop(
+        "Package \"nnet\" must be installed to use this function.",
+        call. = FALSE
+      )
+    }
+
     message <- utils::capture.output( YgivenX.Model.Aux_G1 <- caret::train(stats::as.formula(paste(Y, paste(D,paste(X,collapse="+"),sep="+"), sep="~")), data=data[G1_index,][mainsample_G1,], method="nnet",
                                                                            preProc=c("center","scale"), trControl=caret::trainControl(method="none"), linout=TRUE,
                                                                            tuneGrid=expand.grid(size=2,decay=0.02)) )
@@ -71,6 +86,14 @@ cdgd0 <- function(Y,D,G1,G2,Q=NULL,X,data,weight=NULL,t=0.05,algorithm) {
                                                                             tuneGrid=expand.grid(size=2,decay=0.02)) )
   }
   if (algorithm=="ranger") {
+
+    if (!requireNamespace("ranger", quietly=TRUE)) {
+      stop(
+        "Package \"ranger\" must be installed to use this function.",
+        call. = FALSE
+      )
+    }
+
     message <- utils::capture.output( YgivenX.Model.Aux_G1 <- caret::train(stats::as.formula(paste(Y, paste(D,paste(X,collapse="+"),sep="+"), sep="~")), data=data[G1_index,][mainsample_G1,], method="ranger",
                                                                            trControl=caret::trainControl(method="cv"),
                                                                            tuneGrid=expand.grid(mtry=floor(sqrt(length(X))),splitrule="variance",min.node.size=c(5,10,100))) )
