@@ -18,5 +18,5 @@ Imports:
 URL: https://github.com/ang-yu/cdgd
 BugReports: https://github.com/ang-yu/cdgd/issues
 Depends: 
-    R (>= 4.2.0)
+    R (>= 4.1.2)
 LazyData: true
