@@ -49,11 +49,11 @@ cdgd0 <- function(Y,D,G,Q=NULL,X,data,t=0.025,algorithm) {
 
   data <- as.data.frame(data)
 
-  # estimate the nuisance functions within each group, so that the final estimates are independent across groups
+### estimate the nuisance functions within each group, so that the final estimates are independent across groups
   sample1 <- sample(nrow(data), floor(nrow(data)/2), replace=F)
   sample2 <- setdiff(1:nrow(data), sample1)
 
-  # outcome regression model
+### outcome regression model
   if (algorithm=="nnet") {
     if (!requireNamespace("nnet", quietly=TRUE)) {
       stop(
@@ -97,7 +97,7 @@ cdgd0 <- function(Y,D,G,Q=NULL,X,data,t=0.025,algorithm) {
                                                                              tuneGrid=expand.grid(n.trees=c(25,75,125), interaction.depth=c(1,2,4), shrinkage=0.1, n.minobsinnode=c(5,10,15))) )
   }
 
-  # propensity score model
+### propensity score model
   data[,D] <- as.factor(data[,D])
   levels(data[,D]) <- c("D0","D1")  # necessary for caret implementation of ranger
 
@@ -128,24 +128,60 @@ cdgd0 <- function(Y,D,G,Q=NULL,X,data,t=0.025,algorithm) {
 
   data[,D] <- as.numeric(data[,D])-1
 
-  # predictions
+### cross-fitted predictions
   YgivenX.Pred_D0G0 <- YgivenX.Pred_D1G0 <- YgivenX.Pred_D0G1 <- YgivenX.Pred_D1G1 <- DgivenX.Pred_G0 <- DgivenX.Pred_G1 <- rep(NA, nrow(data))
 
   pred_data <- data
-  pred_data[,colnames(pred_data)%in%D] <- 0
-  YgivenX.Pred_D0[G1_index][mainsample_G1] <- stats::predict(YgivenX.Model.Aux_G1, newdata = pred_data[G1_index,][mainsample_G1,])
-  YgivenX.Pred_D0[G1_index][auxsample_G1] <- stats::predict(YgivenX.Model.Main_G1, newdata = pred_data[G1_index,][auxsample_G1,])
+  pred_data[,D] <- 0
+  pred_data[,G] <- 0
+  YgivenX.Pred_D0G0[sample1] <- stats::predict(YgivenDGX.Model.sample1, newdata = pred_data[sample2,])
+  YgivenX.Pred_D0G0[sample2] <- stats::predict(YgivenDGX.Model.sample2, newdata = pred_data[sample1,])
 
+  pred_data <- data
+  pred_data[,D] <- 1
+  pred_data[,G] <- 0
+  YgivenX.Pred_D1G0[sample1] <- stats::predict(YgivenDGX.Model.sample1, newdata = pred_data[sample2,])
+  YgivenX.Pred_D1G0[sample2] <- stats::predict(YgivenDGX.Model.sample2, newdata = pred_data[sample1,])
 
-  DgivenX.Pred[G1_index][mainsample_G1] <- stats::predict(DgivenX.Model.Aux_G1, newdata=data[G1_index,][mainsample_G1,], type="prob")[,2]
-  DgivenX.Pred[G1_index][auxsample_G1] <- stats::predict(DgivenX.Model.Main_G1, newdata=data[G1_index,][auxsample_G1,], type="prob")[,2]
-  DgivenX.Pred[G2_index][mainsample_G2] <- stats::predict(DgivenX.Model.Aux_G2, newdata=data[G2_index,][mainsample_G2,], type="prob")[,2]
-  DgivenX.Pred[G2_index][auxsample_G2] <- stats::predict(DgivenX.Model.Main_G2, newdata=data[G2_index,][auxsample_G2,], type="prob")[,2]
+  pred_data <- data
+  pred_data[,D] <- 0
+  pred_data[,G] <- 1
+  YgivenX.Pred_D0G1[sample1] <- stats::predict(YgivenDGX.Model.sample1, newdata = pred_data[sample2,])
+  YgivenX.Pred_D0G1[sample2] <- stats::predict(YgivenDGX.Model.sample2, newdata = pred_data[sample1,])
 
+  pred_data <- data
+  pred_data[,D] <- 1
+  pred_data[,G] <- 1
+  YgivenX.Pred_D1G1[sample1] <- stats::predict(YgivenDGX.Model.sample1, newdata = pred_data[sample2,])
+  YgivenX.Pred_D1G1[sample2] <- stats::predict(YgivenDGX.Model.sample2, newdata = pred_data[sample1,])
 
+  pred_data <- data
+  pred_data[,G] <- 0
+  DgivenX.Pred_G0[sample1] <- stats::predict(DgivenGX.Model.sample1, newdata = pred_data[sample2,], type="prob")[,2]
+  DgivenX.Pred_G0[sample2] <- stats::predict(DgivenGX.Model.sample2, newdata = pred_data[sample1,], type="prob")[,2]
 
+  pred_data <- data
+  pred_data[,G] <- 1
+  DgivenX.Pred_G1[sample1] <- stats::predict(DgivenGX.Model.sample1, newdata = pred_data[sample2,], type="prob")[,2]
+  DgivenX.Pred_G1[sample2] <- stats::predict(DgivenGX.Model.sample2, newdata = pred_data[sample1,], type="prob")[,2]
 
+### The "IPO" (individual potential outcome) function
+  # For each d and g value, we have IE(d,g)=\frac{\one(D=d)}{\pi(d,X,g)}[Y-\mu(d,X,g)]+\mu(d,X,g)
+  # We stablize the weight by dividing the sample average of estimated weights
 
+  IPO_D0G0 <- (1-data[,D])/(1-DgivenX.Pred_G0)/mean((1-data[,D])/(1-DgivenX.Pred_G0))*(data[,Y]-YgivenX.Pred_D0G0) + YgivenX.Pred_D0G0
+  IPO_D1G0 <- data[,D]/DgivenX.Pred_G0/(mean(data[,D]/DgivenX.Pred_G0))*(data[,Y]-YgivenX.Pred_D1G0) + YgivenX.Pred_D1G0
+  IPO_D0G1 <- (1-data[,D])/(1-DgivenX.Pred_G0)/(mean((1-data[,D])/(1-DgivenX.Pred_G0)))*(data[,Y]-YgivenX.Pred_D0G1) + YgivenX.Pred_D0G1
+  IPO_D1G1 <- data[,D]/DgivenX.Pred_G0/mean(data[,D]/DgivenX.Pred_G0)*(data[,Y]-YgivenX.Pred_D1G1) + YgivenX.Pred_D1G1
+
+### The cross-fitted substitution estimates of \xi_{dg} and \xi_{dgg'}
+  xi_D0G0 <- xi_D0G1 <- rep(NA, nrow(data))
+  xi_D0G0[sample1] <- mean(YgivenX.Pred_D0G0[intersect(which(data[,G]==0),sample2)])
+  xi_D0G0[sample2] <- mean(YgivenX.Pred_D0G0[intersect(which(data[,G]==0),sample1)])
+  xi_D0G1[sample1] <- mean(YgivenX.Pred_D0G0[intersect(which(data[,G]==1),sample2)])
+  xi_D0G1[sample2] <- mean(YgivenX.Pred_D0G0[intersect(which(data[,G]==1),sample1)])
+
+### The one-step estimate of \xi_{dg} and \xi_{dgg'}
 
 
   Y0_i <- ATT_i <- ATE_i <- rep(NA, nrow(data))
