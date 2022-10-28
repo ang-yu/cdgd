@@ -175,106 +175,89 @@ cdgd0 <- function(Y,D,G,Q=NULL,X,data,t=0.025,algorithm) {
   IPO_D1G1 <- data[,D]/DgivenX.Pred_G0/mean(data[,D]/DgivenX.Pred_G0)*(data[,Y]-YgivenX.Pred_D1G1) + YgivenX.Pred_D1G1
 
 ### The cross-fitted substitution estimates of \xi_{dg} and \xi_{dgg'}
-  xi_D0G0 <- xi_D0G1 <- rep(NA, nrow(data))
-  xi_D0G0[sample1] <- mean(YgivenX.Pred_D0G0[intersect(which(data[,G]==0),sample2)])
-  xi_D0G0[sample2] <- mean(YgivenX.Pred_D0G0[intersect(which(data[,G]==0),sample1)])
-  xi_D0G1[sample1] <- mean(YgivenX.Pred_D0G0[intersect(which(data[,G]==1),sample2)])
-  xi_D0G1[sample2] <- mean(YgivenX.Pred_D0G0[intersect(which(data[,G]==1),sample1)])
+#  xi_D0G0 <- xi_D0G1 <- rep(NA, nrow(data))
+#  xi_D0G0[sample1] <- mean(YgivenX.Pred_D0G0[intersect(which(data[,G]==0),sample2)])
+#  xi_D0G0[sample2] <- mean(YgivenX.Pred_D0G0[intersect(which(data[,G]==0),sample1)])
+#  xi_D0G1[sample1] <- mean(YgivenX.Pred_D0G0[intersect(which(data[,G]==1),sample2)])
+#  xi_D0G1[sample2] <- mean(YgivenX.Pred_D0G0[intersect(which(data[,G]==1),sample1)])
+
+### Cross-fitted group proportion
+#  prop_G1 <- rep(NA, nrow(data))
+#  prop_G1[sample1] <- mean(data[sample2,G])
+#  prop_G1[sample2] <- mean(data[sample1,G])
 
 ### The one-step estimate of \xi_{dg} and \xi_{dgg'}
+  psi_00_S1 <- mean( (1-data[sample1,G])/(1-mean(data[sample1,G]))*IPO_D0G0[sample1] )     # sample 1 estimate
+  psi_00_S2 <- mean( (1-data[sample2,G])/(1-mean(data[sample2,G]))*IPO_D0G0[sample2] )     # sample 2 estimate
+  psi_00 <- (1/2)*(psi_D0G0_S1+psi_D0G0_S2)
 
+  psi_01_S1 <- mean( data[sample1,G]/mean(data[sample1,G])*IPO_D0G1[sample1] )     # sample 1 estimate
+  psi_01_S2 <- mean( data[sample1,G]/mean(data[sample1,G])*IPO_D0G1[sample2] )     # sample 2 estimate
+  psi_01 <- (1/2)*(psi_D0G1_S1+psi_D0G1_S2)
 
-  Y0_i <- ATT_i <- ATE_i <- rep(NA, nrow(data))
+  # There are 8 dgg' combinations, so we define a function first
+  psi_dgg <- function(d,g1,g2) {
+    if (d==0 & g1==0) {
+      IPO_arg <- IPO_D0G0
+      YgivenX.Pred_arg <- YgivenX.Pred_D0G0}
+    if (d==1 & g1==0) {
+      IPO_arg <- IPO_D1G0
+      YgivenX.Pred_arg <- YgivenX.Pred_D1G0}
+    if (d==0 & g1==1) {
+      IPO_arg <- IPO_D0G1
+      YgivenX.Pred_arg <- YgivenX.Pred_D0G1}
+    if (d==1 & g1==1) {
+      IPO_arg <- IPO_D1G1
+      YgivenX.Pred_arg <- YgivenX.Pred_D1G1}
 
+    psi_dgg_S1 <- mean( as.numeric(data[sample1,G]==g1)/mean(data[sample1,G]==g1)*IPO_arg[sample1]*mean(as.numeric(data[sample1,G]==g2)/mean(data[sample1,G]==g2)*data[sample1,D]) +
+                          as.numeric(data[sample1,G]==g2)/mean(data[sample1,G]==g2)*mean(as.numeric(data[sample1,G]==g1)/mean(data[sample1,G]==g1)*YgivenX.Pred_arg)*(data[sample1,D]-mean(as.numeric(data[sample1,G]==g2)/mean(data[sample1,G]==g2)*data[sample1,D])) )
+    psi_dgg_S2 <- mean( as.numeric(data[sample2,G]==g1)/mean(data[sample2,G]==g1)*IPO_arg[sample2]*mean(as.numeric(data[sample2,G]==g2)/mean(data[sample2,G]==g2)*data[sample2,D]) +
+                          as.numeric(data[sample2,G]==g2)/mean(data[sample2,G]==g2)*mean(as.numeric(data[sample2,G]==g1)/mean(data[sample2,G]==g1)*YgivenX.Pred_arg)*(data[sample2,D]-mean(as.numeric(data[sample2,G]==g2)/mean(data[sample2,G]==g2)*data[sample2,D])) )
 
-  Y0_i[G1_index] <- ( YgivenX.Pred_D0 + (1-data[,D])*(data[,Y]-YgivenX.Pred_D0)/(1-DgivenX.Pred) )[G1_index]*wht[G1_index]
-  Y0_i[G2_index] <- ( YgivenX.Pred_D0 + (1-data[,D])*(data[,Y]-YgivenX.Pred_D0)/(1-DgivenX.Pred) )[G2_index]*wht[G2_index]
-
-  ATT_i[G1_index] <- ( (data[,D]-(1-data[,D])*DgivenX.Pred/(1-DgivenX.Pred))*(data[,Y]-YgivenX.Pred_D0) )[G1_index]/mean(data[,D][G1_index]*wht[G1_index])*wht[G1_index]
-  ATT_i[G2_index] <- ( (data[,D]-(1-data[,D])*DgivenX.Pred/(1-DgivenX.Pred))*(data[,Y]-YgivenX.Pred_D0) )[G2_index]/mean(data[,D][G2_index]*wht[G2_index])*wht[G2_index]
-
-  ATE_i[G1_index] <- ( YgivenX.Pred_D1 + data[,D]*(data[,Y]-YgivenX.Pred_D1)/DgivenX.Pred - ( YgivenX.Pred_D0 + (1-data[,D])*(data[,Y]-YgivenX.Pred_D0)/(1-DgivenX.Pred) ) )[G1_index]*wht[G1_index]
-  ATE_i[G2_index] <- ( YgivenX.Pred_D1 + data[,D]*(data[,Y]-YgivenX.Pred_D1)/DgivenX.Pred - ( YgivenX.Pred_D0 + (1-data[,D])*(data[,Y]-YgivenX.Pred_D0)/(1-DgivenX.Pred) ) )[G2_index]*wht[G2_index]
-
-  total <- mean(data[,Y][G1_index]*wht[G1_index])-mean(data[,Y][G2_index]*wht[G2_index])
-  baseline <- mean(Y0_i[G1_index])-mean(Y0_i[G2_index])
-  prevalence <- mean(ATE_i[G2_index])*(mean(data[,D][G1_index]*wht[G1_index])-mean(data[,D][G2_index]*wht[G2_index]))
-  effect <- mean(data[,D][G1_index]*wht[G1_index])*(mean(ATE_i[G1_index])-mean(ATE_i[G2_index]))
-  selection <- (mean(ATT_i[G1_index])-mean(ATE_i[G1_index]))*mean(data[,D][G1_index]*wht[G1_index])-
-    (mean(ATT_i[G2_index])-mean(ATE_i[G2_index]))*mean(data[,D][G2_index]*wht[G2_index])
-
-  ### conditional prevalence ###
-  if (!is.null(Q)) {
-    data_cond <- cbind(ATE_i, data[,D], data[,Q])
-    data_cond <- as.data.frame(data_cond)
-    colnames(data_cond)[1:2] <- c("tau","D")
-    Q_names <- colnames(data_cond)[3:ncol(data_cond)]
-    data_cond$D <- as.factor(data_cond$D)
-    levels(data_cond$D) <- c("D0","D1")  # necessary for caret implementation of ranger
-
-    TaugivenQ.Pred_G1_G1 <- TaugivenQ.Pred_G2_G1 <- DgivenQ.Pred_G1_G1 <- DgivenQ.Pred_G2_G1 <- rep(NA, sum(G1_index))
-    TaugivenQ.Pred_G1_G2 <- TaugivenQ.Pred_G2_G2 <- DgivenQ.Pred_G1_G2 <- DgivenQ.Pred_G2_G2 <- rep(NA, sum(G2_index))
-
-    if (algorithm=="nnet") {
-      message <- utils::capture.output( TaugivenQ.Model_G1 <- caret::train(stats::as.formula(paste("tau", paste(Q_names,sep="+"), sep="~")), data=data_cond[G1_index,], method="nnet",
-                                                                           preProc=c("center","scale"), trControl=caret::trainControl(method="none"), linout=TRUE,
-                                                                           tuneGrid=expand.grid(size=2,decay=0.02)) )
-
-      message <- utils::capture.output( TaugivenQ.Model_G2 <- caret::train(stats::as.formula(paste("tau", paste(Q_names,sep="+"), sep="~")), data=data_cond[G2_index,], method="nnet",
-                                                                           preProc=c("center","scale"), trControl=caret::trainControl(method="none"), linout=TRUE,
-                                                                           tuneGrid=expand.grid(size=2,decay=0.02)) )
-    }
-    if (algorithm=="ranger") {
-      message <- utils::capture.output( TaugivenQ.Model_G1 <- caret::train(stats::as.formula(paste("tau", paste(Q_names,sep="+"), sep="~")), data=data_cond[G1_index,], method="ranger",
-                                                                           trControl=caret::trainControl(method="cv"),
-                                                                           tuneGrid=expand.grid(mtry=floor(sqrt(length(Q_names))),splitrule="variance",min.node.size=c(5,10,100))) )
-
-      message <- utils::capture.output( TaugivenQ.Model_G2 <- caret::train(stats::as.formula(paste("tau", paste(Q_names,sep="+"), sep="~")), data=data_cond[G2_index,], method="ranger",
-                                                                           trControl=caret::trainControl(method="cv"),
-                                                                           tuneGrid=expand.grid(mtry=floor(sqrt(length(Q_names))),splitrule="variance",min.node.size=c(5,10,100))) )
-    }
-
-
-    TaugivenQ.Pred_G1_G1 <- stats::predict(TaugivenQ.Model_G1, newdata = data_cond[G1_index,])
-    TaugivenQ.Pred_G2_G1 <- stats::predict(TaugivenQ.Model_G2, newdata = data_cond[G1_index,])
-    TaugivenQ.Pred_G1_G2 <- stats::predict(TaugivenQ.Model_G1, newdata = data_cond[G2_index,])
-    TaugivenQ.Pred_G2_G2 <- stats::predict(TaugivenQ.Model_G2, newdata = data_cond[G2_index,])
-
-    #plotLowess(data_cond[G2_index,]$tau ~ data_cond[G2_index,]$V3)
-    #plot(data_cond[G2_index,]$V3, TaugivenQ.Pred_G2_G2)
-
-    if (algorithm=="nnet") {
-      message <- utils::capture.output( DaugivenQ.Model_G1 <- caret::train(stats::as.formula(paste("D", paste(Q_names,sep="+"), sep="~")), data=data_cond[G1_index,], method="nnet",
-                                                                           preProc=c("center","scale"), trControl=caret::trainControl(method="none"), linout=FALSE,
-                                                                           tuneGrid=expand.grid(size=2,decay=0.02)), weights=wht[G1_index] )
-
-      message <- utils::capture.output( DaugivenQ.Model_G2 <- caret::train(stats::as.formula(paste("D", paste(Q_names,sep="+"), sep="~")), data=data_cond[G2_index,], method="nnet",
-                                                                           preProc=c("center","scale"), trControl=caret::trainControl(method="none"), linout=FALSE,
-                                                                           tuneGrid=expand.grid(size=2,decay=0.02)), weights=wht[G2_index] )
-    }
-    if (algorithm=="ranger") {
-      message <- utils::capture.output( DaugivenQ.Model_G1 <- caret::train(stats::as.formula(paste("D", paste(Q_names,sep="+"), sep="~")), data=data_cond[G1_index,], method="ranger",
-                                                                           trControl=caret::trainControl(method="cv", classProbs=TRUE),
-                                                                           tuneGrid=expand.grid(mtry=floor(sqrt(length(Q_names))),splitrule="gini",min.node.size=c(1,10,100))), weights=wht[G1_index] )
-
-      message <- utils::capture.output( DaugivenQ.Model_G2 <- caret::train(stats::as.formula(paste("D", paste(Q_names,sep="+"), sep="~")), data=data_cond[G2_index,], method="ranger",
-                                                                           trControl=caret::trainControl(method="cv", classProbs=TRUE),
-                                                                           tuneGrid=expand.grid(mtry=floor(sqrt(length(Q_names))),splitrule="gini",min.node.size=c(1,10,100))), weights=wht[G2_index] )
-    }
-
-
-    DgivenQ.Pred_G1_G1 <- stats::predict(DaugivenQ.Model_G1, newdata = data_cond[G1_index,], type="prob")[,2]
-    DgivenQ.Pred_G2_G1 <- stats::predict(DaugivenQ.Model_G2, newdata = data_cond[G1_index,], type="prob")[,2]
-    DgivenQ.Pred_G1_G2 <- stats::predict(DaugivenQ.Model_G1, newdata = data_cond[G2_index,], type="prob")[,2]
-    DgivenQ.Pred_G2_G2 <- stats::predict(DaugivenQ.Model_G2, newdata = data_cond[G2_index,], type="prob")[,2]
-
-    cond_prevalence <- mean((DgivenQ.Pred_G1_G2-DgivenQ.Pred_G2_G2)*TaugivenQ.Pred_G2_G2*wht[G2_index])
-    cond_effect <- mean((TaugivenQ.Pred_G1_G1-TaugivenQ.Pred_G2_G1)*DgivenQ.Pred_G1_G1*wht[G1_index])
-    Q_dist <- mean(DgivenQ.Pred_G1_G1*TaugivenQ.Pred_G2_G1*wht[G1_index]) - mean(DgivenQ.Pred_G1_G2*TaugivenQ.Pred_G2_G2*wht[G2_index])
-    cond_selection <- total-baseline-cond_prevalence-cond_effect-Q_dist
+    return((1/2)*(psi_dgg_S1+psi_dgg_S2))
   }
 
-  ###  ###
+### point estimates
+  Y_G0 <- mean((1-data[,G])/(1-mean(data[,G]))*data[,Y])       # mean outcome estimate for group 0
+  Y_G1 <- mean(data[,G]/mean(data[,G])*data[,Y])               # mean outcome estimate for group 1
+  total <- Y_G1-Y_G0
+
+  baseline <- psi_01-psi_00
+  prevalence <- psi_dgg(1,0,1)-psi_dgg(1,0,0)-psi_dgg(0,0,1)+psi_dgg(0,0,0)
+  effect <- psi_dgg(1,1,1)-psi_dgg(0,1,1)-psi_dgg(1,0,1)+psi_dgg(0,0,1)
+  selection <- total-baseline-prevalence-effect
+
+### variance estimates
+  Var <- function(x) {mean(x^2)}
+  total_var <- Var( (1-data[,G])/(1-mean(data[,G]))*(data[,Y]-Y_G0) )
+  baseline_var <- Var( data[,G]/mean(data[,G])*(IPO_D0G1-psi_01) - (1-data[,G])/(1-mean(data[,G]))*(IPO_D0G0-psi_00) )
+
+  EIF_dgg <- function(d,g1,g2) {
+    if (d==0 & g1==0) {
+      IPO_arg <- IPO_D0G0
+      YgivenX.Pred_arg <- YgivenX.Pred_D0G0}
+    if (d==1 & g1==0) {
+      IPO_arg <- IPO_D1G0
+      YgivenX.Pred_arg <- YgivenX.Pred_D1G0}
+    if (d==0 & g1==1) {
+      IPO_arg <- IPO_D0G1
+      YgivenX.Pred_arg <- YgivenX.Pred_D0G1}
+    if (d==1 & g1==1) {
+      IPO_arg <- IPO_D1G1
+      YgivenX.Pred_arg <- YgivenX.Pred_D1G1}
+
+    return(
+    as.numeric(data[,G]==g1)/mean(data[,G]==g1)*IPO_arg*mean(data[,G]==g2/mean(data[,G]==g2)*data[,D]) +
+      as.numeric(data[,G]==g2)/mean(data[,G]==g2)*mean(data[,G]==g1/mean(data[,G]==g1)*YgivenX.Pred_arg)*(data[,D]-mean(as.numeric(data[,G]==g2)/mean(data[,G]==g2)*data[,D])) -
+      as.numeric(data[,G]==g1)/mean(data[,G]==g1)*psi_dgg(d,g1,g2)
+    )
+  }
+
+  prevalence_var <- Var( EIF_dgg(1,0,1)-EIF_dgg(1,0,0)-EIF_dgg(0,0,1)+EIF_dgg(0,0,0) )
+
+
+
 
   if (is.null(Q)) {
     point <- c(
