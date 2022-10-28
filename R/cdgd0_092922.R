@@ -1,17 +1,15 @@
 
 
 
-#' Only produce point estimates of cdgd
+#' Perform unconditional decomposition
 #'
 #' @param Y Outcome. The name of a continuous variable.
 #' @param D Treatment status. The name of a binary numeric variable taking values of 0 and 1.
 #' @param G1 Group 1 membership. The name of a binary factor variable taking values of 0 and 1.
 #' @param G2 Group 2 membership. The name of a binary factor variable taking values of 0 and 1.
-#' @param Q Conditional set. The vector of the names of numeric variables.
 #' @param X Confounders. The vector of the names of numeric variables.
 #' @param data A data frame.
 #' @param weight Survey weights. The name of a numeric variable.
-#' @param t Threshold of propensity score censoring. Propensity scores larger than (1-t)th quantile or smaller than tth quantile are censored.
 #' @param algorithm The ML algorithm for modelling. "nnet" for neural network and "ranger" for random forests.
 #'
 #' @return A data frame of point estimates.
@@ -28,17 +26,15 @@
 #' D="treatment",
 #' G1="group_a",
 #' G2="group_b",
-#' X=c("confounder","Q"),
-#' Q="Q",
+#' X=c("confounder"),
 #' data=exp_data,
-#' t=0.05,
 #' algorithm="nnet")
 #'
 #' results0
 
 
 
-cdgd0 <- function(Y,D,G,Q=NULL,X,data,t=0.025,algorithm) {
+cdgd0 <- function(Y,D,G,X,data,algorithm) {
 
   if (!requireNamespace("caret", quietly=TRUE)) {
     stop(
@@ -189,11 +185,11 @@ cdgd0 <- function(Y,D,G,Q=NULL,X,data,t=0.025,algorithm) {
 ### The one-step estimate of \xi_{dg} and \xi_{dgg'}
   psi_00_S1 <- mean( (1-data[sample1,G])/(1-mean(data[sample1,G]))*IPO_D0G0[sample1] )     # sample 1 estimate
   psi_00_S2 <- mean( (1-data[sample2,G])/(1-mean(data[sample2,G]))*IPO_D0G0[sample2] )     # sample 2 estimate
-  psi_00 <- (1/2)*(psi_D0G0_S1+psi_D0G0_S2)
+  psi_00 <- (1/2)*(psi_00_S1+psi_00_S2)
 
   psi_01_S1 <- mean( data[sample1,G]/mean(data[sample1,G])*IPO_D0G1[sample1] )     # sample 1 estimate
   psi_01_S2 <- mean( data[sample1,G]/mean(data[sample1,G])*IPO_D0G1[sample2] )     # sample 2 estimate
-  psi_01 <- (1/2)*(psi_D0G1_S1+psi_D0G1_S2)
+  psi_01 <- (1/2)*(psi_01_S1+psi_01_S2)
 
   # There are 8 dgg' combinations, so we define a function first
   psi_dgg <- function(d,g1,g2) {
@@ -214,6 +210,9 @@ cdgd0 <- function(Y,D,G,Q=NULL,X,data,t=0.025,algorithm) {
                           as.numeric(data[sample1,G]==g2)/mean(data[sample1,G]==g2)*mean(as.numeric(data[sample1,G]==g1)/mean(data[sample1,G]==g1)*YgivenX.Pred_arg)*(data[sample1,D]-mean(as.numeric(data[sample1,G]==g2)/mean(data[sample1,G]==g2)*data[sample1,D])) )
     psi_dgg_S2 <- mean( as.numeric(data[sample2,G]==g1)/mean(data[sample2,G]==g1)*IPO_arg[sample2]*mean(as.numeric(data[sample2,G]==g2)/mean(data[sample2,G]==g2)*data[sample2,D]) +
                           as.numeric(data[sample2,G]==g2)/mean(data[sample2,G]==g2)*mean(as.numeric(data[sample2,G]==g1)/mean(data[sample2,G]==g1)*YgivenX.Pred_arg)*(data[sample2,D]-mean(as.numeric(data[sample2,G]==g2)/mean(data[sample2,G]==g2)*data[sample2,D])) )
+    # Note that this is basically DML1. We could also use DML2, i.e., we would directly return psi_dgg as follows
+    # psi_dgg <- mean( as.numeric(data[,G]==g1)/mean(data[,G]==g1)*IPO_arg*mean(as.numeric(data[,G]==g2)/mean(data[,G]==g2)*data[,D]) +
+    #                       as.numeric(data[,G]==g2)/mean(data[,G]==g2)*mean(as.numeric(data[,G]==g1)/mean(data[,G]==g1)*YgivenX.Pred_arg)*(data[,D]-mean(as.numeric(data[,G]==g2)/mean(data[,G]==g2)*data[,D])) )
 
     return((1/2)*(psi_dgg_S1+psi_dgg_S2))
   }
@@ -228,10 +227,14 @@ cdgd0 <- function(Y,D,G,Q=NULL,X,data,t=0.025,algorithm) {
   effect <- psi_dgg(1,1,1)-psi_dgg(0,1,1)-psi_dgg(1,0,1)+psi_dgg(0,0,1)
   selection <- total-baseline-prevalence-effect
 
-### variance estimates
-  Var <- function(x) {mean(x^2)}
-  total_var <- Var( (1-data[,G])/(1-mean(data[,G]))*(data[,Y]-Y_G0) )
-  baseline_var <- Var( data[,G]/mean(data[,G])*(IPO_D0G1-psi_01) - (1-data[,G])/(1-mean(data[,G]))*(IPO_D0G0-psi_00) )
+### standard error estimates
+  se <- function(x) {sqrt( mean(x^2)/nrow(data) )}
+  total_se <- se( data[,G]/mean(data[,G])*(data[,Y]-Y_G1) - (1-data[,G])/(1-mean(data[,G]))*(data[,Y]-Y_G0) )
+  baseline_se <- se( data[,G]/mean(data[,G])*(IPO_D0G1-psi_01) - (1-data[,G])/(1-mean(data[,G]))*(IPO_D0G0-psi_00) )
+  # Alternatively, we could use
+  # se( c( data[sample1,G]/mean(data[sample1,G])*(IPO_D0G1[sample1]-psi_01) - (1-data[sample1,G])/(1-mean(data[sample1,G]))*(IPO_D0G0[sample1]-psi_00),
+  #         data[sample2,G]/mean(data[sample2,G])*(IPO_D0G1[sample2]-psi_01) - (1-data[sample2,G])/(1-mean(data[sample2,G]))*(IPO_D0G0[sample2]-psi_00) ) )
+  # But there isn't a theoretically strong reason to prefer one over the other.
 
   EIF_dgg <- function(d,g1,g2) {
     if (d==0 & g1==0) {
@@ -248,120 +251,49 @@ cdgd0 <- function(Y,D,G,Q=NULL,X,data,t=0.025,algorithm) {
       YgivenX.Pred_arg <- YgivenX.Pred_D1G1}
 
     return(
-    as.numeric(data[,G]==g1)/mean(data[,G]==g1)*IPO_arg*mean(data[,G]==g2/mean(data[,G]==g2)*data[,D]) +
-      as.numeric(data[,G]==g2)/mean(data[,G]==g2)*mean(data[,G]==g1/mean(data[,G]==g1)*YgivenX.Pred_arg)*(data[,D]-mean(as.numeric(data[,G]==g2)/mean(data[,G]==g2)*data[,D])) -
+    as.numeric(data[,G]==g1)/mean(data[,G]==g1)*IPO_arg*mean(as.numeric(data[,G]==g2)/mean(data[,G]==g2)*data[,D]) +
+      as.numeric(data[,G]==g2)/mean(data[,G]==g2)*mean(as.numeric(data[,G]==g1)/mean(data[,G]==g1)*YgivenX.Pred_arg)*(data[,D]-mean(as.numeric(data[,G]==g2)/mean(data[,G]==g2)*data[,D])) -
       as.numeric(data[,G]==g1)/mean(data[,G]==g1)*psi_dgg(d,g1,g2)
     )
   }
+  # Alternatively, we could use
+  # return(
+  #   c(as.numeric(data[sample1,G]==g1)/mean(data[sample1,G]==g1)*IPO_arg[sample1]*mean(as.numeric(data[sample1,G]==g2)/mean(data[sample1,G]==g2)*data[sample1,D]) +
+  #       as.numeric(data[sample1,G]==g2)/mean(data[sample1,G]==g2)*mean(as.numeric(data[sample1,G]==g1)/mean(data[sample1,G]==g1)*YgivenX.Pred_arg)*(data[sample1,D]-mean(as.numeric(data[sample1,G]==g2)/mean(data[sample1,G]==g2)*data[sample1,D])) -
+  #       as.numeric(data[sample1,G]==g1)/mean(data[sample1,G]==g1)*psi_dgg(d,g1,g2)
+  #     , as.numeric(data[sample2,G]==g1)/mean(data[sample2,G]==g1)*IPO_arg[sample2]*mean(as.numeric(data[sample2,G]==g2)/mean(data[sample2,G]==g2)*data[sample2,D]) +
+  #       as.numeric(data[sample2,G]==g2)/mean(data[sample2,G]==g2)*mean(as.numeric(data[sample2,G]==g1)/mean(data[sample2,G]==g1)*YgivenX.Pred_arg)*(data[sample2,D]-mean(as.numeric(data[sample2,G]==g2)/mean(data[sample2,G]==g2)*data[sample2,D])) -
+  #       as.numeric(data[sample2,G]==g1)/mean(data[sample2,G]==g1)*psi_dgg(d,g1,g2))
+  # )
+  # But there isn't a theoretically strong reason to prefer one over the other.
 
-  prevalence_var <- Var( EIF_dgg(1,0,1)-EIF_dgg(1,0,0)-EIF_dgg(0,0,1)+EIF_dgg(0,0,0) )
+  prevalence_se <- se( EIF_dgg(1,0,1)-EIF_dgg(1,0,0)-EIF_dgg(0,0,1)+EIF_dgg(0,0,0) )
+  effect_se <- se( EIF_dgg(1,1,1)-EIF_dgg(0,1,1)-EIF_dgg(1,0,1)+EIF_dgg(0,0,1) )
+  selection_se <- se( data[,G]/mean(data[,G])*(data[,Y]-Y_G1) - (1-data[,G])/(1-mean(data[,G]))*(data[,Y]-Y_G0) -
+                         ( data[,G]/mean(data[,G])*(IPO_D0G1-psi_01) - (1-data[,G])/(1-mean(data[,G]))*(IPO_D0G0-psi_00) ) -
+                         ( EIF_dgg(1,0,1)-EIF_dgg(1,0,0)-EIF_dgg(0,0,1)+EIF_dgg(0,0,0) ) -
+                         ( EIF_dgg(1,1,1)-EIF_dgg(0,1,1)-EIF_dgg(1,0,1)+EIF_dgg(0,0,1) ) )
 
+### output results
+  point <- c(total,
+             baseline,
+             prevalence,
+             effect,
+             selection)
+  se <- c(total_se,
+          baseline_se,
+          prevalence_se,
+          effect_se,
+          selection_se)
+  CI_lower <- point - qnorm(0.975)*se
+  CI_upper <- point + qnorm(0.975)*se
+  names <- c("total",
+             "baseline",
+             "prevalence",
+             "effect",
+             "selection")
 
-
-
-  if (is.null(Q)) {
-    point <- c(
-      mean(data[,Y][G1_index]*wht[G1_index]),
-      mean(data[,Y][G2_index]*wht[G2_index]),
-      mean(Y0_i[G1_index]),
-      mean(Y0_i[G2_index]),
-      mean(data[,D][G1_index]*wht[G1_index]),
-      mean(data[,D][G2_index]*wht[G2_index]),
-      mean(ATE_i[G1_index]),
-      mean(ATE_i[G2_index]),
-      mean(ATT_i[G1_index]),
-      mean(ATT_i[G2_index]),
-      total,
-      baseline,
-      mean(data[,D][G1_index]*wht[G1_index])-mean(data[,D][G2_index]*wht[G2_index]),
-      mean(ATE_i[G1_index])-mean(ATE_i[G2_index]),
-      mean(ATT_i[G1_index])-mean(ATT_i[G2_index]),
-      total,
-      baseline,
-      prevalence,
-      effect,
-      selection
-    )
-
-    item <- c(
-      "mean_Y_G1",
-      "mean_Y_G2",
-      "mean_Y0_G1",
-      "mean_Y0_G2",
-      "mean_D_G1",
-      "mean_D_G2",
-      "ATE_G1",
-      "ATE_G2",
-      "ATT_G1",
-      "ATT_G2",
-      "diff_mean_Y",
-      "diff_mean_Y0",
-      "diff_mean_D",
-      "diff_ATE",
-      "dff_ATT",
-      "total",
-      "baseline",
-      "prevalence",
-      "effect",
-      "selection")
-  } else {
-    point <- c(
-      mean(data[,Y][G1_index]*wht[G1_index]),
-      mean(data[,Y][G2_index]*wht[G2_index]),
-      mean(Y0_i[G1_index]),
-      mean(Y0_i[G2_index]),
-      mean(data[,D][G1_index]*wht[G1_index]),
-      mean(data[,D][G2_index]*wht[G2_index]),
-      mean(ATE_i[G1_index]),
-      mean(ATE_i[G2_index]),
-      mean(ATT_i[G1_index]),
-      mean(ATT_i[G2_index]),
-      total,
-      baseline,
-      mean(data[,D][G1_index]*wht[G1_index])-mean(data[,D][G2_index]*wht[G2_index]),
-      mean(ATE_i[G1_index])-mean(ATE_i[G2_index]),
-      mean(ATT_i[G1_index])-mean(ATT_i[G2_index]),
-      total,
-      baseline,
-      prevalence,
-      effect,
-      selection,
-      cond_prevalence,
-      cond_effect,
-      cond_selection,
-      Q_dist
-    )
-
-    item <- c(
-      "mean_Y_G1",
-      "mean_Y_G2",
-      "mean_Y0_G1",
-      "mean_Y0_G2",
-      "mean_D_G1",
-      "mean_D_G2",
-      "ATE_G1",
-      "ATE_G2",
-      "ATT_G1",
-      "ATT_G2",
-      "diff_mean_Y",
-      "diff_mean_Y0",
-      "diff_mean_D",
-      "diff_ATE",
-      "dff_ATT",
-      "total",
-      "baseline",
-      "prevalence",
-      "effect",
-      "selection",
-      "cond_prevalence",
-      "cond_effect",
-      "cond_selection",
-      "Q_dist")
-  }
-
-
-  output <- as.data.frame(cbind(item, point))
-  output$point <- as.numeric(output$point)
+  output <- as.data.frame(cbind(names, point,se,CI_lower,CI_upper))
 
   return(output)
 }
