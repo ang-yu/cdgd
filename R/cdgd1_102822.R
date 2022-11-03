@@ -199,16 +199,16 @@ cdgd1 <- function(Y,D,G,X,Q,data,algorithm) {
   if (algorithm=="ranger") {
     message <- utils::capture.output( Y0givenGQ.Model.sample1 <- caret::train(stats::as.formula(paste("YgivenGXQ.Pred_D0_ncf", paste(G,Q,sep="+"), sep="~")), data=data_temp[sample1,], method="ranger",
                                                                               trControl=caret::trainControl(method="cv"),
-                                                                              tuneGrid=expand.grid(mtry=c(5,10,15,20),splitrule=c("variance"),min.node.size=c(50,100,200))) )
+                                                                              tuneGrid=expand.grid(mtry=1,splitrule=c("variance"),min.node.size=c(50,100,200))) )
     message <- utils::capture.output( Y0givenGQ.Model.sample2 <- caret::train(stats::as.formula(paste("YgivenGXQ.Pred_D0_ncf", paste(G,Q,sep="+"), sep="~")), data=data_temp[sample2,], method="ranger",
                                                                               trControl=caret::trainControl(method="cv"),
-                                                                              tuneGrid=expand.grid(mtry=c(5,10,15,20),splitrule=c("variance"),min.node.size=c(50,100,200))) )
+                                                                              tuneGrid=expand.grid(mtry=1,splitrule=c("variance"),min.node.size=c(50,100,200))) )
     message <- utils::capture.output( Y1givenGQ.Model.sample1 <- caret::train(stats::as.formula(paste("YgivenGXQ.Pred_D1_ncf", paste(G,Q,sep="+"), sep="~")), data=data_temp[sample1,], method="ranger",
                                                                               trControl=caret::trainControl(method="cv"),
-                                                                              tuneGrid=expand.grid(mtry=c(5,10,15,20),splitrule=c("variance"),min.node.size=c(50,100,200))) )
+                                                                              tuneGrid=expand.grid(mtry=1,splitrule=c("variance"),min.node.size=c(50,100,200))) )
     message <- utils::capture.output( Y1givenGQ.Model.sample2 <- caret::train(stats::as.formula(paste("YgivenGXQ.Pred_D1_ncf", paste(G,Q,sep="+"), sep="~")), data=data_temp[sample2,], method="ranger",
                                                                               trControl=caret::trainControl(method="cv"),
-                                                                              tuneGrid=expand.grid(mtry=c(5,10,15,20),splitrule=c("variance"),min.node.size=c(50,100,200))) )
+                                                                              tuneGrid=expand.grid(mtry=1,splitrule=c("variance"),min.node.size=c(50,100,200))) )
   }
   if (algorithm=="gbm") {
     message <- utils::capture.output( Y0givenGQ.Model.sample1 <- caret::train(stats::as.formula(paste("YgivenGXQ.Pred_D0_ncf", paste(G,Q,sep="+"), sep="~")), data=data_temp[sample1,], method="gbm",
@@ -277,10 +277,10 @@ cdgd1 <- function(Y,D,G,X,Q,data,algorithm) {
   if (algorithm=="ranger") {
     message <- utils::capture.output( DgivenGQ.Model.sample1 <- caret::train(stats::as.formula(paste(D, paste(G,Q,sep="+"), sep="~")), data=data[sample1,], method="ranger",
                                                                               trControl=caret::trainControl(method="cv", classProbs=TRUE),
-                                                                              tuneGrid=expand.grid(mtry=c(5,10,15,20),splitrule=c("gini"),min.node.size=c(50,100,200))) )
+                                                                              tuneGrid=expand.grid(mtry=1,splitrule=c("gini"),min.node.size=c(50,100,200))) )
     message <- utils::capture.output( DgivenGQ.Model.sample2 <- caret::train(stats::as.formula(paste(D, paste(G,Q,sep="+"), sep="~")), data=data[sample2,], method="ranger",
                                                                               trControl=caret::trainControl(method="cv", classProbs=TRUE),
-                                                                              tuneGrid=expand.grid(mtry=c(5,10,15,20),splitrule=c("gini"),min.node.size=c(50,100,200))) )
+                                                                              tuneGrid=expand.grid(mtry=1,splitrule=c("gini"),min.node.size=c(50,100,200))) )
   }
   if (algorithm=="gbm") {
     message <- utils::capture.output( DgivenGQ.Model.sample1 <- caret::train(stats::as.formula(paste(D, paste(G,Q,sep="+"), sep="~")), data=data[sample1,], method="gbm",
@@ -307,7 +307,7 @@ cdgd1 <- function(Y,D,G,X,Q,data,algorithm) {
 
 ### Estimate p_g(Q)=Pr(G=g | Q)
   data[,G] <- as.factor(data[,G])
-  levels(data[,D]) <- c("G0","G1")  # necessary for caret implementation of ranger
+  levels(data[,G]) <- c("G0","G1")  # necessary for caret implementation of ranger
 
   if (algorithm=="nnet") {
     message <- utils::capture.output( GgivenQ.Model.sample1 <- caret::train(stats::as.formula(paste(G, paste(Q,sep="+"), sep="~")), data=data[sample1,], method="nnet",
@@ -320,10 +320,10 @@ cdgd1 <- function(Y,D,G,X,Q,data,algorithm) {
   if (algorithm=="ranger") {
     message <- utils::capture.output( GgivenQ.Model.sample1 <- caret::train(stats::as.formula(paste(G, paste(Q,sep="+"), sep="~")), data=data[sample1,], method="ranger",
                                                                              trControl=caret::trainControl(method="cv", classProbs=TRUE),
-                                                                             tuneGrid=expand.grid(mtry=c(5,10,15,20),splitrule=c("gini"),min.node.size=c(50,100,200))) )
+                                                                             tuneGrid=expand.grid(mtry=1,splitrule=c("gini"),min.node.size=c(50,100,200))) )
     message <- utils::capture.output( GgivenQ.Model.sample2 <- caret::train(stats::as.formula(paste(G, paste(Q,sep="+"), sep="~")), data=data[sample2,], method="ranger",
                                                                              trControl=caret::trainControl(method="cv", classProbs=TRUE),
-                                                                             tuneGrid=expand.grid(mtry=c(5,10,15,20),splitrule=c("gini"),min.node.size=c(50,100,200))) )
+                                                                             tuneGrid=expand.grid(mtry=1,splitrule=c("gini"),min.node.size=c(50,100,200))) )
   }
   if (algorithm=="gbm") {
     message <- utils::capture.output( GgivenQ.Model.sample1 <- caret::train(stats::as.formula(paste(G, paste(Q,sep="+"), sep="~")), data=data[sample1,], method="gbm",
@@ -340,10 +340,20 @@ cdgd1 <- function(Y,D,G,X,Q,data,algorithm) {
   GgivenQ.Pred[sample1] <- stats::predict(DgivenGQ.Model.sample1, newdata = data[sample2,], type="prob")[,2]
   GgivenQ.Pred[sample2] <- stats::predict(DgivenGQ.Model.sample2, newdata = data[sample1,], type="prob")[,2]
 
+### The one-step estimate of \xi_{dg}
+  psi_00 <- mean( (1-data[,G])/(1-mean(data[,G]))*IPO_D0G0 )
+  psi_01 <- mean( data[,G]/mean(data[,G])*IPO_D0G1 )
+  # Note that this is basically DML2. We could also use DML1:
+  #psi_00_S1 <- mean( (1-data[sample1,G])/(1-mean(data[sample1,G]))*IPO_D0G0[sample1] )     # sample 1 estimate
+  #psi_00_S2 <- mean( (1-data[sample2,G])/(1-mean(data[sample2,G]))*IPO_D0G0[sample2] )     # sample 2 estimate
+  #psi_00 <- (1/2)*(psi_00_S1+psi_00_S2)
+  #psi_01_S1 <- mean( data[sample1,G]/mean(data[sample1,G])*IPO_D0G1[sample1] )     # sample 1 estimate
+  #psi_01_S2 <- mean( data[sample1,G]/mean(data[sample1,G])*IPO_D0G1[sample2] )     # sample 2 estimate
+  #psi_01 <- (1/2)*(psi_01_S1+psi_01_S2)
 
 ### The one-step estimate of \xi_{dgg'g''}
   # There are 8 possible dgg'g'' combinations, so we define a function first
-  psi_dgg <- function(d,g1,g2,g3) {
+  psi_dggg <- function(d,g1,g2,g3) {
     if (d==0 & g1==0) {
       IPO_arg <- IPO_D0G0
       YdgivenQ.Pred_arg <- Y0givenQ.Pred_G0
@@ -377,18 +387,19 @@ cdgd1 <- function(Y,D,G,X,Q,data,algorithm) {
       g3givenQ.Pred_arg <- GgivenQ.Pred
     }
 
-    psi_dggg_S1 <- mean( as.numeric(data[sample1,G]==g3)/mean(data[sample1,G]==g3)*YdgivenQ.Pred_arg*DgivenQ.Pred_arg +
-                           as.numeric(data[sample1,G]==g1)/mean(data[sample1,G]==g3) )
+    psi_dggg <- mean( as.numeric(data[,G]==g3)/mean(data[,G]==g3)*YdgivenQ.Pred_arg*DgivenQ.Pred_arg +
+                           as.numeric(data[,G]==g1)/mean(data[,G]==g3)*g3givenQ.Pred_arg/g1givenQ.Pred_arg*(IPO_arg-YdgivenQ.Pred_arg)*DgivenQ.Pred_arg +
+                           as.numeric(data[,G]==g2)/mean(data[,G]==g3)*g3givenQ.Pred_arg/g2givenQ.Pred_arg*(data[,D]-DgivenQ.Pred_arg)*YdgivenQ.Pred_arg )
+    # Note that this is basically DML2. We could also use DML1:
+    #psi_dggg_S1 <- mean( as.numeric(data[sample1,G]==g3)/mean(data[sample1,G]==g3)*YdgivenQ.Pred_arg[sample1]*DgivenQ.Pred_arg[sample1] +
+    #                       as.numeric(data[sample1,G]==g1)/mean(data[sample1,G]==g3)*g3givenQ.Pred_arg[sample1]/g1givenQ.Pred_arg[sample1]*(IPO_arg[sample1]-YdgivenQ.Pred_arg[sample1])*DgivenQ.Pred_arg[sample1] +
+    #                       as.numeric(data[sample1,G]==g2)/mean(data[sample1,G]==g3)*g3givenQ.Pred_arg[sample1]/g2givenQ.Pred_arg[sample1]*(data[sample1,D]-DgivenQ.Pred_arg[sample1])*YdgivenQ.Pred_arg[sample1] )
+    #psi_dggg_S2 <- mean( as.numeric(data[sample2,G]==g3)/mean(data[sample2,G]==g3)*YdgivenQ.Pred_arg[sample2]*DgivenQ.Pred_arg[sample2] +
+    #                       as.numeric(data[sample2,G]==g1)/mean(data[sample2,G]==g3)*g3givenQ.Pred_arg[sample2]/g1givenQ.Pred_arg[sample2]*(IPO_arg[sample2]-YdgivenQ.Pred_arg[sample2])*DgivenQ.Pred_arg[sample2] +
+    #                       as.numeric(data[sample2,G]==g2)/mean(data[sample2,G]==g3)*g3givenQ.Pred_arg[sample2]/g2givenQ.Pred_arg[sample2]*(data[sample2,D]-DgivenQ.Pred_arg[sample2])*YdgivenQ.Pred_arg[sample2] )
+    #psi_dggg <- (1/2)*(psi_dggg_S1+psi_dggg_S2)
 
-    psi_dggg_S1 <- mean( as.numeric(data[sample1,G]==g1)/mean(data[sample1,G]==g1)*IPO_arg[sample1]*mean(as.numeric(data[sample1,G]==g2)/mean(data[sample1,G]==g2)*data[sample1,D]) +
-                          as.numeric(data[sample1,G]==g2)/mean(data[sample1,G]==g2)*mean(as.numeric(data[sample1,G]==g1)/mean(data[sample1,G]==g1)*YgivenXQ.Pred_arg)*(data[sample1,D]-mean(as.numeric(data[sample1,G]==g2)/mean(data[sample1,G]==g2)*data[sample1,D])) )
-    psi_dggg_S2 <- mean( as.numeric(data[sample2,G]==g1)/mean(data[sample2,G]==g1)*IPO_arg[sample2]*mean(as.numeric(data[sample2,G]==g2)/mean(data[sample2,G]==g2)*data[sample2,D]) +
-                          as.numeric(data[sample2,G]==g2)/mean(data[sample2,G]==g2)*mean(as.numeric(data[sample2,G]==g1)/mean(data[sample2,G]==g1)*YgivenXQ.Pred_arg)*(data[sample2,D]-mean(as.numeric(data[sample2,G]==g2)/mean(data[sample2,G]==g2)*data[sample2,D])) )
-    # Note that this is basically DML1. We could also use DML2, i.e., we would directly return psi_dgg as follows
-    # psi_dgg <- mean( as.numeric(data[,G]==g1)/mean(data[,G]==g1)*IPO_arg*mean(as.numeric(data[,G]==g2)/mean(data[,G]==g2)*data[,D]) +
-    #                       as.numeric(data[,G]==g2)/mean(data[,G]==g2)*mean(as.numeric(data[,G]==g1)/mean(data[,G]==g1)*YgivenXQ.Pred_arg)*(data[,D]-mean(as.numeric(data[,G]==g2)/mean(data[,G]==g2)*data[,D])) )
-
-    return((1/2)*(psi_dgg_S1+psi_dgg_S2))
+    return(psi_dggg)
   }
 
   ### point estimates
@@ -397,9 +408,10 @@ cdgd1 <- function(Y,D,G,X,Q,data,algorithm) {
   total <- Y_G1-Y_G0
 
   baseline <- psi_01-psi_00
-  prevalence <- psi_dgg(1,0,1)-psi_dgg(1,0,0)-psi_dgg(0,0,1)+psi_dgg(0,0,0)
-  effect <- psi_dgg(1,1,1)-psi_dgg(0,1,1)-psi_dgg(1,0,1)+psi_dgg(0,0,1)
-  selection <- total-baseline-prevalence-effect
+  cond_prevalence <- psi_dggg(1,0,1,0)-psi_dggg(0,0,1,0)-psi_dggg(1,0,0,0)+psi_dggg(0,0,0,0)
+  cond_effect <- psi_dggg(1,1,1,1)-psi_dggg(0,1,1,1)-psi_dggg(1,0,1,1)+psi_dggg(0,0,1,1)
+  Q_dist <- psi_dggg(1,0,1,1)-psi_dggg(0,0,1,1)-psi_dggg(1,0,1,0)+psi_dggg(0,0,1,0)
+  cond_selection <- total-baseline-cond_prevalence-cond_effect-Q_dist
 
   ### standard error estimates
   se <- function(x) {sqrt( mean(x^2)/nrow(data) )}
@@ -410,62 +422,77 @@ cdgd1 <- function(Y,D,G,X,Q,data,algorithm) {
   #         data[sample2,G]/mean(data[sample2,G])*(IPO_D0G1[sample2]-psi_01) - (1-data[sample2,G])/(1-mean(data[sample2,G]))*(IPO_D0G0[sample2]-psi_00) ) )
   # But there isn't a theoretically strong reason to prefer one over the other.
 
-  EIF_dgg <- function(d,g1,g2) {
+  EIF_dggg <- function(d,g1,g2,g3) {
     if (d==0 & g1==0) {
       IPO_arg <- IPO_D0G0
-      YgivenXQ.Pred_arg <- YgivenXQ.Pred_D0G0}
+      YdgivenQ.Pred_arg <- Y0givenQ.Pred_G0
+      g1givenQ.Pred_arg <- 1-GgivenQ.Pred}
     if (d==1 & g1==0) {
       IPO_arg <- IPO_D1G0
-      YgivenXQ.Pred_arg <- YgivenXQ.Pred_D1G0}
+      YdgivenQ.Pred_arg <- Y1givenQ.Pred_G0
+      g1givenQ.Pred_arg <- 1-GgivenQ.Pred}
     if (d==0 & g1==1) {
       IPO_arg <- IPO_D0G1
-      YgivenXQ.Pred_arg <- YgivenXQ.Pred_D0G1}
+      YdgivenQ.Pred_arg <- Y0givenQ.Pred_G1
+      g1givenQ.Pred_arg <- GgivenQ.Pred}
     if (d==1 & g1==1) {
       IPO_arg <- IPO_D1G1
-      YgivenXQ.Pred_arg <- YgivenXQ.Pred_D1G1}
+      YdgivenQ.Pred_arg <- Y1givenQ.Pred_G1
+      g1givenQ.Pred_arg <- GgivenQ.Pred}
+
+    if (g2==0) {
+      DgivenQ.Pred_arg <- DgivenQ.Pred_G0
+      g2givenQ.Pred_arg <- 1-GgivenQ.Pred
+    }
+    if (g2==1) {
+      DgivenQ.Pred_arg <- DgivenQ.Pred_G1
+      g2givenQ.Pred_arg <- GgivenQ.Pred
+    }
+
+    if (g3==0) {
+      g3givenQ.Pred_arg <- 1-GgivenQ.Pred
+    }
+    if (g3==1) {
+      g3givenQ.Pred_arg <- GgivenQ.Pred
+    }
 
     return(
-      as.numeric(data[,G]==g1)/mean(data[,G]==g1)*IPO_arg*mean(as.numeric(data[,G]==g2)/mean(data[,G]==g2)*data[,D]) +
-        as.numeric(data[,G]==g2)/mean(data[,G]==g2)*mean(as.numeric(data[,G]==g1)/mean(data[,G]==g1)*YgivenXQ.Pred_arg)*(data[,D]-mean(as.numeric(data[,G]==g2)/mean(data[,G]==g2)*data[,D])) -
-        as.numeric(data[,G]==g1)/mean(data[,G]==g1)*psi_dgg(d,g1,g2)
+      as.numeric(data[,G]==g3)/mean(data[,G]==g3)*(YdgivenQ.Pred_arg*DgivenQ.Pred_arg-psi_dggg(d,g1,g2,g3)) +
+        as.numeric(data[,G]==g1)/mean(data[,G]==g3)*g3givenQ.Pred_arg/g1givenQ.Pred_arg*(IPO_arg-YdgivenQ.Pred_arg)*DgivenQ.Pred_arg +
+        as.numeric(data[,G]==g2)/mean(data[,G]==g3)*g3givenQ.Pred_arg/g2givenQ.Pred_arg*(data[,D]-DgivenQ.Pred_arg)*YdgivenQ.Pred_arg
     )
   }
-  # Alternatively, we could use
-  # return(
-  #   c(as.numeric(data[sample1,G]==g1)/mean(data[sample1,G]==g1)*IPO_arg[sample1]*mean(as.numeric(data[sample1,G]==g2)/mean(data[sample1,G]==g2)*data[sample1,D]) +
-  #       as.numeric(data[sample1,G]==g2)/mean(data[sample1,G]==g2)*mean(as.numeric(data[sample1,G]==g1)/mean(data[sample1,G]==g1)*YgivenXQ.Pred_arg)*(data[sample1,D]-mean(as.numeric(data[sample1,G]==g2)/mean(data[sample1,G]==g2)*data[sample1,D])) -
-  #       as.numeric(data[sample1,G]==g1)/mean(data[sample1,G]==g1)*psi_dgg(d,g1,g2)
-  #     , as.numeric(data[sample2,G]==g1)/mean(data[sample2,G]==g1)*IPO_arg[sample2]*mean(as.numeric(data[sample2,G]==g2)/mean(data[sample2,G]==g2)*data[sample2,D]) +
-  #       as.numeric(data[sample2,G]==g2)/mean(data[sample2,G]==g2)*mean(as.numeric(data[sample2,G]==g1)/mean(data[sample2,G]==g1)*YgivenXQ.Pred_arg)*(data[sample2,D]-mean(as.numeric(data[sample2,G]==g2)/mean(data[sample2,G]==g2)*data[sample2,D])) -
-  #       as.numeric(data[sample2,G]==g1)/mean(data[sample2,G]==g1)*psi_dgg(d,g1,g2))
-  # )
-  # But there isn't a theoretically strong reason to prefer one over the other.
 
-  prevalence_se <- se( EIF_dgg(1,0,1)-EIF_dgg(1,0,0)-EIF_dgg(0,0,1)+EIF_dgg(0,0,0) )
-  effect_se <- se( EIF_dgg(1,1,1)-EIF_dgg(0,1,1)-EIF_dgg(1,0,1)+EIF_dgg(0,0,1) )
-  selection_se <- se( data[,G]/mean(data[,G])*(data[,Y]-Y_G1) - (1-data[,G])/(1-mean(data[,G]))*(data[,Y]-Y_G0) -
-                        ( data[,G]/mean(data[,G])*(IPO_D0G1-psi_01) - (1-data[,G])/(1-mean(data[,G]))*(IPO_D0G0-psi_00) ) -
-                        ( EIF_dgg(1,0,1)-EIF_dgg(1,0,0)-EIF_dgg(0,0,1)+EIF_dgg(0,0,0) ) -
-                        ( EIF_dgg(1,1,1)-EIF_dgg(0,1,1)-EIF_dgg(1,0,1)+EIF_dgg(0,0,1) ) )
+  cond_prevalence_se <- se( EIF_dggg(1,0,1,0)-EIF_dggg(0,0,1,0)-EIF_dggg(1,0,0,0)+EIF_dggg(0,0,0,0) )
+  cond_effect_se <- se( EIF_dggg(1,1,1,1)-EIF_dggg(0,1,1,1)-EIF_dggg(1,0,1,1)+EIF_dggg(0,0,1,1) )
+  Q_dist_se <- se( EIF_dggg(1,0,1,1)-EIF_dggg(0,0,1,1)-EIF_dggg(1,0,1,0)+EIF_dggg(0,0,1,0) )
+  cond_selection_se <- se( data[,G]/mean(data[,G])*(data[,Y]-Y_G1) - (1-data[,G])/(1-mean(data[,G]))*(data[,Y]-Y_G0) -
+                         ( data[,G]/mean(data[,G])*(IPO_D0G1-psi_01) - (1-data[,G])/(1-mean(data[,G]))*(IPO_D0G0-psi_00) ) -
+                         ( EIF_dggg(1,0,1,0)-EIF_dggg(0,0,1,0)-EIF_dggg(1,0,0,0)+EIF_dggg(0,0,0,0) ) -
+                         ( EIF_dggg(1,1,1,1)-EIF_dggg(0,1,1,1)-EIF_dggg(1,0,1,1)+EIF_dggg(0,0,1,1) ) -
+                         ( EIF_dggg(1,0,1,1)-EIF_dggg(0,0,1,1)-EIF_dggg(1,0,1,0)+EIF_dggg(0,0,1,0) ))
 
   ### output results
   point <- c(total,
              baseline,
-             prevalence,
-             effect,
-             selection)
+             cond_prevalence,
+             cond_effect,
+             cond_selection,
+             Q_dist)
   se <- c(total_se,
           baseline_se,
-          prevalence_se,
-          effect_se,
-          selection_se)
+          cond_prevalence_se,
+          cond_effect_se,
+          cond_selection_se,
+          Q_dist_se)
   CI_lower <- point - qnorm(0.975)*se
   CI_upper <- point + qnorm(0.975)*se
   names <- c("total",
              "baseline",
-             "prevalence",
-             "effect",
-             "selection")
+             "conditional prevalence",
+             "conditional effect",
+             "conditional selection",
+             "Q distribution")
 
   output <- as.data.frame(cbind(names, point,se,CI_lower,CI_upper))
 

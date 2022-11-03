@@ -34,6 +34,7 @@
 
 
 
+
 cdgd0 <- function(Y,D,G,X,data,algorithm) {
 
   if (!requireNamespace("caret", quietly=TRUE)) {
@@ -45,11 +46,11 @@ cdgd0 <- function(Y,D,G,X,data,algorithm) {
 
   data <- as.data.frame(data)
 
-### estimate the nuisance functions within each group, so that the final estimates are independent across groups
+  ### estimate the nuisance functions within each group, so that the final estimates are independent across groups
   sample1 <- sample(nrow(data), floor(nrow(data)/2), replace=F)
   sample2 <- setdiff(1:nrow(data), sample1)
 
-### outcome regression model
+  ### outcome regression model
   if (algorithm=="nnet") {
     if (!requireNamespace("nnet", quietly=TRUE)) {
       stop(
@@ -58,11 +59,11 @@ cdgd0 <- function(Y,D,G,X,data,algorithm) {
       )
     }
     message <- utils::capture.output( YgivenDGX.Model.sample1 <- caret::train(stats::as.formula(paste(Y, paste(D,G,paste(X,collapse="+"),sep="+"), sep="~")), data=data[sample1,], method="nnet",
-                                                                             preProc=c("center","scale"), trControl=caret::trainControl(method="cv"), linout=TRUE,
-                                                                             tuneGrid=expand.grid(size=c(1,2),decay=c(0,0.1,0.2,0.3)) ))
+                                                                              preProc=c("center","scale"), trControl=caret::trainControl(method="cv"), linout=TRUE,
+                                                                              tuneGrid=expand.grid(size=c(1,2),decay=c(0,0.1,0.2,0.3)) ))
     message <- utils::capture.output( YgivenDGX.Model.sample2 <- caret::train(stats::as.formula(paste(Y, paste(D,G,paste(X,collapse="+"),sep="+"), sep="~")), data=data[sample2,], method="nnet",
-                                                                             preProc=c("center","scale"), trControl=caret::trainControl(method="cv"), linout=TRUE,
-                                                                             tuneGrid=expand.grid(size=c(1,2),decay=c(0,0.1,0.2,0.3)) ))
+                                                                              preProc=c("center","scale"), trControl=caret::trainControl(method="cv"), linout=TRUE,
+                                                                              tuneGrid=expand.grid(size=c(1,2),decay=c(0,0.1,0.2,0.3)) ))
   }
   if (algorithm=="ranger") {
     if (!requireNamespace("ranger", quietly=TRUE)) {
@@ -72,11 +73,11 @@ cdgd0 <- function(Y,D,G,X,data,algorithm) {
       )
     }
     message <- utils::capture.output( YgivenDGX.Model.sample1 <- caret::train(stats::as.formula(paste(Y, paste(D,G,paste(X,collapse="+"),sep="+"), sep="~")), data=data[sample1,], method="ranger",
-                                                                             trControl=caret::trainControl(method="cv"),
-                                                                             tuneGrid=expand.grid(mtry=c(5,10,15,20),splitrule=c("variance"),min.node.size=c(50,100,200))) )
+                                                                              trControl=caret::trainControl(method="cv"),
+                                                                              tuneGrid=expand.grid(mtry=c(5,10,15,20),splitrule=c("variance"),min.node.size=c(50,100,200))) )
     message <- utils::capture.output( YgivenDGX.Model.sample2 <- caret::train(stats::as.formula(paste(Y, paste(D,G,paste(X,collapse="+"),sep="+"), sep="~")), data=data[sample2,], method="ranger",
-                                                                             trControl=caret::trainControl(method="cv"),
-                                                                             tuneGrid=expand.grid(mtry=c(5,10,15,20),splitrule=c("variance"),min.node.size=c(50,100,200))) )
+                                                                              trControl=caret::trainControl(method="cv"),
+                                                                              tuneGrid=expand.grid(mtry=c(5,10,15,20),splitrule=c("variance"),min.node.size=c(50,100,200))) )
   }
   if (algorithm=="gbm") {
     if (!requireNamespace("gbm", quietly=TRUE)) {
@@ -86,45 +87,45 @@ cdgd0 <- function(Y,D,G,X,data,algorithm) {
       )
     }
     message <- utils::capture.output( YgivenDGX.Model.sample1 <- caret::train(stats::as.formula(paste(Y, paste(D,G,paste(X,collapse="+"),sep="+"), sep="~")), data=data[sample1,], method="gbm",
-                                                                             trControl=caret::trainControl(method="cv"),
-                                                                             tuneGrid=expand.grid(n.trees=c(25,75,125), interaction.depth=c(1,2,4), shrinkage=0.1, n.minobsinnode=c(5,10,15))) )
+                                                                              trControl=caret::trainControl(method="cv"),
+                                                                              tuneGrid=expand.grid(n.trees=c(25,75,125), interaction.depth=c(1,2,4), shrinkage=0.1, n.minobsinnode=c(5,10,15))) )
     message <- utils::capture.output( YgivenDGX.Model.sample2 <- caret::train(stats::as.formula(paste(Y, paste(D,G,paste(X,collapse="+"),sep="+"), sep="~")), data=data[sample2,], method="gbm",
-                                                                             trControl=caret::trainControl(method="cv"),
-                                                                             tuneGrid=expand.grid(n.trees=c(25,75,125), interaction.depth=c(1,2,4), shrinkage=0.1, n.minobsinnode=c(5,10,15))) )
+                                                                              trControl=caret::trainControl(method="cv"),
+                                                                              tuneGrid=expand.grid(n.trees=c(25,75,125), interaction.depth=c(1,2,4), shrinkage=0.1, n.minobsinnode=c(5,10,15))) )
   }
 
-### propensity score model
+  ### propensity score model
   data[,D] <- as.factor(data[,D])
   levels(data[,D]) <- c("D0","D1")  # necessary for caret implementation of ranger
 
   if (algorithm=="nnet") {
     message <- utils::capture.output( DgivenGX.Model.sample1 <- caret::train(stats::as.formula(paste(D, paste(G,paste(X,collapse="+"),sep="+"), sep="~")), data=data[sample1,], method="nnet",
-                                                                            preProc=c("center","scale"), trControl=caret::trainControl(method="cv"), linout=FALSE,
-                                                                            tuneGrid=expand.grid(size=c(1,2),decay=c(0,0.1,0.2,0.3)) ))
+                                                                             preProc=c("center","scale"), trControl=caret::trainControl(method="cv"), linout=FALSE,
+                                                                             tuneGrid=expand.grid(size=c(1,2),decay=c(0,0.1,0.2,0.3)) ))
     message <- utils::capture.output( DgivenGX.Model.sample2 <- caret::train(stats::as.formula(paste(D, paste(G,paste(X,collapse="+"),sep="+"), sep="~")), data=data[sample2,], method="nnet",
-                                                                            preProc=c("center","scale"), trControl=caret::trainControl(method="cv"), linout=FALSE,
-                                                                            tuneGrid=expand.grid(size=c(1,2),decay=c(0,0.1,0.2,0.3)) ))
+                                                                             preProc=c("center","scale"), trControl=caret::trainControl(method="cv"), linout=FALSE,
+                                                                             tuneGrid=expand.grid(size=c(1,2),decay=c(0,0.1,0.2,0.3)) ))
   }
   if (algorithm=="ranger") {
     message <- utils::capture.output( DgivenGX.Model.sample1 <- caret::train(stats::as.formula(paste(D, paste(G,paste(X,collapse="+"),sep="+"), sep="~")), data=data[sample1,], method="ranger",
-                                                                            trControl=caret::trainControl(method="cv", classProbs=TRUE),
-                                                                            tuneGrid=expand.grid(mtry=c(5,10,15,20),splitrule=c("gini"),min.node.size=c(50,100,200))) )
+                                                                             trControl=caret::trainControl(method="cv", classProbs=TRUE),
+                                                                             tuneGrid=expand.grid(mtry=c(5,10,15,20),splitrule=c("gini"),min.node.size=c(50,100,200))) )
     message <- utils::capture.output( DgivenGX.Model.sample2 <- caret::train(stats::as.formula(paste(D, paste(G,paste(X,collapse="+"),sep="+"), sep="~")), data=data[sample2,], method="ranger",
-                                                                            trControl=caret::trainControl(method="cv", classProbs=TRUE),
-                                                                            tuneGrid=expand.grid(mtry=c(5,10,15,20),splitrule=c("gini"),min.node.size=c(50,100,200))) )
+                                                                             trControl=caret::trainControl(method="cv", classProbs=TRUE),
+                                                                             tuneGrid=expand.grid(mtry=c(5,10,15,20),splitrule=c("gini"),min.node.size=c(50,100,200))) )
   }
   if (algorithm=="gbm") {
     message <- utils::capture.output( DgivenGX.Model.sample1 <- caret::train(stats::as.formula(paste(D, paste(G,paste(X,collapse="+"),sep="+"), sep="~")), data=data[sample1,], method="gbm",
-                                                                            trControl=caret::trainControl(method="cv"),
-                                                                            tuneGrid=expand.grid(n.trees=c(25,75,125), interaction.depth=c(1,2,4), shrinkage=0.1, n.minobsinnode=c(5,10,15))) )
+                                                                             trControl=caret::trainControl(method="cv"),
+                                                                             tuneGrid=expand.grid(n.trees=c(25,75,125), interaction.depth=c(1,2,4), shrinkage=0.1, n.minobsinnode=c(5,10,15))) )
     message <- utils::capture.output( DgivenGX.Model.sample2 <- caret::train(stats::as.formula(paste(D, paste(G,paste(X,collapse="+"),sep="+"), sep="~")), data=data[sample2,], method="gbm",
-                                                                            trControl=caret::trainControl(method="cv"),
-                                                                            tuneGrid=expand.grid(n.trees=c(25,75,125), interaction.depth=c(1,2,4), shrinkage=0.1, n.minobsinnode=c(5,10,15))) )
+                                                                             trControl=caret::trainControl(method="cv"),
+                                                                             tuneGrid=expand.grid(n.trees=c(25,75,125), interaction.depth=c(1,2,4), shrinkage=0.1, n.minobsinnode=c(5,10,15))) )
   }
 
   data[,D] <- as.numeric(data[,D])-1
 
-### cross-fitted predictions
+  ### cross-fitted predictions
   YgivenX.Pred_D0G0 <- YgivenX.Pred_D1G0 <- YgivenX.Pred_D0G1 <- YgivenX.Pred_D1G1 <- DgivenX.Pred_G0 <- DgivenX.Pred_G1 <- rep(NA, nrow(data))
 
   pred_data <- data
@@ -161,7 +162,7 @@ cdgd0 <- function(Y,D,G,X,data,algorithm) {
   DgivenX.Pred_G1[sample1] <- stats::predict(DgivenGX.Model.sample1, newdata = pred_data[sample2,], type="prob")[,2]
   DgivenX.Pred_G1[sample2] <- stats::predict(DgivenGX.Model.sample2, newdata = pred_data[sample1,], type="prob")[,2]
 
-### The "IPO" (individual potential outcome) function
+  ### The "IPO" (individual potential outcome) function
   # For each d and g value, we have IE(d,g)=\frac{\one(D=d)}{\pi(d,X,g)}[Y-\mu(d,X,g)]+\mu(d,X,g)
   # We stablize the weight by dividing the sample average of estimated weights
 
@@ -170,26 +171,28 @@ cdgd0 <- function(Y,D,G,X,data,algorithm) {
   IPO_D0G1 <- (1-data[,D])/(1-DgivenX.Pred_G0)/(mean((1-data[,D])/(1-DgivenX.Pred_G0)))*(data[,Y]-YgivenX.Pred_D0G1) + YgivenX.Pred_D0G1
   IPO_D1G1 <- data[,D]/DgivenX.Pred_G0/mean(data[,D]/DgivenX.Pred_G0)*(data[,Y]-YgivenX.Pred_D1G1) + YgivenX.Pred_D1G1
 
-### The cross-fitted substitution estimates of \xi_{dg} and \xi_{dgg'}
-#  xi_D0G0 <- xi_D0G1 <- rep(NA, nrow(data))
-#  xi_D0G0[sample1] <- mean(YgivenX.Pred_D0G0[intersect(which(data[,G]==0),sample2)])
-#  xi_D0G0[sample2] <- mean(YgivenX.Pred_D0G0[intersect(which(data[,G]==0),sample1)])
-#  xi_D0G1[sample1] <- mean(YgivenX.Pred_D0G0[intersect(which(data[,G]==1),sample2)])
-#  xi_D0G1[sample2] <- mean(YgivenX.Pred_D0G0[intersect(which(data[,G]==1),sample1)])
+  ### The cross-fitted substitution estimates of \xi_{dg} and \xi_{dgg'}
+  #  xi_D0G0 <- xi_D0G1 <- rep(NA, nrow(data))
+  #  xi_D0G0[sample1] <- mean(YgivenX.Pred_D0G0[intersect(which(data[,G]==0),sample2)])
+  #  xi_D0G0[sample2] <- mean(YgivenX.Pred_D0G0[intersect(which(data[,G]==0),sample1)])
+  #  xi_D0G1[sample1] <- mean(YgivenX.Pred_D0G0[intersect(which(data[,G]==1),sample2)])
+  #  xi_D0G1[sample2] <- mean(YgivenX.Pred_D0G0[intersect(which(data[,G]==1),sample1)])
 
-### Cross-fitted group proportion
-#  prop_G1 <- rep(NA, nrow(data))
-#  prop_G1[sample1] <- mean(data[sample2,G])
-#  prop_G1[sample2] <- mean(data[sample1,G])
+  ### Cross-fitted group proportion
+  #  prop_G1 <- rep(NA, nrow(data))
+  #  prop_G1[sample1] <- mean(data[sample2,G])
+  #  prop_G1[sample2] <- mean(data[sample1,G])
 
-### The one-step estimate of \xi_{dg} and \xi_{dgg'}
-  psi_00_S1 <- mean( (1-data[sample1,G])/(1-mean(data[sample1,G]))*IPO_D0G0[sample1] )     # sample 1 estimate
-  psi_00_S2 <- mean( (1-data[sample2,G])/(1-mean(data[sample2,G]))*IPO_D0G0[sample2] )     # sample 2 estimate
-  psi_00 <- (1/2)*(psi_00_S1+psi_00_S2)
-
-  psi_01_S1 <- mean( data[sample1,G]/mean(data[sample1,G])*IPO_D0G1[sample1] )     # sample 1 estimate
-  psi_01_S2 <- mean( data[sample1,G]/mean(data[sample1,G])*IPO_D0G1[sample2] )     # sample 2 estimate
-  psi_01 <- (1/2)*(psi_01_S1+psi_01_S2)
+  ### The one-step estimate of \xi_{dg} and \xi_{dgg'}
+  psi_00 <- mean( (1-data[,G])/(1-mean(data[,G]))*IPO_D0G0 )
+  psi_01 <- mean( data[,G]/mean(data[,G])*IPO_D0G1 )
+  # Note that this is basically DML2. We could also use DML1:
+  #psi_00_S1 <- mean( (1-data[sample1,G])/(1-mean(data[sample1,G]))*IPO_D0G0[sample1] )     # sample 1 estimate
+  #psi_00_S2 <- mean( (1-data[sample2,G])/(1-mean(data[sample2,G]))*IPO_D0G0[sample2] )     # sample 2 estimate
+  #psi_00 <- (1/2)*(psi_00_S1+psi_00_S2)
+  #psi_01_S1 <- mean( data[sample1,G]/mean(data[sample1,G])*IPO_D0G1[sample1] )     # sample 1 estimate
+  #psi_01_S2 <- mean( data[sample1,G]/mean(data[sample1,G])*IPO_D0G1[sample2] )     # sample 2 estimate
+  #psi_01 <- (1/2)*(psi_01_S1+psi_01_S2)
 
   # There are 8 dgg' combinations, so we define a function first
   psi_dgg <- function(d,g1,g2) {
@@ -206,18 +209,19 @@ cdgd0 <- function(Y,D,G,X,data,algorithm) {
       IPO_arg <- IPO_D1G1
       YgivenX.Pred_arg <- YgivenX.Pred_D1G1}
 
-    psi_dgg_S1 <- mean( as.numeric(data[sample1,G]==g1)/mean(data[sample1,G]==g1)*IPO_arg[sample1]*mean(as.numeric(data[sample1,G]==g2)/mean(data[sample1,G]==g2)*data[sample1,D]) +
-                          as.numeric(data[sample1,G]==g2)/mean(data[sample1,G]==g2)*mean(as.numeric(data[sample1,G]==g1)/mean(data[sample1,G]==g1)*YgivenX.Pred_arg)*(data[sample1,D]-mean(as.numeric(data[sample1,G]==g2)/mean(data[sample1,G]==g2)*data[sample1,D])) )
-    psi_dgg_S2 <- mean( as.numeric(data[sample2,G]==g1)/mean(data[sample2,G]==g1)*IPO_arg[sample2]*mean(as.numeric(data[sample2,G]==g2)/mean(data[sample2,G]==g2)*data[sample2,D]) +
-                          as.numeric(data[sample2,G]==g2)/mean(data[sample2,G]==g2)*mean(as.numeric(data[sample2,G]==g1)/mean(data[sample2,G]==g1)*YgivenX.Pred_arg)*(data[sample2,D]-mean(as.numeric(data[sample2,G]==g2)/mean(data[sample2,G]==g2)*data[sample2,D])) )
-    # Note that this is basically DML1. We could also use DML2, i.e., we would directly return psi_dgg as follows
-    # psi_dgg <- mean( as.numeric(data[,G]==g1)/mean(data[,G]==g1)*IPO_arg*mean(as.numeric(data[,G]==g2)/mean(data[,G]==g2)*data[,D]) +
-    #                       as.numeric(data[,G]==g2)/mean(data[,G]==g2)*mean(as.numeric(data[,G]==g1)/mean(data[,G]==g1)*YgivenX.Pred_arg)*(data[,D]-mean(as.numeric(data[,G]==g2)/mean(data[,G]==g2)*data[,D])) )
+    psi_dgg <- mean( as.numeric(data[,G]==g1)/mean(data[,G]==g1)*IPO_arg*mean(as.numeric(data[,G]==g2)/mean(data[,G]==g2)*data[,D]) +
+                       as.numeric(data[,G]==g2)/mean(data[,G]==g2)*mean(as.numeric(data[,G]==g1)/mean(data[,G]==g1)*YgivenX.Pred_arg)*(data[,D]-mean(as.numeric(data[,G]==g2)/mean(data[,G]==g2)*data[,D])) )
+    # Note that this is basically DML2. We could also use DML1:
+    #psi_dgg_S1 <- mean( as.numeric(data[sample1,G]==g1)/mean(data[sample1,G]==g1)*IPO_arg[sample1]*mean(as.numeric(data[sample1,G]==g2)/mean(data[sample1,G]==g2)*data[sample1,D]) +
+    #                      as.numeric(data[sample1,G]==g2)/mean(data[sample1,G]==g2)*mean(as.numeric(data[sample1,G]==g1)/mean(data[sample1,G]==g1)*YgivenX.Pred_arg)*(data[sample1,D]-mean(as.numeric(data[sample1,G]==g2)/mean(data[sample1,G]==g2)*data[sample1,D])) )
+    #psi_dgg_S2 <- mean( as.numeric(data[sample2,G]==g1)/mean(data[sample2,G]==g1)*IPO_arg[sample2]*mean(as.numeric(data[sample2,G]==g2)/mean(data[sample2,G]==g2)*data[sample2,D]) +
+    #                      as.numeric(data[sample2,G]==g2)/mean(data[sample2,G]==g2)*mean(as.numeric(data[sample2,G]==g1)/mean(data[sample2,G]==g1)*YgivenX.Pred_arg)*(data[sample2,D]-mean(as.numeric(data[sample2,G]==g2)/mean(data[sample2,G]==g2)*data[sample2,D])) )
+    #psi_dgg <- (1/2)*(psi_dgg_S1+psi_dgg_S2)
 
-    return((1/2)*(psi_dgg_S1+psi_dgg_S2))
+    return(psi_dgg)
   }
 
-### point estimates
+  ### point estimates
   Y_G0 <- mean((1-data[,G])/(1-mean(data[,G]))*data[,Y])       # mean outcome estimate for group 0
   Y_G1 <- mean(data[,G]/mean(data[,G])*data[,Y])               # mean outcome estimate for group 1
   total <- Y_G1-Y_G0
@@ -227,7 +231,7 @@ cdgd0 <- function(Y,D,G,X,data,algorithm) {
   effect <- psi_dgg(1,1,1)-psi_dgg(0,1,1)-psi_dgg(1,0,1)+psi_dgg(0,0,1)
   selection <- total-baseline-prevalence-effect
 
-### standard error estimates
+  ### standard error estimates
   se <- function(x) {sqrt( mean(x^2)/nrow(data) )}
   total_se <- se( data[,G]/mean(data[,G])*(data[,Y]-Y_G1) - (1-data[,G])/(1-mean(data[,G]))*(data[,Y]-Y_G0) )
   baseline_se <- se( data[,G]/mean(data[,G])*(IPO_D0G1-psi_01) - (1-data[,G])/(1-mean(data[,G]))*(IPO_D0G0-psi_00) )
@@ -251,9 +255,9 @@ cdgd0 <- function(Y,D,G,X,data,algorithm) {
       YgivenX.Pred_arg <- YgivenX.Pred_D1G1}
 
     return(
-    as.numeric(data[,G]==g1)/mean(data[,G]==g1)*IPO_arg*mean(as.numeric(data[,G]==g2)/mean(data[,G]==g2)*data[,D]) +
-      as.numeric(data[,G]==g2)/mean(data[,G]==g2)*mean(as.numeric(data[,G]==g1)/mean(data[,G]==g1)*YgivenX.Pred_arg)*(data[,D]-mean(as.numeric(data[,G]==g2)/mean(data[,G]==g2)*data[,D])) -
-      as.numeric(data[,G]==g1)/mean(data[,G]==g1)*psi_dgg(d,g1,g2)
+      as.numeric(data[,G]==g1)/mean(data[,G]==g1)*IPO_arg*mean(as.numeric(data[,G]==g2)/mean(data[,G]==g2)*data[,D]) +
+        as.numeric(data[,G]==g2)/mean(data[,G]==g2)*mean(as.numeric(data[,G]==g1)/mean(data[,G]==g1)*YgivenX.Pred_arg)*(data[,D]-mean(as.numeric(data[,G]==g2)/mean(data[,G]==g2)*data[,D])) -
+        as.numeric(data[,G]==g1)/mean(data[,G]==g1)*psi_dgg(d,g1,g2)
     )
   }
   # Alternatively, we could use
@@ -270,11 +274,11 @@ cdgd0 <- function(Y,D,G,X,data,algorithm) {
   prevalence_se <- se( EIF_dgg(1,0,1)-EIF_dgg(1,0,0)-EIF_dgg(0,0,1)+EIF_dgg(0,0,0) )
   effect_se <- se( EIF_dgg(1,1,1)-EIF_dgg(0,1,1)-EIF_dgg(1,0,1)+EIF_dgg(0,0,1) )
   selection_se <- se( data[,G]/mean(data[,G])*(data[,Y]-Y_G1) - (1-data[,G])/(1-mean(data[,G]))*(data[,Y]-Y_G0) -
-                         ( data[,G]/mean(data[,G])*(IPO_D0G1-psi_01) - (1-data[,G])/(1-mean(data[,G]))*(IPO_D0G0-psi_00) ) -
-                         ( EIF_dgg(1,0,1)-EIF_dgg(1,0,0)-EIF_dgg(0,0,1)+EIF_dgg(0,0,0) ) -
-                         ( EIF_dgg(1,1,1)-EIF_dgg(0,1,1)-EIF_dgg(1,0,1)+EIF_dgg(0,0,1) ) )
+                        ( data[,G]/mean(data[,G])*(IPO_D0G1-psi_01) - (1-data[,G])/(1-mean(data[,G]))*(IPO_D0G0-psi_00) ) -
+                        ( EIF_dgg(1,0,1)-EIF_dgg(1,0,0)-EIF_dgg(0,0,1)+EIF_dgg(0,0,0) ) -
+                        ( EIF_dgg(1,1,1)-EIF_dgg(0,1,1)-EIF_dgg(1,0,1)+EIF_dgg(0,0,1) ) )
 
-### output results
+  ### output results
   point <- c(total,
              baseline,
              prevalence,
@@ -297,3 +301,4 @@ cdgd0 <- function(Y,D,G,X,data,algorithm) {
 
   return(output)
 }
+
