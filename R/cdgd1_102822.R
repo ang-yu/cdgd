@@ -10,9 +10,8 @@
 #' @param Q Conditional set. The vector of the names of numeric variables.
 #' @param X Confounders. The vector of the names of numeric variables.
 #' @param data A data frame.
-#' @param weight Survey weights. The name of a numeric variable.
-#' @param t Threshold of propensity score censoring. Propensity scores larger than (1-t)th quantile or smaller than tth quantile are censored.
 #' @param algorithm The ML algorithm for modelling. "nnet" for neural network and "ranger" for random forests.
+#' @param alpha 1-alpha confidence interval.
 #'
 #' @return A data frame of point estimates.
 #'

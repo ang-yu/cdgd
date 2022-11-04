@@ -116,11 +116,11 @@ data <- data[data$pincome_1==1 | data$pincome_2==1, ]
 
 
 ### Unconditional decomposition
-
+# The Q variable should be listed first to ensure consistency with conditional decomposition
 set.seed(1)
 result_gbm <- cdgd0(Y="adult_income_rank",D="completion",G="pincome_1",
-      X=c("gender","medu","parental_presence",
-          "n_sib","urban","edu_exp","AFQT","age","friend_edu_exp","rotter_score","rosenberg_irt_score",
+      X=c("AFQT","gender","medu","parental_presence",
+          "n_sib","urban","edu_exp","age","friend_edu_exp","rotter_score","rosenberg_irt_score",
           "sig_other_exp1","sig_other_exp2","sig_other_exp3","sig_other_exp4","foreign_lang",
           "SMSA1","SMSA2","SMSA3","SMSA4","mother_seperate",
           "school_satis1","school_satis2","school_satis3","fm_foreign_born",
@@ -129,8 +129,8 @@ result_gbm <- cdgd0(Y="adult_income_rank",D="completion",G="pincome_1",
 
 set.seed(1)
 result_nnet <- cdgd0(Y="adult_income_rank",D="completion",G="pincome_1",
-                    X=c("gender","medu","parental_presence",
-                        "n_sib","urban","edu_exp","AFQT","age","friend_edu_exp","rotter_score","rosenberg_irt_score",
+                    X=c("AFQT","gender","medu","parental_presence",
+                        "n_sib","urban","edu_exp","age","friend_edu_exp","rotter_score","rosenberg_irt_score",
                         "sig_other_exp1","sig_other_exp2","sig_other_exp3","sig_other_exp4","foreign_lang",
                         "SMSA1","SMSA2","SMSA3","SMSA4","mother_seperate",
                         "school_satis1","school_satis2","school_satis3","fm_foreign_born",
@@ -139,8 +139,8 @@ result_nnet <- cdgd0(Y="adult_income_rank",D="completion",G="pincome_1",
 
 set.seed(1)
 result_ranger <- cdgd0(Y="adult_income_rank",D="completion",G="pincome_1",
-                     X=c("gender","medu","parental_presence",
-                         "n_sib","urban","edu_exp","AFQT","age","friend_edu_exp","rotter_score","rosenberg_irt_score",
+                     X=c("AFQT","gender","medu","parental_presence",
+                         "n_sib","urban","edu_exp","age","friend_edu_exp","rotter_score","rosenberg_irt_score",
                          "sig_other_exp1","sig_other_exp2","sig_other_exp3","sig_other_exp4","foreign_lang",
                          "SMSA1","SMSA2","SMSA3","SMSA4","mother_seperate",
                          "school_satis1","school_satis2","school_satis3","fm_foreign_born",
