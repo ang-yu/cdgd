@@ -38,7 +38,7 @@
 
 
 
-cdgd1 <- function(Y,D,G,X,Q,data,algorithm) {
+cdgd1 <- function(Y,D,G,X,Q,data,algorithm,alpha=0.05) {
 
   if (!requireNamespace("caret", quietly=TRUE)) {
     stop(
@@ -63,10 +63,10 @@ cdgd1 <- function(Y,D,G,X,Q,data,algorithm) {
     }
     message <- utils::capture.output( YgivenDGXQ.Model.sample1 <- caret::train(stats::as.formula(paste(Y, paste(D,G,Q,paste(X,collapse="+"),sep="+"), sep="~")), data=data[sample1,], method="nnet",
                                                                               preProc=c("center","scale"), trControl=caret::trainControl(method="cv"), linout=TRUE,
-                                                                              tuneGrid=expand.grid(size=c(1,2),decay=c(0,0.1,0.2,0.3)) ))
+                                                                              tuneGrid=expand.grid(size=c(1,2,4),decay=c(0,0.5,1,1.5,2)) ))
     message <- utils::capture.output( YgivenDGXQ.Model.sample2 <- caret::train(stats::as.formula(paste(Y, paste(D,G,Q,paste(X,collapse="+"),sep="+"), sep="~")), data=data[sample2,], method="nnet",
                                                                               preProc=c("center","scale"), trControl=caret::trainControl(method="cv"), linout=TRUE,
-                                                                              tuneGrid=expand.grid(size=c(1,2),decay=c(0,0.1,0.2,0.3)) ))
+                                                                              tuneGrid=expand.grid(size=c(1,2,4),decay=c(0,0.5,1,1.5,2)) ))
   }
   if (algorithm=="ranger") {
     if (!requireNamespace("ranger", quietly=TRUE)) {
@@ -104,10 +104,10 @@ cdgd1 <- function(Y,D,G,X,Q,data,algorithm) {
   if (algorithm=="nnet") {
     message <- utils::capture.output( DgivenGXQ.Model.sample1 <- caret::train(stats::as.formula(paste(D, paste(G,Q,paste(X,collapse="+"),sep="+"), sep="~")), data=data[sample1,], method="nnet",
                                                                              preProc=c("center","scale"), trControl=caret::trainControl(method="cv"), linout=FALSE,
-                                                                             tuneGrid=expand.grid(size=c(1,2),decay=c(0,0.1,0.2,0.3)) ))
+                                                                             tuneGrid=expand.grid(size=c(1,2,4),decay=c(0,0.5,1,1.5,2)) ))
     message <- utils::capture.output( DgivenGXQ.Model.sample2 <- caret::train(stats::as.formula(paste(D, paste(G,Q,paste(X,collapse="+"),sep="+"), sep="~")), data=data[sample2,], method="nnet",
                                                                              preProc=c("center","scale"), trControl=caret::trainControl(method="cv"), linout=FALSE,
-                                                                             tuneGrid=expand.grid(size=c(1,2),decay=c(0,0.1,0.2,0.3)) ))
+                                                                             tuneGrid=expand.grid(size=c(1,2,4),decay=c(0,0.5,1,1.5,2)) ))
   }
   if (algorithm=="ranger") {
     message <- utils::capture.output( DgivenGXQ.Model.sample1 <- caret::train(stats::as.formula(paste(D, paste(G,Q,paste(X,collapse="+"),sep="+"), sep="~")), data=data[sample1,], method="ranger",
@@ -185,16 +185,16 @@ cdgd1 <- function(Y,D,G,X,Q,data,algorithm) {
   if (algorithm=="nnet") {
     message <- utils::capture.output( Y0givenGQ.Model.sample1 <- caret::train(stats::as.formula(paste("YgivenGXQ.Pred_D0_ncf", paste(G,Q,sep="+"), sep="~")), data=data_temp[sample1,], method="nnet",
                                                                               preProc=c("center","scale"), trControl=caret::trainControl(method="cv"), linout=TRUE,
-                                                                              tuneGrid=expand.grid(size=c(1,2),decay=c(0,0.1,0.2,0.3)) ))
+                                                                              tuneGrid=expand.grid(size=c(1,2,4),decay=c(0,0.5,1,1.5,2)) ))
     message <- utils::capture.output( Y0givenGQ.Model.sample2 <- caret::train(stats::as.formula(paste("YgivenGXQ.Pred_D0_ncf", paste(G,Q,sep="+"), sep="~")), data=data_temp[sample2,], method="nnet",
                                                                               preProc=c("center","scale"), trControl=caret::trainControl(method="cv"), linout=TRUE,
-                                                                              tuneGrid=expand.grid(size=c(1,2),decay=c(0,0.1,0.2,0.3)) ))
+                                                                              tuneGrid=expand.grid(size=c(1,2,4),decay=c(0,0.5,1,1.5,2)) ))
     message <- utils::capture.output( Y1givenGQ.Model.sample1 <- caret::train(stats::as.formula(paste("YgivenGXQ.Pred_D1_ncf", paste(G,Q,sep="+"), sep="~")), data=data_temp[sample1,], method="nnet",
                                                                               preProc=c("center","scale"), trControl=caret::trainControl(method="cv"), linout=TRUE,
-                                                                              tuneGrid=expand.grid(size=c(1,2),decay=c(0,0.1,0.2,0.3)) ))
+                                                                              tuneGrid=expand.grid(size=c(1,2,4),decay=c(0,0.5,1,1.5,2)) ))
     message <- utils::capture.output( Y1givenGQ.Model.sample2 <- caret::train(stats::as.formula(paste("YgivenGXQ.Pred_D1_ncf", paste(G,Q,sep="+"), sep="~")), data=data_temp[sample2,], method="nnet",
                                                                               preProc=c("center","scale"), trControl=caret::trainControl(method="cv"), linout=TRUE,
-                                                                              tuneGrid=expand.grid(size=c(1,2),decay=c(0,0.1,0.2,0.3)) ))
+                                                                              tuneGrid=expand.grid(size=c(1,2,4),decay=c(0,0.5,1,1.5,2)) ))
   }
   if (algorithm=="ranger") {
     message <- utils::capture.output( Y0givenGQ.Model.sample1 <- caret::train(stats::as.formula(paste("YgivenGXQ.Pred_D0_ncf", paste(G,Q,sep="+"), sep="~")), data=data_temp[sample1,], method="ranger",
@@ -269,10 +269,10 @@ cdgd1 <- function(Y,D,G,X,Q,data,algorithm) {
   if (algorithm=="nnet") {
     message <- utils::capture.output( DgivenGQ.Model.sample1 <- caret::train(stats::as.formula(paste(D, paste(G,Q,sep="+"), sep="~")), data=data[sample1,], method="nnet",
                                                                               preProc=c("center","scale"), trControl=caret::trainControl(method="cv"), linout=FALSE,
-                                                                              tuneGrid=expand.grid(size=c(1,2),decay=c(0,0.1,0.2,0.3)) ))
+                                                                              tuneGrid=expand.grid(size=c(1,2,4),decay=c(0,0.5,1,1.5,2)) ))
     message <- utils::capture.output( DgivenGQ.Model.sample2 <- caret::train(stats::as.formula(paste(D, paste(G,Q,sep="+"), sep="~")), data=data[sample2,], method="nnet",
                                                                               preProc=c("center","scale"), trControl=caret::trainControl(method="cv"), linout=FALSE,
-                                                                              tuneGrid=expand.grid(size=c(1,2),decay=c(0,0.1,0.2,0.3)) ))
+                                                                              tuneGrid=expand.grid(size=c(1,2,4),decay=c(0,0.5,1,1.5,2)) ))
   }
   if (algorithm=="ranger") {
     message <- utils::capture.output( DgivenGQ.Model.sample1 <- caret::train(stats::as.formula(paste(D, paste(G,Q,sep="+"), sep="~")), data=data[sample1,], method="ranger",
@@ -312,10 +312,10 @@ cdgd1 <- function(Y,D,G,X,Q,data,algorithm) {
   if (algorithm=="nnet") {
     message <- utils::capture.output( GgivenQ.Model.sample1 <- caret::train(stats::as.formula(paste(G, paste(Q,sep="+"), sep="~")), data=data[sample1,], method="nnet",
                                                                              preProc=c("center","scale"), trControl=caret::trainControl(method="cv"), linout=FALSE,
-                                                                             tuneGrid=expand.grid(size=c(1,2),decay=c(0,0.1,0.2,0.3)) ))
+                                                                             tuneGrid=expand.grid(size=c(1,2,4),decay=c(0,0.5,1,1.5,2)) ))
     message <- utils::capture.output( GgivenQ.Model.sample2 <- caret::train(stats::as.formula(paste(G, paste(Q,sep="+"), sep="~")), data=data[sample2,], method="nnet",
                                                                              preProc=c("center","scale"), trControl=caret::trainControl(method="cv"), linout=FALSE,
-                                                                             tuneGrid=expand.grid(size=c(1,2),decay=c(0,0.1,0.2,0.3)) ))
+                                                                             tuneGrid=expand.grid(size=c(1,2,4),decay=c(0,0.5,1,1.5,2)) ))
   }
   if (algorithm=="ranger") {
     message <- utils::capture.output( GgivenQ.Model.sample1 <- caret::train(stats::as.formula(paste(G, paste(Q,sep="+"), sep="~")), data=data[sample1,], method="ranger",
@@ -387,9 +387,13 @@ cdgd1 <- function(Y,D,G,X,Q,data,algorithm) {
       g3givenQ.Pred_arg <- GgivenQ.Pred
     }
 
+    # denominators for weight stabilization using the fact that E( \frac{\one(G=g)p_{g''}(Q)}{p_g(Q)p_{g''}} ) and E( \frac{\one(G=g')p_{g''}(Q)}{p_{g'}(Q)p_{g''}} ) are both 1.
+    stab1 <- mean(as.numeric(data[,G]==g1)/mean(data[,G]==g3)*g3givenQ.Pred_arg/g1givenQ.Pred_arg)
+    stab2 <- mean(as.numeric(data[,G]==g2)/mean(data[,G]==g3)*g3givenQ.Pred_arg/g2givenQ.Pred_arg)
+
     psi_dggg <- mean( as.numeric(data[,G]==g3)/mean(data[,G]==g3)*YdgivenQ.Pred_arg*DgivenQ.Pred_arg +
-                           as.numeric(data[,G]==g1)/mean(data[,G]==g3)*g3givenQ.Pred_arg/g1givenQ.Pred_arg*(IPO_arg-YdgivenQ.Pred_arg)*DgivenQ.Pred_arg +
-                           as.numeric(data[,G]==g2)/mean(data[,G]==g3)*g3givenQ.Pred_arg/g2givenQ.Pred_arg*(data[,D]-DgivenQ.Pred_arg)*YdgivenQ.Pred_arg )
+                        as.numeric(data[,G]==g1)/mean(data[,G]==g3)*g3givenQ.Pred_arg/g1givenQ.Pred_arg/stab1*(IPO_arg-YdgivenQ.Pred_arg)*DgivenQ.Pred_arg +
+                        as.numeric(data[,G]==g2)/mean(data[,G]==g3)*g3givenQ.Pred_arg/g2givenQ.Pred_arg/stab2*(data[,D]-DgivenQ.Pred_arg)*YdgivenQ.Pred_arg )
     # Note that this is basically DML2. We could also use DML1:
     #psi_dggg_S1 <- mean( as.numeric(data[sample1,G]==g3)/mean(data[sample1,G]==g3)*YdgivenQ.Pred_arg[sample1]*DgivenQ.Pred_arg[sample1] +
     #                       as.numeric(data[sample1,G]==g1)/mean(data[sample1,G]==g3)*g3givenQ.Pred_arg[sample1]/g1givenQ.Pred_arg[sample1]*(IPO_arg[sample1]-YdgivenQ.Pred_arg[sample1])*DgivenQ.Pred_arg[sample1] +
@@ -456,10 +460,14 @@ cdgd1 <- function(Y,D,G,X,Q,data,algorithm) {
       g3givenQ.Pred_arg <- GgivenQ.Pred
     }
 
+    # denominators for weight stabilization using the fact that E( \frac{\one(G=g)p_{g''}(Q)}{p_g(Q)p_{g''}} ) and E( \frac{\one(G=g')p_{g''}(Q)}{p_{g'}(Q)p_{g''}} ) are both 1.
+    stab1 <- mean(as.numeric(data[,G]==g1)/mean(data[,G]==g3)*g3givenQ.Pred_arg/g1givenQ.Pred_arg)
+    stab2 <- mean(as.numeric(data[,G]==g2)/mean(data[,G]==g3)*g3givenQ.Pred_arg/g2givenQ.Pred_arg)
+
     return(
       as.numeric(data[,G]==g3)/mean(data[,G]==g3)*(YdgivenQ.Pred_arg*DgivenQ.Pred_arg-psi_dggg(d,g1,g2,g3)) +
-        as.numeric(data[,G]==g1)/mean(data[,G]==g3)*g3givenQ.Pred_arg/g1givenQ.Pred_arg*(IPO_arg-YdgivenQ.Pred_arg)*DgivenQ.Pred_arg +
-        as.numeric(data[,G]==g2)/mean(data[,G]==g3)*g3givenQ.Pred_arg/g2givenQ.Pred_arg*(data[,D]-DgivenQ.Pred_arg)*YdgivenQ.Pred_arg
+        as.numeric(data[,G]==g1)/mean(data[,G]==g3)*g3givenQ.Pred_arg/g1givenQ.Pred_arg/stab1*(IPO_arg-YdgivenQ.Pred_arg)*DgivenQ.Pred_arg +
+        as.numeric(data[,G]==g2)/mean(data[,G]==g3)*g3givenQ.Pred_arg/g2givenQ.Pred_arg/stab2*(data[,D]-DgivenQ.Pred_arg)*YdgivenQ.Pred_arg
     )
   }
 
@@ -485,8 +493,8 @@ cdgd1 <- function(Y,D,G,X,Q,data,algorithm) {
           cond_effect_se,
           cond_selection_se,
           Q_dist_se)
-  CI_lower <- point - qnorm(0.975)*se
-  CI_upper <- point + qnorm(0.975)*se
+  CI_lower <- point - qnorm(1-alpha/2)*se
+  CI_upper <- point + qnorm(1-alpha/2)*se
   names <- c("total",
              "baseline",
              "conditional prevalence",
