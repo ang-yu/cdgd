@@ -117,6 +117,15 @@ data <- data[data$pincome_1==1 | data$pincome_2==1, ]
 
 ### Unconditional decomposition
 # The Q variable should be listed first to ensure consistency with conditional decomposition
+result_parametric <- cdgd0_parametric(Y="adult_income_rank",D="completion",G="pincome_1",
+                    X=c("AFQT","gender","medu","parental_presence",
+                        "n_sib","urban","edu_exp","age","friend_edu_exp","rotter_score","rosenberg_irt_score",
+                        "sig_other_exp1","sig_other_exp2","sig_other_exp3","sig_other_exp4","foreign_lang",
+                        "SMSA1","SMSA2","SMSA3","SMSA4","mother_seperate",
+                        "school_satis1","school_satis2","school_satis3","fm_foreign_born",
+                        "region1","region2","region3","region4","m_work","race1","race2","race3"),
+                    data=data)
+
 set.seed(1)
 result_gbm <- cdgd0(Y="adult_income_rank",D="completion",G="pincome_1",
       X=c("AFQT","gender","medu","parental_presence",
@@ -149,6 +158,14 @@ result_ranger <- cdgd0(Y="adult_income_rank",D="completion",G="pincome_1",
 
 
 ### Conditional decomposition
+cond_result_parametric <- cdgd1_parametric(Y="adult_income_rank",D="completion",G="pincome_1",Q="AFQT",
+                         X=c("gender","medu","parental_presence",
+                             "n_sib","urban","edu_exp","age","friend_edu_exp","rotter_score","rosenberg_irt_score",
+                             "sig_other_exp1","sig_other_exp2","sig_other_exp3","sig_other_exp4","foreign_lang",
+                             "SMSA1","SMSA2","SMSA3","SMSA4","mother_seperate",
+                             "school_satis1","school_satis2","school_satis3","fm_foreign_born",
+                             "region1","region2","region3","region4","m_work","race1","race2","race3"),
+                         data=data)
 
 set.seed(1)
 cond_result_gbm <- cdgd1(Y="adult_income_rank",D="completion",G="pincome_1",Q="AFQT",
