@@ -46,7 +46,7 @@ cdgd1_parametric <- function(Y,D,G,X,Q,data,algorithm,alpha=0.05) {
   ### propensity score model
   DgivenGXQ.Model <- glm(stats::as.formula(paste(D, paste(G,Q,paste(X,collapse="+"),sep="+"), sep="~")), data=data, family=binomial(link="logit"))
 
-  ### cross-fitted predictions
+  ### predictions
   YgivenXQ.Pred_D0G0 <- YgivenXQ.Pred_D1G0 <- YgivenXQ.Pred_D0G1 <- YgivenXQ.Pred_D1G1 <- DgivenXQ.Pred_G0 <- DgivenXQ.Pred_G1 <- rep(NA, nrow(data))
 
   pred_data <- data
