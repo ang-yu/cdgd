@@ -117,7 +117,7 @@ data <- data[data$pincome_1==1 | data$pincome_2==1, ]
 
 ### Unconditional decomposition
 # The Q variable should be listed first to ensure consistency with conditional decomposition
-result_parametric <- cdgd0_parametric(Y="adult_income_rank",D="completion",G="pincome_1",
+result_parametric <- cdgd0_p(Y="adult_income_rank",D="completion",G="pincome_1",
                     X=c("AFQT","gender","medu","parental_presence",
                         "n_sib","urban","edu_exp","age","friend_edu_exp","rotter_score","rosenberg_irt_score",
                         "sig_other_exp2","sig_other_exp3","sig_other_exp4","foreign_lang",
@@ -158,7 +158,7 @@ result_ranger <- cdgd0(Y="adult_income_rank",D="completion",G="pincome_1",
 
 
 ### Conditional decomposition
-cond_result_parametric <- cdgd1_parametric(Y="adult_income_rank",D="completion",G="pincome_1",Q="AFQT",
+cond_result_parametric <- cdgd1_p(Y="adult_income_rank",D="completion",G="pincome_1",Q="AFQT",
                          X=c("gender","medu","parental_presence",
                              "n_sib","urban","edu_exp","age","friend_edu_exp","rotter_score","rosenberg_irt_score",
                              "sig_other_exp2","sig_other_exp3","sig_other_exp4","foreign_lang",

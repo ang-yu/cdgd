@@ -1,30 +1,27 @@
 
 
 
-#' Perform unconditional decomposition
+#' Perform unconditional decomposition via parametric models
 #'
 #' @param Y Outcome. The name of a continuous variable.
 #' @param D Treatment status. The name of a binary numeric variable taking values of 0 and 1.
-#' @param G1 Group 1 membership. The name of a binary factor variable taking values of 0 and 1.
-#' @param G2 Group 2 membership. The name of a binary factor variable taking values of 0 and 1.
+#' @param G Advantaged group membership. The name of a binary numeric variable taking values of 0 and 1.
 #' @param X Confounders. The vector of the names of numeric variables.
 #' @param data A data frame.
+#' @param algorithm The ML algorithm for modelling. "nnet" for neural network, "ranger" for random forests, "gbm" for generalized boosted models.
 #' @param alpha 1-alpha confidence interval.
 #'
-#' @return A data frame of point estimates.
+#' @return A data frame of estimates.
 #'
 #' @export
 #'
 #' @examples
 #' data(exp_data)
 #'
-#' set.seed(1)
-#'
 #' results0 <- cdgd0(
 #' Y="outcome",
 #' D="treatment",
-#' G1="group_a",
-#' G2="group_b",
+#' G="group_a",
 #' X=c("confounder"),
 #' data=exp_data,
 #' algorithm="nnet")
@@ -39,7 +36,7 @@ cdgd0_parametric <- function(Y,D,G,X,data,algorithm,alpha=0.05) {
   data <- as.data.frame(data)
 
   ### outcome regression model
-  YgivenDGX.Model <- lm(stats::as.formula(paste(Y, paste(D,G,paste(X,collapse="+"),sep="+"), sep="~")), data=data)
+  YgivenDGX.Model <- lm(stats::as.formula(paste(Y, paste(paste(D,c(G,X),sep="*"),collapse="+"), sep="~")), data=data)
 
   ### propensity score model
   DgivenGX.Model <- glm(stats::as.formula(paste(D, paste(G,paste(X,collapse="+"),sep="+"), sep="~")), data=data, family=binomial(link="logit"))

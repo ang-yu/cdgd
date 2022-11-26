@@ -1,15 +1,15 @@
 
 
 
-#' Perform conditional decomposition
+#' Perform conditional decomposition via parametric models
 #'
 #' @param Y Outcome. The name of a continuous variable.
 #' @param D Treatment status. The name of a binary numeric variable taking values of 0 and 1.
-#' @param G1 Group 1 membership. The name of a binary factor variable taking values of 0 and 1.
-#' @param G2 Group 2 membership. The name of a binary factor variable taking values of 0 and 1.
+#' @param G Advantaged group membership. The name of a binary numeric variable taking values of 0 and 1.
 #' @param Q Conditional set. The vector of the names of numeric variables.
 #' @param X Confounders. The vector of the names of numeric variables.
 #' @param data A data frame.
+#' @param algorithm The ML algorithm for modelling. "nnet" for neural network, "ranger" for random forests, "gbm" for generalized boosted models.
 #' @param alpha 1-alpha confidence interval.
 #'
 #' @return A data frame of point estimates.
@@ -19,14 +19,11 @@
 #' @examples
 #' data(exp_data)
 #'
-#' set.seed(1)
-#'
 #' results0 <- cdgd0(
 #' Y="outcome",
 #' D="treatment",
-#' G1="group_a",
-#' G2="group_b",
-#' X=c("confounder","Q"),
+#' G="group_a",
+#' #' X=c("confounder","Q"),
 #' Q="Q",
 #' data=exp_data,
 #' t=0.05,
@@ -41,7 +38,7 @@ cdgd1_parametric <- function(Y,D,G,X,Q,data,algorithm,alpha=0.05) {
   data <- as.data.frame(data)
 
   ### outcome regression model
-  YgivenDGXQ.Model <- lm(stats::as.formula(paste(Y, paste(D,G,Q,paste(X,collapse="+"),sep="+"), sep="~")), data=data)
+  YgivenDGXQ.Model <- lm(stats::as.formula(paste(Y, paste(paste(D,c(G,Q,X),sep="*"),collapse="+"), sep="~")), data=data)
 
   ### propensity score model
   DgivenGXQ.Model <- glm(stats::as.formula(paste(D, paste(G,Q,paste(X,collapse="+"),sep="+"), sep="~")), data=data, family=binomial(link="logit"))
@@ -71,11 +68,11 @@ cdgd1_parametric <- function(Y,D,G,X,Q,data,algorithm,alpha=0.05) {
 
   pred_data <- data
   pred_data[,G] <- 0
-  DgivenXQ.Pred_G0 <- stats::predict(DgivenGX.Model, newdata = pred_data, type="response")
+  DgivenXQ.Pred_G0 <- stats::predict(DgivenGXQ.Model, newdata = pred_data, type="response")
 
   pred_data <- data
   pred_data[,G] <- 1
-  DgivenXQ.Pred_G1 <- stats::predict(DgivenGX.Model, newdata = pred_data, type="response")
+  DgivenXQ.Pred_G1 <- stats::predict(DgivenGXQ.Model, newdata = pred_data, type="response")
 
   ### Estimate E(Y_d | Q,g)
   data_temp <- data[,c(G,Q)]
@@ -88,8 +85,8 @@ cdgd1_parametric <- function(Y,D,G,X,Q,data,algorithm,alpha=0.05) {
   pred_data[,D] <- 0
   data_temp$YgivenGXQ.Pred_D1_ncf <- stats::predict(YgivenDGXQ.Model, newdata = pred_data)
 
-  Y0givenGQ.Model <- lm(stats::as.formula(paste("YgivenGXQ.Pred_D0_ncf", paste(G,Q,sep="+"), sep="~")), data=data_temp)
-  Y1givenGQ.Model <- lm(stats::as.formula(paste("YgivenGXQ.Pred_D1_ncf", paste(G,Q,sep="+"), sep="~")), data=data_temp)
+  Y0givenGQ.Model <- lm(stats::as.formula(paste("YgivenGXQ.Pred_D0_ncf", paste(G,Q,sep="*"), sep="~")), data=data_temp)
+  Y1givenGQ.Model <- lm(stats::as.formula(paste("YgivenGXQ.Pred_D1_ncf", paste(G,Q,sep="*"), sep="~")), data=data_temp)
 
   Y0givenQ.Pred_G0 <- Y0givenQ.Pred_G1 <- Y1givenQ.Pred_G0 <- Y1givenQ.Pred_G1 <- rep(NA, nrow(data))
 
@@ -113,7 +110,7 @@ cdgd1_parametric <- function(Y,D,G,X,Q,data,algorithm,alpha=0.05) {
   IPO_D1G1 <- data[,D]/DgivenXQ.Pred_G0/mean(data[,D]/DgivenXQ.Pred_G0)*(data[,Y]-YgivenXQ.Pred_D1G1) + YgivenXQ.Pred_D1G1
 
   ### Estimate E(D | Q,g')
-  DgivenGQ.Model <- glm(stats::as.formula(paste(D, paste(G,Q,sep="+"), sep="~")), data=data, family=binomial(link="logit"))
+  DgivenGQ.Model <- glm(stats::as.formula(paste(D, paste(G,Q,sep="*"), sep="~")), data=data, family=binomial(link="logit"))
 
   DgivenQ.Pred_G0 <- DgivenQ.Pred_G1 <- rep(NA, nrow(data))
 
