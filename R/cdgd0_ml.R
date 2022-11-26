@@ -33,7 +33,7 @@
 
 
 
-cdgd0 <- function(Y,D,G,X,data,algorithm,alpha=0.05) {
+cdgd0_ml <- function(Y,D,G,X,data,algorithm,alpha=0.05) {
 
   if (!requireNamespace("caret", quietly=TRUE)) {
     stop(

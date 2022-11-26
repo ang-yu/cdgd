@@ -117,7 +117,7 @@ data <- data[data$pincome_1==1 | data$pincome_2==1, ]
 
 ### Unconditional decomposition
 # The Q variable should be listed first to ensure consistency with conditional decomposition
-result_parametric <- cdgd0_p(Y="adult_income_rank",D="completion",G="pincome_1",
+result_parametric <- cdgd0_pa(Y="adult_income_rank",D="completion",G="pincome_1",
                     X=c("AFQT","gender","medu","parental_presence",
                         "n_sib","urban","edu_exp","age","friend_edu_exp","rotter_score","rosenberg_irt_score",
                         "sig_other_exp2","sig_other_exp3","sig_other_exp4","foreign_lang",
@@ -127,7 +127,7 @@ result_parametric <- cdgd0_p(Y="adult_income_rank",D="completion",G="pincome_1",
                     data=data)
 
 set.seed(1)
-result_gbm <- cdgd0(Y="adult_income_rank",D="completion",G="pincome_1",
+result_gbm <- cdgd0_ml(Y="adult_income_rank",D="completion",G="pincome_1",
       X=c("AFQT","gender","medu","parental_presence",
           "n_sib","urban","edu_exp","age","friend_edu_exp","rotter_score","rosenberg_irt_score",
           "sig_other_exp2","sig_other_exp3","sig_other_exp4","foreign_lang",
@@ -137,7 +137,7 @@ result_gbm <- cdgd0(Y="adult_income_rank",D="completion",G="pincome_1",
       data=data,algorithm="gbm")
 
 set.seed(1)
-result_nnet <- cdgd0(Y="adult_income_rank",D="completion",G="pincome_1",
+result_nnet <- cdgd0_ml(Y="adult_income_rank",D="completion",G="pincome_1",
                     X=c("AFQT","gender","medu","parental_presence",
                         "n_sib","urban","edu_exp","age","friend_edu_exp","rotter_score","rosenberg_irt_score",
                         "sig_other_exp2","sig_other_exp3","sig_other_exp4","foreign_lang",
@@ -147,7 +147,7 @@ result_nnet <- cdgd0(Y="adult_income_rank",D="completion",G="pincome_1",
                     data=data,algorithm="nnet")
 
 set.seed(1)
-result_ranger <- cdgd0(Y="adult_income_rank",D="completion",G="pincome_1",
+result_ranger <- cdgd0_ml(Y="adult_income_rank",D="completion",G="pincome_1",
                      X=c("AFQT","gender","medu","parental_presence",
                          "n_sib","urban","edu_exp","age","friend_edu_exp","rotter_score","rosenberg_irt_score",
                          "sig_other_exp2","sig_other_exp3","sig_other_exp4","foreign_lang",
@@ -158,7 +158,7 @@ result_ranger <- cdgd0(Y="adult_income_rank",D="completion",G="pincome_1",
 
 
 ### Conditional decomposition
-cond_result_parametric <- cdgd1_p(Y="adult_income_rank",D="completion",G="pincome_1",Q="AFQT",
+cond_result_parametric <- cdgd1_pa(Y="adult_income_rank",D="completion",G="pincome_1",Q="AFQT",
                          X=c("gender","medu","parental_presence",
                              "n_sib","urban","edu_exp","age","friend_edu_exp","rotter_score","rosenberg_irt_score",
                              "sig_other_exp2","sig_other_exp3","sig_other_exp4","foreign_lang",
@@ -168,7 +168,7 @@ cond_result_parametric <- cdgd1_p(Y="adult_income_rank",D="completion",G="pincom
                          data=data)
 
 set.seed(1)
-cond_result_gbm <- cdgd1(Y="adult_income_rank",D="completion",G="pincome_1",Q="AFQT",
+cond_result_gbm <- cdgd1_ml(Y="adult_income_rank",D="completion",G="pincome_1",Q="AFQT",
                     X=c("gender","medu","parental_presence",
                         "n_sib","urban","edu_exp","age","friend_edu_exp","rotter_score","rosenberg_irt_score",
                         "sig_other_exp2","sig_other_exp3","sig_other_exp4","foreign_lang",
@@ -178,7 +178,7 @@ cond_result_gbm <- cdgd1(Y="adult_income_rank",D="completion",G="pincome_1",Q="A
                     data=data,algorithm="gbm")
 
 set.seed(1)
-cond_result_nnet <- cdgd1(Y="adult_income_rank",D="completion",G="pincome_1",Q="AFQT",
+cond_result_nnet <- cdgd1_ml(Y="adult_income_rank",D="completion",G="pincome_1",Q="AFQT",
                      X=c("gender","medu","parental_presence",
                          "n_sib","urban","edu_exp","age","friend_edu_exp","rotter_score","rosenberg_irt_score",
                          "sig_other_exp2","sig_other_exp3","sig_other_exp4","foreign_lang",
@@ -188,7 +188,7 @@ cond_result_nnet <- cdgd1(Y="adult_income_rank",D="completion",G="pincome_1",Q="
                      data=data,algorithm="nnet")
 
 set.seed(1)
-cond_result_ranger <- cdgd1(Y="adult_income_rank",D="completion",G="pincome_1",Q="AFQT",
+cond_result_ranger <- cdgd1_ml(Y="adult_income_rank",D="completion",G="pincome_1",Q="AFQT",
                        X=c("gender","medu","parental_presence",
                            "n_sib","urban","edu_exp","age","friend_edu_exp","rotter_score","rosenberg_irt_score",
                            "sig_other_exp2","sig_other_exp3","sig_other_exp4","foreign_lang",
