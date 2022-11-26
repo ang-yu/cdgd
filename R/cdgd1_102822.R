@@ -76,10 +76,10 @@ cdgd1 <- function(Y,D,G,X,Q,data,algorithm,alpha=0.05) {
     }
     message <- utils::capture.output( YgivenDGXQ.Model.sample1 <- caret::train(stats::as.formula(paste(Y, paste(D,G,Q,paste(X,collapse="+"),sep="+"), sep="~")), data=data[sample1,], method="ranger",
                                                                               trControl=caret::trainControl(method="cv"),
-                                                                              tuneGrid=expand.grid(mtry=c(5,10,15,20),splitrule=c("variance"),min.node.size=c(50,100,200))) )
+                                                                              tuneGrid=expand.grid(mtry=c(5,10,20),splitrule=c("variance"),min.node.size=c(25,50,100,200))) )
     message <- utils::capture.output( YgivenDGXQ.Model.sample2 <- caret::train(stats::as.formula(paste(Y, paste(D,G,Q,paste(X,collapse="+"),sep="+"), sep="~")), data=data[sample2,], method="ranger",
                                                                               trControl=caret::trainControl(method="cv"),
-                                                                              tuneGrid=expand.grid(mtry=c(5,10,15,20),splitrule=c("variance"),min.node.size=c(50,100,200))) )
+                                                                              tuneGrid=expand.grid(mtry=c(5,10,20),splitrule=c("variance"),min.node.size=c(25,50,100,200))) )
   }
   if (algorithm=="gbm") {
     if (!requireNamespace("gbm", quietly=TRUE)) {
@@ -90,10 +90,10 @@ cdgd1 <- function(Y,D,G,X,Q,data,algorithm,alpha=0.05) {
     }
     message <- utils::capture.output( YgivenDGXQ.Model.sample1 <- caret::train(stats::as.formula(paste(Y, paste(D,G,Q,paste(X,collapse="+"),sep="+"), sep="~")), data=data[sample1,], method="gbm",
                                                                               trControl=caret::trainControl(method="cv"),
-                                                                              tuneGrid=expand.grid(n.trees=c(25,75,125), interaction.depth=c(1,2,4), shrinkage=0.1, n.minobsinnode=c(5,10,15))) )
+                                                                              tuneGrid=expand.grid(n.trees=c(25,75,125), interaction.depth=c(1,2), shrinkage=0.1, n.minobsinnode=c(5,10,20))) )
     message <- utils::capture.output( YgivenDGXQ.Model.sample2 <- caret::train(stats::as.formula(paste(Y, paste(D,G,Q,paste(X,collapse="+"),sep="+"), sep="~")), data=data[sample2,], method="gbm",
                                                                               trControl=caret::trainControl(method="cv"),
-                                                                              tuneGrid=expand.grid(n.trees=c(25,75,125), interaction.depth=c(1,2,4), shrinkage=0.1, n.minobsinnode=c(5,10,15))) )
+                                                                              tuneGrid=expand.grid(n.trees=c(25,75,125), interaction.depth=c(1,2), shrinkage=0.1, n.minobsinnode=c(5,10,20))) )
   }
 
 ### propensity score model
@@ -111,18 +111,18 @@ cdgd1 <- function(Y,D,G,X,Q,data,algorithm,alpha=0.05) {
   if (algorithm=="ranger") {
     message <- utils::capture.output( DgivenGXQ.Model.sample1 <- caret::train(stats::as.formula(paste(D, paste(G,Q,paste(X,collapse="+"),sep="+"), sep="~")), data=data[sample1,], method="ranger",
                                                                              trControl=caret::trainControl(method="cv", classProbs=TRUE),
-                                                                             tuneGrid=expand.grid(mtry=c(5,10,15,20),splitrule=c("gini"),min.node.size=c(50,100,200))) )
+                                                                             tuneGrid=expand.grid(mtry=c(5,10,20),splitrule=c("gini"),min.node.size=c(25,50,100,200))) )
     message <- utils::capture.output( DgivenGXQ.Model.sample2 <- caret::train(stats::as.formula(paste(D, paste(G,Q,paste(X,collapse="+"),sep="+"), sep="~")), data=data[sample2,], method="ranger",
                                                                              trControl=caret::trainControl(method="cv", classProbs=TRUE),
-                                                                             tuneGrid=expand.grid(mtry=c(5,10,15,20),splitrule=c("gini"),min.node.size=c(50,100,200))) )
+                                                                             tuneGrid=expand.grid(mtry=c(5,10,20),splitrule=c("gini"),min.node.size=c(25,50,100,200))) )
   }
   if (algorithm=="gbm") {
     message <- utils::capture.output( DgivenGXQ.Model.sample1 <- caret::train(stats::as.formula(paste(D, paste(G,Q,paste(X,collapse="+"),sep="+"), sep="~")), data=data[sample1,], method="gbm",
                                                                              trControl=caret::trainControl(method="cv"),
-                                                                             tuneGrid=expand.grid(n.trees=c(25,75,125), interaction.depth=c(1,2,4), shrinkage=0.1, n.minobsinnode=c(5,10,15))) )
+                                                                             tuneGrid=expand.grid(n.trees=c(25,75,125), interaction.depth=c(1,2), shrinkage=0.1, n.minobsinnode=c(5,10,20))) )
     message <- utils::capture.output( DgivenGXQ.Model.sample2 <- caret::train(stats::as.formula(paste(D, paste(G,Q,paste(X,collapse="+"),sep="+"), sep="~")), data=data[sample2,], method="gbm",
                                                                              trControl=caret::trainControl(method="cv"),
-                                                                             tuneGrid=expand.grid(n.trees=c(25,75,125), interaction.depth=c(1,2,4), shrinkage=0.1, n.minobsinnode=c(5,10,15))) )
+                                                                             tuneGrid=expand.grid(n.trees=c(25,75,125), interaction.depth=c(1,2), shrinkage=0.1, n.minobsinnode=c(5,10,20))) )
   }
 
   data[,D] <- as.numeric(data[,D])-1
@@ -184,44 +184,44 @@ cdgd1 <- function(Y,D,G,X,Q,data,algorithm,alpha=0.05) {
   if (algorithm=="nnet") {
     message <- utils::capture.output( Y0givenGQ.Model.sample1 <- caret::train(stats::as.formula(paste("YgivenGXQ.Pred_D0_ncf", paste(G,Q,sep="+"), sep="~")), data=data_temp[sample1,], method="nnet",
                                                                               preProc=c("center","scale"), trControl=caret::trainControl(method="cv"), linout=TRUE,
-                                                                              tuneGrid=expand.grid(size=c(1,4,7),decay=c(0,0.05,0.1,0.2)) ))
+                                                                              tuneGrid=expand.grid(size=c(1,4,7),decay=c(0,0.01,0.05)) ))
     message <- utils::capture.output( Y0givenGQ.Model.sample2 <- caret::train(stats::as.formula(paste("YgivenGXQ.Pred_D0_ncf", paste(G,Q,sep="+"), sep="~")), data=data_temp[sample2,], method="nnet",
                                                                               preProc=c("center","scale"), trControl=caret::trainControl(method="cv"), linout=TRUE,
-                                                                              tuneGrid=expand.grid(size=c(1,4,7),decay=c(0,0.05,0.1,0.2)) ))
+                                                                              tuneGrid=expand.grid(size=c(1,4,7),decay=c(0,0.01,0.05)) ))
     message <- utils::capture.output( Y1givenGQ.Model.sample1 <- caret::train(stats::as.formula(paste("YgivenGXQ.Pred_D1_ncf", paste(G,Q,sep="+"), sep="~")), data=data_temp[sample1,], method="nnet",
                                                                               preProc=c("center","scale"), trControl=caret::trainControl(method="cv"), linout=TRUE,
-                                                                              tuneGrid=expand.grid(size=c(1,4,7),decay=c(0,0.05,0.1,0.2)) ))
+                                                                              tuneGrid=expand.grid(size=c(1,4,7),decay=c(0,0.01,0.05)) ))
     message <- utils::capture.output( Y1givenGQ.Model.sample2 <- caret::train(stats::as.formula(paste("YgivenGXQ.Pred_D1_ncf", paste(G,Q,sep="+"), sep="~")), data=data_temp[sample2,], method="nnet",
                                                                               preProc=c("center","scale"), trControl=caret::trainControl(method="cv"), linout=TRUE,
-                                                                              tuneGrid=expand.grid(size=c(1,4,7),decay=c(0,0.05,0.1,0.2)) ))
+                                                                              tuneGrid=expand.grid(size=c(1,4,7),decay=c(0,0.01,0.05)) ))
   }
   if (algorithm=="ranger") {
     message <- utils::capture.output( Y0givenGQ.Model.sample1 <- caret::train(stats::as.formula(paste("YgivenGXQ.Pred_D0_ncf", paste(G,Q,sep="+"), sep="~")), data=data_temp[sample1,], method="ranger",
                                                                               trControl=caret::trainControl(method="cv"),
-                                                                              tuneGrid=expand.grid(mtry=1,splitrule=c("variance"),min.node.size=c(50,100,200))) )
+                                                                              tuneGrid=expand.grid(mtry=1,splitrule=c("variance"),min.node.size=c(25,50,100))) )
     message <- utils::capture.output( Y0givenGQ.Model.sample2 <- caret::train(stats::as.formula(paste("YgivenGXQ.Pred_D0_ncf", paste(G,Q,sep="+"), sep="~")), data=data_temp[sample2,], method="ranger",
                                                                               trControl=caret::trainControl(method="cv"),
-                                                                              tuneGrid=expand.grid(mtry=1,splitrule=c("variance"),min.node.size=c(50,100,200))) )
+                                                                              tuneGrid=expand.grid(mtry=1,splitrule=c("variance"),min.node.size=c(25,50,100))) )
     message <- utils::capture.output( Y1givenGQ.Model.sample1 <- caret::train(stats::as.formula(paste("YgivenGXQ.Pred_D1_ncf", paste(G,Q,sep="+"), sep="~")), data=data_temp[sample1,], method="ranger",
                                                                               trControl=caret::trainControl(method="cv"),
-                                                                              tuneGrid=expand.grid(mtry=1,splitrule=c("variance"),min.node.size=c(50,100,200))) )
+                                                                              tuneGrid=expand.grid(mtry=1,splitrule=c("variance"),min.node.size=c(25,50,100))) )
     message <- utils::capture.output( Y1givenGQ.Model.sample2 <- caret::train(stats::as.formula(paste("YgivenGXQ.Pred_D1_ncf", paste(G,Q,sep="+"), sep="~")), data=data_temp[sample2,], method="ranger",
                                                                               trControl=caret::trainControl(method="cv"),
-                                                                              tuneGrid=expand.grid(mtry=1,splitrule=c("variance"),min.node.size=c(50,100,200))) )
+                                                                              tuneGrid=expand.grid(mtry=1,splitrule=c("variance"),min.node.size=c(25,50,100))) )
   }
   if (algorithm=="gbm") {
     message <- utils::capture.output( Y0givenGQ.Model.sample1 <- caret::train(stats::as.formula(paste("YgivenGXQ.Pred_D0_ncf", paste(G,Q,sep="+"), sep="~")), data=data_temp[sample1,], method="gbm",
                                                                               trControl=caret::trainControl(method="cv"),
-                                                                              tuneGrid=expand.grid(n.trees=c(25,75,125), interaction.depth=c(1,2,4), shrinkage=0.1, n.minobsinnode=c(5,10,15))) )
+                                                                              tuneGrid=expand.grid(n.trees=c(25,75,125), interaction.depth=c(1,2), shrinkage=0.1, n.minobsinnode=c(5,10,20))) )
     message <- utils::capture.output( Y0givenGQ.Model.sample2 <- caret::train(stats::as.formula(paste("YgivenGXQ.Pred_D0_ncf", paste(G,Q,sep="+"), sep="~")), data=data_temp[sample2,], method="gbm",
                                                                               trControl=caret::trainControl(method="cv"),
-                                                                              tuneGrid=expand.grid(n.trees=c(25,75,125), interaction.depth=c(1,2,4), shrinkage=0.1, n.minobsinnode=c(5,10,15))) )
+                                                                              tuneGrid=expand.grid(n.trees=c(25,75,125), interaction.depth=c(1,2), shrinkage=0.1, n.minobsinnode=c(5,10,20))) )
     message <- utils::capture.output( Y1givenGQ.Model.sample1 <- caret::train(stats::as.formula(paste("YgivenGXQ.Pred_D1_ncf", paste(G,Q,sep="+"), sep="~")), data=data_temp[sample1,], method="gbm",
                                                                               trControl=caret::trainControl(method="cv"),
-                                                                              tuneGrid=expand.grid(n.trees=c(25,75,125), interaction.depth=c(1,2,4), shrinkage=0.1, n.minobsinnode=c(5,10,15))) )
+                                                                              tuneGrid=expand.grid(n.trees=c(25,75,125), interaction.depth=c(1,2), shrinkage=0.1, n.minobsinnode=c(5,10,20))) )
     message <- utils::capture.output( Y1givenGQ.Model.sample2 <- caret::train(stats::as.formula(paste("YgivenGXQ.Pred_D1_ncf", paste(G,Q,sep="+"), sep="~")), data=data_temp[sample2,], method="gbm",
                                                                               trControl=caret::trainControl(method="cv"),
-                                                                              tuneGrid=expand.grid(n.trees=c(25,75,125), interaction.depth=c(1,2,4), shrinkage=0.1, n.minobsinnode=c(5,10,15))) )
+                                                                              tuneGrid=expand.grid(n.trees=c(25,75,125), interaction.depth=c(1,2), shrinkage=0.1, n.minobsinnode=c(5,10,20))) )
   }
 
   Y0givenQ.Pred_G0 <- Y0givenQ.Pred_G1 <- Y1givenQ.Pred_G0 <- Y1givenQ.Pred_G1 <- rep(NA, nrow(data))
@@ -268,26 +268,26 @@ cdgd1 <- function(Y,D,G,X,Q,data,algorithm,alpha=0.05) {
   if (algorithm=="nnet") {
     message <- utils::capture.output( DgivenGQ.Model.sample1 <- caret::train(stats::as.formula(paste(D, paste(G,Q,sep="+"), sep="~")), data=data[sample1,], method="nnet",
                                                                              preProc=c("center","scale"), trControl=caret::trainControl(method="cv"), linout=FALSE,
-                                                                             tuneGrid=expand.grid(size=c(1,4,7),decay=c(0,0.05,0.1,0.2)) ))
+                                                                             tuneGrid=expand.grid(size=c(1,4,7),decay=c(0,0.01,0.05)) ))
     message <- utils::capture.output( DgivenGQ.Model.sample2 <- caret::train(stats::as.formula(paste(D, paste(G,Q,sep="+"), sep="~")), data=data[sample2,], method="nnet",
                                                                              preProc=c("center","scale"), trControl=caret::trainControl(method="cv"), linout=FALSE,
-                                                                             tuneGrid=expand.grid(size=c(1,4,7),decay=c(0,0.05,0.1,0.2)) ))
+                                                                             tuneGrid=expand.grid(size=c(1,4,7),decay=c(0,0.01,0.05)) ))
   }
   if (algorithm=="ranger") {
     message <- utils::capture.output( DgivenGQ.Model.sample1 <- caret::train(stats::as.formula(paste(D, paste(G,Q,sep="+"), sep="~")), data=data[sample1,], method="ranger",
                                                                               trControl=caret::trainControl(method="cv", classProbs=TRUE),
-                                                                              tuneGrid=expand.grid(mtry=1,splitrule=c("gini"),min.node.size=c(50,100,200))) )
+                                                                              tuneGrid=expand.grid(mtry=1,splitrule=c("gini"),min.node.size=c(25,50,100))) )
     message <- utils::capture.output( DgivenGQ.Model.sample2 <- caret::train(stats::as.formula(paste(D, paste(G,Q,sep="+"), sep="~")), data=data[sample2,], method="ranger",
                                                                               trControl=caret::trainControl(method="cv", classProbs=TRUE),
-                                                                              tuneGrid=expand.grid(mtry=1,splitrule=c("gini"),min.node.size=c(50,100,200))) )
+                                                                              tuneGrid=expand.grid(mtry=1,splitrule=c("gini"),min.node.size=c(25,50,100))) )
   }
   if (algorithm=="gbm") {
     message <- utils::capture.output( DgivenGQ.Model.sample1 <- caret::train(stats::as.formula(paste(D, paste(G,Q,sep="+"), sep="~")), data=data[sample1,], method="gbm",
                                                                               trControl=caret::trainControl(method="cv"),
-                                                                              tuneGrid=expand.grid(n.trees=c(25,75,125), interaction.depth=c(1,2,4), shrinkage=0.1, n.minobsinnode=c(5,10,15))) )
+                                                                              tuneGrid=expand.grid(n.trees=c(25,75,125), interaction.depth=c(1,2), shrinkage=0.1, n.minobsinnode=c(5,10,20))) )
     message <- utils::capture.output( DgivenGQ.Model.sample2 <- caret::train(stats::as.formula(paste(D, paste(G,Q,sep="+"), sep="~")), data=data[sample2,], method="gbm",
                                                                               trControl=caret::trainControl(method="cv"),
-                                                                              tuneGrid=expand.grid(n.trees=c(25,75,125), interaction.depth=c(1,2,4), shrinkage=0.1, n.minobsinnode=c(5,10,15))) )
+                                                                              tuneGrid=expand.grid(n.trees=c(25,75,125), interaction.depth=c(1,2), shrinkage=0.1, n.minobsinnode=c(5,10,20))) )
   }
 
   data[,D] <- as.numeric(data[,D])-1
@@ -311,26 +311,26 @@ cdgd1 <- function(Y,D,G,X,Q,data,algorithm,alpha=0.05) {
   if (algorithm=="nnet") {
     message <- utils::capture.output( GgivenQ.Model.sample1 <- caret::train(stats::as.formula(paste(G, paste(Q,sep="+"), sep="~")), data=data[sample1,], method="nnet",
                                                                             preProc=c("center","scale"), trControl=caret::trainControl(method="cv"), linout=FALSE,
-                                                                            tuneGrid=expand.grid(size=c(1,4,7),decay=c(0,0.05,0.1,0.2)) ))
+                                                                            tuneGrid=expand.grid(size=c(1,4,7),decay=c(0,0.01,0.05)) ))
     message <- utils::capture.output( GgivenQ.Model.sample2 <- caret::train(stats::as.formula(paste(G, paste(Q,sep="+"), sep="~")), data=data[sample2,], method="nnet",
                                                                             preProc=c("center","scale"), trControl=caret::trainControl(method="cv"), linout=FALSE,
-                                                                            tuneGrid=expand.grid(size=c(1,4,7),decay=c(0,0.05,0.1,0.2)) ))
+                                                                            tuneGrid=expand.grid(size=c(1,4,7),decay=c(0,0.01,0.05)) ))
   }
   if (algorithm=="ranger") {
     message <- utils::capture.output( GgivenQ.Model.sample1 <- caret::train(stats::as.formula(paste(G, paste(Q,sep="+"), sep="~")), data=data[sample1,], method="ranger",
                                                                              trControl=caret::trainControl(method="cv", classProbs=TRUE),
-                                                                             tuneGrid=expand.grid(mtry=1,splitrule=c("gini"),min.node.size=c(50,100,200))) )
+                                                                             tuneGrid=expand.grid(mtry=1,splitrule=c("gini"),min.node.size=c(25,50,100))) )
     message <- utils::capture.output( GgivenQ.Model.sample2 <- caret::train(stats::as.formula(paste(G, paste(Q,sep="+"), sep="~")), data=data[sample2,], method="ranger",
                                                                              trControl=caret::trainControl(method="cv", classProbs=TRUE),
-                                                                             tuneGrid=expand.grid(mtry=1,splitrule=c("gini"),min.node.size=c(50,100,200))) )
+                                                                             tuneGrid=expand.grid(mtry=1,splitrule=c("gini"),min.node.size=c(25,50,100))) )
   }
   if (algorithm=="gbm") {
     message <- utils::capture.output( GgivenQ.Model.sample1 <- caret::train(stats::as.formula(paste(G, paste(Q,sep="+"), sep="~")), data=data[sample1,], method="gbm",
                                                                              trControl=caret::trainControl(method="cv"),
-                                                                             tuneGrid=expand.grid(n.trees=c(25,75,125), interaction.depth=c(1,2,4), shrinkage=0.1, n.minobsinnode=c(5,10,15))) )
+                                                                             tuneGrid=expand.grid(n.trees=c(25,75,125), interaction.depth=c(1,2), shrinkage=0.1, n.minobsinnode=c(5,10,20))) )
     message <- utils::capture.output( GgivenQ.Model.sample2 <- caret::train(stats::as.formula(paste(G, paste(Q,sep="+"), sep="~")), data=data[sample2,], method="gbm",
                                                                              trControl=caret::trainControl(method="cv"),
-                                                                             tuneGrid=expand.grid(n.trees=c(25,75,125), interaction.depth=c(1,2,4), shrinkage=0.1, n.minobsinnode=c(5,10,15))) )
+                                                                             tuneGrid=expand.grid(n.trees=c(25,75,125), interaction.depth=c(1,2), shrinkage=0.1, n.minobsinnode=c(5,10,20))) )
   }
 
   data[,G] <- as.numeric(data[,G])-1
