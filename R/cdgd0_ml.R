@@ -282,20 +282,69 @@ cdgd0 <- function(Y,D,G,X,data,algorithm,alpha=0.05) {
              prevalence,
              effect,
              selection)
-  se <- c(total_se,
+
+  point_specific <- c(Y_G1,
+                      Y_G0,
+                      psi_01,
+                      psi_00,
+                      mean(data[,G]/mean(data[,G])*data[,D]),
+                      mean((1-data[,G])/(1-mean(data[,G]))*data[,D]),
+                      mean(data[,G]/mean(data[,G])*data[,D])-mean((1-data[,G])/(1-mean(data[,G]))*data[,D]),
+                      mean(data[,G]/mean(data[,G])*(IPO_D1G1-IPO_D0G1)),
+                      mean((1-data[,G])/(1-mean(data[,G]))*(IPO_D1G0-IPO_D0G0)),
+                      mean(data[,G]/mean(data[,G])*(IPO_D1G1-IPO_D0G1)) - mean((1-data[,G])/(1-mean(data[,G]))*(IPO_D1G0-IPO_D0G0)),
+                      Y_G1-psi_01-psi_dgg(1,1,1)+psi_dgg(0,1,1),
+                      Y_G0-psi_00-psi_dgg(1,0,0)+psi_dgg(0,0,0))
+
+  se_est <- c(total_se,
           baseline_se,
           prevalence_se,
           effect_se,
           selection_se)
-  CI_lower <- point - qnorm(1-alpha/2)*se
-  CI_upper <- point + qnorm(1-alpha/2)*se
+
+  se_est_specific <- c(se( data[,G]/mean(data[,G])*(data[,Y]-Y_G1) ),
+                   se( (1-data[,G])/(1-mean(data[,G]))*(data[,Y]-Y_G0) ),
+                   se( data[,G]/mean(data[,G])*(IPO_D0G1-psi_01)),
+                   se( (1-data[,G])/(1-mean(data[,G]))*(IPO_D0G0-psi_00)),
+                   se( data[,G]/mean(data[,G])*(data[,D]-mean(data[,G]/mean(data[,G])*data[,D])) ),
+                   se( (1-data[,G])/(1-mean(data[,G]))*(data[,D]-mean((1-data[,G])/(1-mean(data[,G]))*data[,D])) ),
+                   se( data[,G]/mean(data[,G])*(data[,D]-mean(data[,G]/mean(data[,G])*data[,D])) - (1-data[,G])/(1-mean(data[,G]))*(data[,D]-mean((1-data[,G])/(1-mean(data[,G]))*data[,D])) ),
+                   se( data[,G]/mean(data[,G])*(IPO_D1G1-IPO_D0G1-mean(data[,G]/mean(data[,G])*(IPO_D1G1-IPO_D0G1))) ),
+                   se( (1-data[,G])/(1-mean(data[,G]))*(IPO_D1G0-IPO_D0G0-mean((1-data[,G])/(1-mean(data[,G]))*(IPO_D1G0-IPO_D0G0))) ),
+                   se( data[,G]/mean(data[,G])*(IPO_D1G1-IPO_D0G1-mean(data[,G]/mean(data[,G])*(IPO_D1G1-IPO_D0G1))) - (1-data[,G])/(1-mean(data[,G]))*(IPO_D1G0-IPO_D0G0-mean((1-data[,G])/(1-mean(data[,G]))*(IPO_D1G0-IPO_D0G0))) ),
+                   se( data[,G]/mean(data[,G])*(data[,Y]-Y_G1)-data[,G]/mean(data[,G])*(IPO_D0G1-psi_01)-EIF_dgg(1,1,1)+EIF_dgg(0,1,1) ),
+                   se( (1-data[,G])/(1-mean(data[,G]))*(data[,Y]-Y_G0)-(1-data[,G])/(1-mean(data[,G]))*(IPO_D0G0-psi_00)-EIF_dgg(1,0,0)+EIF_dgg(0,0,0) ) )
+
+  CI_lower <- point - qnorm(1-alpha/2)*se_est
+  CI_upper <- point + qnorm(1-alpha/2)*se_est
+
+  CI_lower_specific <- point_specific - qnorm(1-alpha/2)*se_est_specific
+  CI_upper_specific <- point_specific + qnorm(1-alpha/2)*se_est_specific
+
   names <- c("total",
              "baseline",
              "prevalence",
              "effect",
              "selection")
 
-  output <- as.data.frame(cbind(names, point,se,CI_lower,CI_upper))
+  names_specific <- c("Y_G1",
+                      "Y_G0",
+                      "Y0_G1",
+                      "Y0_G0",
+                      "D_G1",
+                      "D_G0",
+                      "D_G1-D_G0",
+                      "ATE_G1",
+                      "ATE_G0",
+                      "ATE_G1-ATE_G0",
+                      "Cov_G1",
+                      "Cov_G0")
+
+  results <- as.data.frame(cbind(names,point,se_est,CI_lower,CI_upper))
+  results_specific <- as.data.frame(cbind(names_specific, point_specific,se_est_specific,CI_lower_specific,CI_upper_specific))
+  colnames(results_specific) <- c("names","point","se_est","CI_lower","CI_upper")
+
+  output <- list(results, results_specific)
 
   return(output)
 }
