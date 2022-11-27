@@ -490,8 +490,8 @@ cdgd1_ml <- function(Y,D,G,X,Q,data,algorithm,alpha=0.05) {
           cond_effect_se,
           cond_selection_se,
           Q_dist_se)
-  CI_lower <- point - qnorm(1-alpha/2)*se
-  CI_upper <- point + qnorm(1-alpha/2)*se
+  CI_lower <- point - stats::qnorm(1-alpha/2)*se
+  CI_upper <- point + stats::qnorm(1-alpha/2)*se
   names <- c("total",
              "baseline",
              "conditional prevalence",

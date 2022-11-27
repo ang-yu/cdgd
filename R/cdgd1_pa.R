@@ -38,10 +38,10 @@ cdgd1_pa <- function(Y,D,G,X,Q,data,algorithm,alpha=0.05) {
   data <- as.data.frame(data)
 
   ### outcome regression model
-  YgivenDGXQ.Model <- lm(stats::as.formula(paste(Y, paste(paste(D,c(G,Q,X),sep="*"),collapse="+"), sep="~")), data=data)
+  YgivenDGXQ.Model <- stats::lm(stats::as.formula(paste(Y, paste(paste(D,c(G,Q,X),sep="*"),collapse="+"), sep="~")), data=data)
 
   ### propensity score model
-  DgivenGXQ.Model <- glm(stats::as.formula(paste(D, paste(G,Q,paste(X,collapse="+"),sep="+"), sep="~")), data=data, family=binomial(link="logit"))
+  DgivenGXQ.Model <- stats::glm(stats::as.formula(paste(D, paste(G,Q,paste(X,collapse="+"),sep="+"), sep="~")), data=data, family=stats::binomial(link="logit"))
 
   ### predictions
   YgivenXQ.Pred_D0G0 <- YgivenXQ.Pred_D1G0 <- YgivenXQ.Pred_D0G1 <- YgivenXQ.Pred_D1G1 <- DgivenXQ.Pred_G0 <- DgivenXQ.Pred_G1 <- rep(NA, nrow(data))
@@ -49,22 +49,22 @@ cdgd1_pa <- function(Y,D,G,X,Q,data,algorithm,alpha=0.05) {
   pred_data <- data
   pred_data[,D] <- 0
   pred_data[,G] <- 0
-  YgivenXQ.Pred_D0G0 <- stats::predict(YgivenDGX.Model, newdata = pred_data)
+  YgivenXQ.Pred_D0G0 <- stats::predict(YgivenDGXQ.Model, newdata = pred_data)
 
   pred_data <- data
   pred_data[,D] <- 1
   pred_data[,G] <- 0
-  YgivenXQ.Pred_D1G0 <- stats::predict(YgivenDGX.Model, newdata = pred_data)
+  YgivenXQ.Pred_D1G0 <- stats::predict(YgivenDGXQ.Model, newdata = pred_data)
 
   pred_data <- data
   pred_data[,D] <- 0
   pred_data[,G] <- 1
-  YgivenXQ.Pred_D0G1 <- stats::predict(YgivenDGX.Model, newdata = pred_data)
+  YgivenXQ.Pred_D0G1 <- stats::predict(YgivenDGXQ.Model, newdata = pred_data)
 
   pred_data <- data
   pred_data[,D] <- 1
   pred_data[,G] <- 1
-  YgivenXQ.Pred_D1G1 <- stats::predict(YgivenDGX.Model, newdata = pred_data)
+  YgivenXQ.Pred_D1G1 <- stats::predict(YgivenDGXQ.Model, newdata = pred_data)
 
   pred_data <- data
   pred_data[,G] <- 0
@@ -85,8 +85,8 @@ cdgd1_pa <- function(Y,D,G,X,Q,data,algorithm,alpha=0.05) {
   pred_data[,D] <- 0
   data_temp$YgivenGXQ.Pred_D1_ncf <- stats::predict(YgivenDGXQ.Model, newdata = pred_data)
 
-  Y0givenGQ.Model <- lm(stats::as.formula(paste("YgivenGXQ.Pred_D0_ncf", paste(G,Q,sep="*"), sep="~")), data=data_temp)
-  Y1givenGQ.Model <- lm(stats::as.formula(paste("YgivenGXQ.Pred_D1_ncf", paste(G,Q,sep="*"), sep="~")), data=data_temp)
+  Y0givenGQ.Model <- stats::lm(stats::as.formula(paste("YgivenGXQ.Pred_D0_ncf", paste(G,Q,sep="*"), sep="~")), data=data_temp)
+  Y1givenGQ.Model <- stats::lm(stats::as.formula(paste("YgivenGXQ.Pred_D1_ncf", paste(G,Q,sep="*"), sep="~")), data=data_temp)
 
   Y0givenQ.Pred_G0 <- Y0givenQ.Pred_G1 <- Y1givenQ.Pred_G0 <- Y1givenQ.Pred_G1 <- rep(NA, nrow(data))
 
@@ -110,7 +110,7 @@ cdgd1_pa <- function(Y,D,G,X,Q,data,algorithm,alpha=0.05) {
   IPO_D1G1 <- data[,D]/DgivenXQ.Pred_G0/mean(data[,D]/DgivenXQ.Pred_G0)*(data[,Y]-YgivenXQ.Pred_D1G1) + YgivenXQ.Pred_D1G1
 
   ### Estimate E(D | Q,g')
-  DgivenGQ.Model <- glm(stats::as.formula(paste(D, paste(G,Q,sep="*"), sep="~")), data=data, family=binomial(link="logit"))
+  DgivenGQ.Model <- stats::glm(stats::as.formula(paste(D, paste(G,Q,sep="*"), sep="~")), data=data, family=stats::binomial(link="logit"))
 
   DgivenQ.Pred_G0 <- DgivenQ.Pred_G1 <- rep(NA, nrow(data))
 
@@ -123,7 +123,7 @@ cdgd1_pa <- function(Y,D,G,X,Q,data,algorithm,alpha=0.05) {
   DgivenQ.Pred_G1 <- stats::predict(DgivenGQ.Model, newdata = pred_data, type="response")
 
   ### Estimate p_g(Q)=Pr(G=g | Q)
-  GgivenQ.Model <- glm(stats::as.formula(paste(G, paste(Q,sep="+"), sep="~")), data=data, family=binomial(link="logit"))
+  GgivenQ.Model <- stats::glm(stats::as.formula(paste(G, paste(Q,sep="+"), sep="~")), data=data, family=stats::binomial(link="logit"))
 
   GgivenQ.Pred <- rep(NA, nrow(data))
   GgivenQ.Pred <- stats::predict(DgivenGQ.Model, newdata = data, type="response")
@@ -262,8 +262,8 @@ cdgd1_pa <- function(Y,D,G,X,Q,data,algorithm,alpha=0.05) {
           cond_effect_se,
           cond_selection_se,
           Q_dist_se)
-  CI_lower <- point - qnorm(1-alpha/2)*se
-  CI_upper <- point + qnorm(1-alpha/2)*se
+  CI_lower <- point - stats::qnorm(1-alpha/2)*se
+  CI_upper <- point + stats::qnorm(1-alpha/2)*se
   names <- c("total",
              "baseline",
              "conditional prevalence",

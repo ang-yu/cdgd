@@ -36,10 +36,10 @@ cdgd0_pa <- function(Y,D,G,X,data,algorithm,alpha=0.05) {
   data <- as.data.frame(data)
 
   ### outcome regression model
-  YgivenDGX.Model <- lm(stats::as.formula(paste(Y, paste(paste(D,c(G,X),sep="*"),collapse="+"), sep="~")), data=data)
+  YgivenDGX.Model <- stats::lm(stats::as.formula(paste(Y, paste(paste(D,c(G,X),sep="*"),collapse="+"), sep="~")), data=data)
 
   ### propensity score model
-  DgivenGX.Model <- glm(stats::as.formula(paste(D, paste(G,paste(X,collapse="+"),sep="+"), sep="~")), data=data, family=binomial(link="logit"))
+  DgivenGX.Model <- stats::glm(stats::as.formula(paste(D, paste(G,paste(X,collapse="+"),sep="+"), sep="~")), data=data, family=stats::binomial(link="logit"))
 
   ### predictions
   YgivenX.Pred_D0G0 <- YgivenX.Pred_D1G0 <- YgivenX.Pred_D0G1 <- YgivenX.Pred_D1G1 <- DgivenX.Pred_G0 <- DgivenX.Pred_G1 <- rep(NA, nrow(data))
@@ -188,11 +188,11 @@ cdgd0_pa <- function(Y,D,G,X,data,algorithm,alpha=0.05) {
                        se( data[,G]/mean(data[,G])*(data[,Y]-Y_G1)-data[,G]/mean(data[,G])*(IPO_D0G1-psi_01)-EIF_dgg(1,1,1)+EIF_dgg(0,1,1) ),
                        se( (1-data[,G])/(1-mean(data[,G]))*(data[,Y]-Y_G0)-(1-data[,G])/(1-mean(data[,G]))*(IPO_D0G0-psi_00)-EIF_dgg(1,0,0)+EIF_dgg(0,0,0) ) )
 
-  CI_lower <- point - qnorm(1-alpha/2)*se_est
-  CI_upper <- point + qnorm(1-alpha/2)*se_est
+  CI_lower <- point - stats::qnorm(1-alpha/2)*se_est
+  CI_upper <- point + stats::qnorm(1-alpha/2)*se_est
 
-  CI_lower_specific <- point_specific - qnorm(1-alpha/2)*se_est_specific
-  CI_upper_specific <- point_specific + qnorm(1-alpha/2)*se_est_specific
+  CI_lower_specific <- point_specific - stats::qnorm(1-alpha/2)*se_est_specific
+  CI_upper_specific <- point_specific + stats::qnorm(1-alpha/2)*se_est_specific
 
   names <- c("total",
              "baseline",

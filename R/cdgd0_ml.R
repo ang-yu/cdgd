@@ -315,11 +315,11 @@ cdgd0_ml <- function(Y,D,G,X,data,algorithm,alpha=0.05) {
                    se( data[,G]/mean(data[,G])*(data[,Y]-Y_G1)-data[,G]/mean(data[,G])*(IPO_D0G1-psi_01)-EIF_dgg(1,1,1)+EIF_dgg(0,1,1) ),
                    se( (1-data[,G])/(1-mean(data[,G]))*(data[,Y]-Y_G0)-(1-data[,G])/(1-mean(data[,G]))*(IPO_D0G0-psi_00)-EIF_dgg(1,0,0)+EIF_dgg(0,0,0) ) )
 
-  CI_lower <- point - qnorm(1-alpha/2)*se_est
-  CI_upper <- point + qnorm(1-alpha/2)*se_est
+  CI_lower <- point - stats::qnorm(1-alpha/2)*se_est
+  CI_upper <- point + stats::qnorm(1-alpha/2)*se_est
 
-  CI_lower_specific <- point_specific - qnorm(1-alpha/2)*se_est_specific
-  CI_upper_specific <- point_specific + qnorm(1-alpha/2)*se_est_specific
+  CI_lower_specific <- point_specific - stats::qnorm(1-alpha/2)*se_est_specific
+  CI_upper_specific <- point_specific + stats::qnorm(1-alpha/2)*se_est_specific
 
   names <- c("total",
              "baseline",
