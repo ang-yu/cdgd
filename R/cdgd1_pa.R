@@ -9,7 +9,6 @@
 #' @param Q Conditional set. The vector of the names of numeric variables.
 #' @param X Confounders. The vector of the names of numeric variables.
 #' @param data A data frame.
-#' @param algorithm The ML algorithm for modelling. "nnet" for neural network, "ranger" for random forests, "gbm" for generalized boosted models.
 #' @param alpha 1-alpha confidence interval.
 #'
 #' @return A list of estimates.
