@@ -19,7 +19,6 @@ Y_b <- Y_0_b + tau_b*D_b
 exp_data <- as.data.frame(cbind(c(Y_a,Y_b),c(D_a,D_b),c(X_a,X_b),c(Q_a,Q_b)))
 colnames(exp_data) <- c("outcome","treatment","confounder","Q")
 exp_data$group_a <- c(rep(1,500),rep(0,500))
-exp_data$group_b <- c(rep(0,500),rep(1,500))
 
 cov(D_a, tau_a)-cov(D_b, tau_b)
 
