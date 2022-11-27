@@ -11,7 +11,7 @@
 #' @param algorithm The ML algorithm for modelling. "nnet" for neural network, "ranger" for random forests, "gbm" for generalized boosted models.
 #' @param alpha 1-alpha confidence interval.
 #'
-#' @return A data frame of estimates.
+#' @return A list of estimates.
 #'
 #' @export
 #'
