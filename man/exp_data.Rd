@@ -5,7 +5,7 @@
 \alias{exp_data}
 \title{Simulated example data}
 \format{
-An object of class \code{data.frame} with 1000 rows and 6 columns.
+An object of class \code{data.frame} with 1000 rows and 5 columns.
 }
 \usage{
 data(exp_data)

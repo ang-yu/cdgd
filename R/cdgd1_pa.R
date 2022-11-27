@@ -33,7 +33,7 @@
 
 
 
-cdgd1_parametric <- function(Y,D,G,X,Q,data,algorithm,alpha=0.05) {
+cdgd1_pa <- function(Y,D,G,X,Q,data,algorithm,alpha=0.05) {
 
   data <- as.data.frame(data)
 
