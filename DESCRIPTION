@@ -1,22 +1,23 @@
 Package: cdgd
 Title: Causal Decomposition of Group Disparities
-Version: 0.1.1
+Version: 0.2.1
 Authors@R: 
-    person("Ang", "Yu", , "ang_yu@outlook.com", role = c("aut", "cre"),
-           comment = c(ORCID = "0000-0002-1828-0165"))
+    person("Ang", "Yu", email = "ayu33@wisc.edu", role = c("aut", "cre"),
+           comment = c(website = "https://ang-yu.github.io/",
+                       ORCID = "0000-0002-1828-0165"))
 Description: This package implements the causal decomposition of group disparities of Yu and Elwert (2022).
 License: MIT
 Encoding: UTF-8
 Roxygen: list(markdown = TRUE)
 RoxygenNote: 7.2.0
 Imports: 
-    caret (>= 6.0-92),
-    nnet (>= 7.3-17),
-    ranger (>= 0.13.1),
-    utils (>= 4.2.0),
-    stats (>= 4.2.0)
+    caret (>= 6.0-93),
+    nnet (>= 7.3-18),
+    ranger (>= 0.14.1),
+    utils (>= 4.2.2),
+    stats (>= 4.2.2)
 URL: https://github.com/ang-yu/cdgd
 BugReports: https://github.com/ang-yu/cdgd/issues
 Depends: 
-    R (>= 4.1.2)
+    R (>= 4.2.2)
 LazyData: true
