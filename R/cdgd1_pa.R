@@ -18,21 +18,19 @@
 #' @examples
 #' data(exp_data)
 #'
-#' results0 <- cdgd0(
+#' results <- cdgd1_pa(
 #' Y="outcome",
 #' D="treatment",
 #' G="group_a",
-#' #' X=c("confounder","Q"),
+#' X=c("confounder","Q"),
 #' Q="Q",
-#' data=exp_data,
-#' t=0.05,
-#' algorithm="nnet")
+#' data=exp_data)
 #'
-#' results0
+#' results
 
 
 
-cdgd1_pa <- function(Y,D,G,X,Q,data,algorithm,alpha=0.05) {
+cdgd1_pa <- function(Y,D,G,X,Q,data,alpha=0.05) {
 
   data <- as.data.frame(data)
 

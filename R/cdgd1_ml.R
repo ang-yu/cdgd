@@ -21,17 +21,16 @@
 #'
 #' set.seed(1)
 #'
-#' results0 <- cdgd0(
+#' results <- cdgd1_ml(
 #' Y="outcome",
 #' D="treatment",
 #' G="group_a",
-#' #' X=c("confounder","Q"),
+#' X=c("confounder","Q"),
 #' Q="Q",
 #' data=exp_data,
-#' t=0.05,
 #' algorithm="nnet")
 #'
-#' results0
+#' results
 
 
 

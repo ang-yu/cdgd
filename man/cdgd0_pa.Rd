@@ -4,7 +4,7 @@
 \alias{cdgd0_pa}
 \title{Perform unconditional decomposition via parametric models}
 \usage{
-cdgd0_pa(Y, D, G, X, data, algorithm, alpha = 0.05)
+cdgd0_pa(Y, D, G, X, data, alpha = 0.05)
 }
 \arguments{
 \item{Y}{Outcome. The name of a continuous variable.}
@@ -17,12 +17,10 @@ cdgd0_pa(Y, D, G, X, data, algorithm, alpha = 0.05)
 
 \item{data}{A data frame.}
 
-\item{algorithm}{The ML algorithm for modelling. "nnet" for neural network, "ranger" for random forests, "gbm" for generalized boosted models.}
-
 \item{alpha}{1-alpha confidence interval.}
 }
 \value{
-A data frame of estimates.
+A list of estimates.
 }
 \description{
 Perform unconditional decomposition via parametric models
@@ -30,13 +28,12 @@ Perform unconditional decomposition via parametric models
 \examples{
 data(exp_data)
 
-results0 <- cdgd0(
+results <- cdgd0_pa(
 Y="outcome",
 D="treatment",
 G="group_a",
-X=c("confounder"),
-data=exp_data,
-algorithm="nnet")
+X=c("confounder","Q"),
+data=exp_data)
 
-results0
+results[[1]]
 }

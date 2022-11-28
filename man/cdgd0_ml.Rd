@@ -22,7 +22,7 @@ cdgd0_ml(Y, D, G, X, data, algorithm, alpha = 0.05)
 \item{alpha}{1-alpha confidence interval.}
 }
 \value{
-A data frame of estimates.
+A list of estimates.
 }
 \description{
 Perform unconditional decomposition via Machine Learning
@@ -32,13 +32,13 @@ data(exp_data)
 
 set.seed(1)
 
-results0 <- cdgd0(
+results <- cdgd0_ml(
 Y="outcome",
 D="treatment",
 G="group_a",
-X=c("confounder"),
+X=c("confounder","Q"),
 data=exp_data,
 algorithm="nnet")
 
-results0
+results[[1]]
 }
