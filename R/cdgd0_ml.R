@@ -344,7 +344,7 @@ cdgd0_ml <- function(Y,D,G,X,data,algorithm,alpha=0.05) {
   results_specific <- as.data.frame(cbind(names_specific, point_specific,se_est_specific,CI_lower_specific,CI_upper_specific))
   colnames(results_specific) <- c("names","point","se_est","CI_lower","CI_upper")
 
-  output <- list(results, results_specific)
+  output <- list(results=results, results_specific=results_specific)
 
   return(output)
 }

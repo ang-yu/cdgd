@@ -217,7 +217,7 @@ cdgd0_pa <- function(Y,D,G,X,data,algorithm,alpha=0.05) {
   colnames(results) <- c("names","point","se","CI_lower","CI_upper")
   colnames(results_specific) <- c("names","point","se","CI_lower","CI_upper")
 
-  output <- list(results, results_specific)
+  output <- list(results=results, results_specific=results_specific)
 
   return(output)
 }
