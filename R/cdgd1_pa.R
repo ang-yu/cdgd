@@ -71,6 +71,15 @@ cdgd1_pa <- function(Y,D,G,X,Q,data,alpha=0.05) {
   pred_data[,G] <- 1
   DgivenXQ.Pred_G1 <- stats::predict(DgivenGXQ.Model, newdata = pred_data, type="response")
 
+  zero_one <- sum(DgivenXQ.Pred_G0==0)+sum(DgivenXQ.Pred_G1==0)+
+    sum(DgivenXQ.Pred_G0==1)+sum(DgivenXQ.Pred_G1==1)
+  if ( zero_one>0 ) {
+    stop(
+      paste("D given X and are exact 0 or 1 in", zero_one, "cases.", sep=" "),
+      call. = FALSE
+    )
+  }
+
   ### Estimate E(Y_d | Q,g)
   data_temp <- data[,c(G,Q)]
 
@@ -124,6 +133,14 @@ cdgd1_pa <- function(Y,D,G,X,Q,data,alpha=0.05) {
 
   GgivenQ.Pred <- rep(NA, nrow(data))
   GgivenQ.Pred <- stats::predict(DgivenGQ.Model, newdata = data, type="response")
+
+  zero_one <- sum(GgivenQ.Pred==0)+sum(GgivenQ.Pred==1)
+  if ( zero_one>0 ) {
+    stop(
+      paste("G given Q are exact 0 or 1 in", zero_one, "cases.", sep=" "),
+      call. = FALSE
+    )
+  }
 
   ### The one-step estimate of \xi_{dg}
   psi_00 <- mean( (1-data[,G])/(1-mean(data[,G]))*IPO_D0G0 )

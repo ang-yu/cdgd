@@ -70,6 +70,15 @@ cdgd0_pa <- function(Y,D,G,X,data,alpha=0.05) {
   pred_data[,G] <- 1
   DgivenX.Pred_G1 <- stats::predict(DgivenGX.Model, newdata = pred_data, type="response")
 
+  zero_one <- sum(DgivenX.Pred_G0==0)+sum(DgivenX.Pred_G1==0)+
+    sum(DgivenX.Pred_G0==1)+sum(DgivenX.Pred_G1==1)
+  if ( zero_one>0 ) {
+    stop(
+      paste("D given X and are exact 0 or 1 in", zero_one, "cases.", sep=" "),
+      call. = FALSE
+    )
+  }
+
   ### The "IPO" (individual potential outcome) function
   # For each d and g value, we have IE(d,g)=\frac{\one(D=d)}{\pi(d,X,g)}[Y-\mu(d,X,g)]+\mu(d,X,g)
   # We stablize the weight by dividing the sample average of estimated weights

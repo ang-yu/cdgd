@@ -161,6 +161,15 @@ cdgd1_ml <- function(Y,D,G,X,Q,data,algorithm,alpha=0.05) {
   DgivenXQ.Pred_G1[sample1] <- stats::predict(DgivenGXQ.Model.sample1, newdata = pred_data[sample2,], type="prob")[,2]
   DgivenXQ.Pred_G1[sample2] <- stats::predict(DgivenGXQ.Model.sample2, newdata = pred_data[sample1,], type="prob")[,2]
 
+  zero_one <- sum(DgivenXQ.Pred_G0==0)+sum(DgivenXQ.Pred_G1==0)+
+    sum(DgivenXQ.Pred_G0==1)+sum(DgivenXQ.Pred_G1==1)
+  if ( zero_one>0 ) {
+    stop(
+      paste("D given X and are exact 0 or 1 in", zero_one, "cases.", sep=" "),
+      call. = FALSE
+    )
+  }
+
 ### Estimate E(Y_d | Q,g)
   YgivenGXQ.Pred_D1_ncf <- YgivenGXQ.Pred_D0_ncf <- rep(NA, nrow(data)) # ncf stands for non-cross-fitted
 
@@ -335,6 +344,14 @@ cdgd1_ml <- function(Y,D,G,X,Q,data,algorithm,alpha=0.05) {
   GgivenQ.Pred <- rep(NA, nrow(data))
   GgivenQ.Pred[sample1] <- stats::predict(DgivenGQ.Model.sample1, newdata = data[sample2,], type="prob")[,2]
   GgivenQ.Pred[sample2] <- stats::predict(DgivenGQ.Model.sample2, newdata = data[sample1,], type="prob")[,2]
+
+  zero_one <- sum(GgivenQ.Pred==0)+sum(GgivenQ.Pred==1)
+  if ( zero_one>0 ) {
+    stop(
+      paste("G given Q are exact 0 or 1 in", zero_one, "cases.", sep=" "),
+      call. = FALSE
+    )
+  }
 
 ### The one-step estimate of \xi_{dg}
   psi_00 <- mean( (1-data[,G])/(1-mean(data[,G]))*IPO_D0G0 )
