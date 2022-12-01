@@ -11,7 +11,7 @@
 #' @param data A data frame.
 #' @param alpha 1-alpha confidence interval.
 #'
-#' @return A list of estimates.
+#' @return A dataframe of estimates.
 #'
 #' @export
 #'

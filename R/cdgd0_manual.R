@@ -1,14 +1,20 @@
 
 
 
-#' Perform unconditional decomposition via Machine Learning
+#' Perform unconditional decomposition using conditional expectations predicted beforehand.
+#'
+#' The conditional expectations, i.e., the nuisance terms, should be estimated using cross-fitting.
 #'
 #' @param Y Outcome. The name of a continuous variable.
 #' @param D Treatment status. The name of a binary numeric variable taking values of 0 and 1.
 #' @param G Advantaged group membership. The name of a binary numeric variable taking values of 0 and 1.
-#' @param X Confounders. The vector of the names of numeric variables.
+#' @param YgivenX.Pred_D0G0 A numeric vector of predicted Y values given X, D=0, and G=0. Vector length=nrow(data).
+#' @param YgivenX.Pred_D1G0 A numeric vector of predicted Y values given X, D=1, and G=0. Vector length=nrow(data).
+#' @param YgivenX.Pred_D0G1 A numeric vector of predicted Y values given X, D=0, and G=1. Vector length=nrow(data).
+#' @param YgivenX.Pred_D1G1 A numeric vector of predicted Y values given X, D=1, and G=1. Vector length=nrow(data).
+#' @param DgivenX.Pred_G0 A numeric vector of predicted D values given X and G=1. Vector length=nrow(data).
+#' @param DgivenX.Pred_G1 A numeric vector of predicted D values given X and G=0. Vector length=nrow(data).
 #' @param data A data frame.
-#' @param algorithm The ML algorithm for modelling. "nnet" for neural network, "ranger" for random forests, "gbm" for generalized boosted models.
 #' @param alpha 1-alpha confidence interval.
 #'
 #' @return A list of estimates.
@@ -33,120 +39,9 @@
 
 
 
-cdgd0_ml <- function(Y,D,G,X,data,algorithm,alpha=0.05) {
-
-  if (!requireNamespace("caret", quietly=TRUE)) {
-    stop(
-      "Package \"caret\" must be installed to use this function.",
-      call. = FALSE
-    )
-  }
+cdgd0_manual <- function(Y,D,G,YgivenX.Pred_D0G0,YgivenX.Pred_D1G0,YgivenX.Pred_D0G1,YgivenX.Pred_D1G1,DgivenX.Pred_G0,DgivenX.Pred_G1,data,alpha=0.05) {
 
   data <- as.data.frame(data)
-
-  ### estimate the nuisance functions within each group, so that the final estimates are independent across groups
-  sample1 <- sample(nrow(data), floor(nrow(data)/2), replace=F)
-  sample2 <- setdiff(1:nrow(data), sample1)
-
-  ### outcome regression model
-  if (algorithm=="nnet") {
-    if (!requireNamespace("nnet", quietly=TRUE)) {
-      stop(
-        "Package \"nnet\" must be installed to use this function.",
-        call. = FALSE
-      )
-    }
-    message <- utils::capture.output( YgivenDGX.Model.sample1 <- caret::train(stats::as.formula(paste(Y, paste(D,G,paste(X,collapse="+"),sep="+"), sep="~")), data=data[sample1,], method="nnet",
-                                                                              preProc=c("center","scale"), trControl=caret::trainControl(method="cv"), linout=TRUE ))
-    message <- utils::capture.output( YgivenDGX.Model.sample2 <- caret::train(stats::as.formula(paste(Y, paste(D,G,paste(X,collapse="+"),sep="+"), sep="~")), data=data[sample2,], method="nnet",
-                                                                              preProc=c("center","scale"), trControl=caret::trainControl(method="cv"), linout=TRUE ))
-  }
-  if (algorithm=="ranger") {
-    if (!requireNamespace("ranger", quietly=TRUE)) {
-      stop(
-        "Package \"ranger\" must be installed to use this function.",
-        call. = FALSE
-      )
-    }
-    message <- utils::capture.output( YgivenDGX.Model.sample1 <- caret::train(stats::as.formula(paste(Y, paste(D,G,paste(X,collapse="+"),sep="+"), sep="~")), data=data[sample1,], method="ranger",
-                                                                              trControl=caret::trainControl(method="cv")) )
-    message <- utils::capture.output( YgivenDGX.Model.sample2 <- caret::train(stats::as.formula(paste(Y, paste(D,G,paste(X,collapse="+"),sep="+"), sep="~")), data=data[sample2,], method="ranger",
-                                                                              trControl=caret::trainControl(method="cv")) )
-  }
-  if (algorithm=="gbm") {
-    if (!requireNamespace("gbm", quietly=TRUE)) {
-      stop(
-        "Package \"gbm\" must be installed to use this function.",
-        call. = FALSE
-      )
-    }
-    message <- utils::capture.output( YgivenDGX.Model.sample1 <- caret::train(stats::as.formula(paste(Y, paste(D,G,paste(X,collapse="+"),sep="+"), sep="~")), data=data[sample1,], method="gbm",
-                                                                              trControl=caret::trainControl(method="cv")) )
-    message <- utils::capture.output( YgivenDGX.Model.sample2 <- caret::train(stats::as.formula(paste(Y, paste(D,G,paste(X,collapse="+"),sep="+"), sep="~")), data=data[sample2,], method="gbm",
-                                                                              trControl=caret::trainControl(method="cv")) )
-  }
-
-  ### propensity score model
-  data[,D] <- as.factor(data[,D])
-  levels(data[,D]) <- c("D0","D1")  # necessary for caret implementation of ranger
-
-  if (algorithm=="nnet") {
-    message <- utils::capture.output( DgivenGX.Model.sample1 <- caret::train(stats::as.formula(paste(D, paste(G,paste(X,collapse="+"),sep="+"), sep="~")), data=data[sample1,], method="nnet",
-                                                                             preProc=c("center","scale"), trControl=caret::trainControl(method="cv"), linout=FALSE ))
-    message <- utils::capture.output( DgivenGX.Model.sample2 <- caret::train(stats::as.formula(paste(D, paste(G,paste(X,collapse="+"),sep="+"), sep="~")), data=data[sample2,], method="nnet",
-                                                                             preProc=c("center","scale"), trControl=caret::trainControl(method="cv"), linout=FALSE ))
-  }
-  if (algorithm=="ranger") {
-    message <- utils::capture.output( DgivenGX.Model.sample1 <- caret::train(stats::as.formula(paste(D, paste(G,paste(X,collapse="+"),sep="+"), sep="~")), data=data[sample1,], method="ranger",
-                                                                             trControl=caret::trainControl(method="cv", classProbs=TRUE)) )
-    message <- utils::capture.output( DgivenGX.Model.sample2 <- caret::train(stats::as.formula(paste(D, paste(G,paste(X,collapse="+"),sep="+"), sep="~")), data=data[sample2,], method="ranger",
-                                                                             trControl=caret::trainControl(method="cv", classProbs=TRUE)) )
-  }
-  if (algorithm=="gbm") {
-    message <- utils::capture.output( DgivenGX.Model.sample1 <- caret::train(stats::as.formula(paste(D, paste(G,paste(X,collapse="+"),sep="+"), sep="~")), data=data[sample1,], method="gbm",
-                                                                             trControl=caret::trainControl(method="cv")) )
-    message <- utils::capture.output( DgivenGX.Model.sample2 <- caret::train(stats::as.formula(paste(D, paste(G,paste(X,collapse="+"),sep="+"), sep="~")), data=data[sample2,], method="gbm",
-                                                                             trControl=caret::trainControl(method="cv")) )
-  }
-
-  data[,D] <- as.numeric(data[,D])-1
-
-  ### cross-fitted predictions
-  YgivenX.Pred_D0G0 <- YgivenX.Pred_D1G0 <- YgivenX.Pred_D0G1 <- YgivenX.Pred_D1G1 <- DgivenX.Pred_G0 <- DgivenX.Pred_G1 <- rep(NA, nrow(data))
-
-  pred_data <- data
-  pred_data[,D] <- 0
-  pred_data[,G] <- 0
-  YgivenX.Pred_D0G0[sample1] <- stats::predict(YgivenDGX.Model.sample1, newdata = pred_data[sample2,])
-  YgivenX.Pred_D0G0[sample2] <- stats::predict(YgivenDGX.Model.sample2, newdata = pred_data[sample1,])
-
-  pred_data <- data
-  pred_data[,D] <- 1
-  pred_data[,G] <- 0
-  YgivenX.Pred_D1G0[sample1] <- stats::predict(YgivenDGX.Model.sample1, newdata = pred_data[sample2,])
-  YgivenX.Pred_D1G0[sample2] <- stats::predict(YgivenDGX.Model.sample2, newdata = pred_data[sample1,])
-
-  pred_data <- data
-  pred_data[,D] <- 0
-  pred_data[,G] <- 1
-  YgivenX.Pred_D0G1[sample1] <- stats::predict(YgivenDGX.Model.sample1, newdata = pred_data[sample2,])
-  YgivenX.Pred_D0G1[sample2] <- stats::predict(YgivenDGX.Model.sample2, newdata = pred_data[sample1,])
-
-  pred_data <- data
-  pred_data[,D] <- 1
-  pred_data[,G] <- 1
-  YgivenX.Pred_D1G1[sample1] <- stats::predict(YgivenDGX.Model.sample1, newdata = pred_data[sample2,])
-  YgivenX.Pred_D1G1[sample2] <- stats::predict(YgivenDGX.Model.sample2, newdata = pred_data[sample1,])
-
-  pred_data <- data
-  pred_data[,G] <- 0
-  DgivenX.Pred_G0[sample1] <- stats::predict(DgivenGX.Model.sample1, newdata = pred_data[sample2,], type="prob")[,2]
-  DgivenX.Pred_G0[sample2] <- stats::predict(DgivenGX.Model.sample2, newdata = pred_data[sample1,], type="prob")[,2]
-
-  pred_data <- data
-  pred_data[,G] <- 1
-  DgivenX.Pred_G1[sample1] <- stats::predict(DgivenGX.Model.sample1, newdata = pred_data[sample2,], type="prob")[,2]
-  DgivenX.Pred_G1[sample2] <- stats::predict(DgivenGX.Model.sample2, newdata = pred_data[sample1,], type="prob")[,2]
 
   zero_one <- sum(DgivenX.Pred_G0==0)+sum(DgivenX.Pred_G1==0)+
     sum(DgivenX.Pred_G0==1)+sum(DgivenX.Pred_G1==1)
@@ -299,24 +194,24 @@ cdgd0_ml <- function(Y,D,G,X,data,algorithm,alpha=0.05) {
                       Jackson_reduction)
 
   se_est <- c(total_se,
-          baseline_se,
-          prevalence_se,
-          effect_se,
-          selection_se)
+              baseline_se,
+              prevalence_se,
+              effect_se,
+              selection_se)
 
   se_est_specific <- c(se( data[,G]/mean(data[,G])*(data[,Y]-Y_G1) ),
-                   se( (1-data[,G])/(1-mean(data[,G]))*(data[,Y]-Y_G0) ),
-                   se( data[,G]/mean(data[,G])*(IPO_D0G1-psi_01)),
-                   se( (1-data[,G])/(1-mean(data[,G]))*(IPO_D0G0-psi_00)),
-                   se( data[,G]/mean(data[,G])*(data[,D]-mean(data[,G]/mean(data[,G])*data[,D])) ),
-                   se( (1-data[,G])/(1-mean(data[,G]))*(data[,D]-mean((1-data[,G])/(1-mean(data[,G]))*data[,D])) ),
-                   se( data[,G]/mean(data[,G])*(data[,D]-mean(data[,G]/mean(data[,G])*data[,D])) - (1-data[,G])/(1-mean(data[,G]))*(data[,D]-mean((1-data[,G])/(1-mean(data[,G]))*data[,D])) ),
-                   se( data[,G]/mean(data[,G])*(IPO_D1G1-IPO_D0G1-mean(data[,G]/mean(data[,G])*(IPO_D1G1-IPO_D0G1))) ),
-                   se( (1-data[,G])/(1-mean(data[,G]))*(IPO_D1G0-IPO_D0G0-mean((1-data[,G])/(1-mean(data[,G]))*(IPO_D1G0-IPO_D0G0))) ),
-                   se( data[,G]/mean(data[,G])*(IPO_D1G1-IPO_D0G1-mean(data[,G]/mean(data[,G])*(IPO_D1G1-IPO_D0G1))) - (1-data[,G])/(1-mean(data[,G]))*(IPO_D1G0-IPO_D0G0-mean((1-data[,G])/(1-mean(data[,G]))*(IPO_D1G0-IPO_D0G0))) ),
-                   se( data[,G]/mean(data[,G])*(data[,Y]-Y_G1)-data[,G]/mean(data[,G])*(IPO_D0G1-psi_01)-EIF_dgg(1,1,1)+EIF_dgg(0,1,1) ),
-                   se( (1-data[,G])/(1-mean(data[,G]))*(data[,Y]-Y_G0)-(1-data[,G])/(1-mean(data[,G]))*(IPO_D0G0-psi_00)-EIF_dgg(1,0,0)+EIF_dgg(0,0,0) ),
-                   Jackson_reduction_se)
+                       se( (1-data[,G])/(1-mean(data[,G]))*(data[,Y]-Y_G0) ),
+                       se( data[,G]/mean(data[,G])*(IPO_D0G1-psi_01)),
+                       se( (1-data[,G])/(1-mean(data[,G]))*(IPO_D0G0-psi_00)),
+                       se( data[,G]/mean(data[,G])*(data[,D]-mean(data[,G]/mean(data[,G])*data[,D])) ),
+                       se( (1-data[,G])/(1-mean(data[,G]))*(data[,D]-mean((1-data[,G])/(1-mean(data[,G]))*data[,D])) ),
+                       se( data[,G]/mean(data[,G])*(data[,D]-mean(data[,G]/mean(data[,G])*data[,D])) - (1-data[,G])/(1-mean(data[,G]))*(data[,D]-mean((1-data[,G])/(1-mean(data[,G]))*data[,D])) ),
+                       se( data[,G]/mean(data[,G])*(IPO_D1G1-IPO_D0G1-mean(data[,G]/mean(data[,G])*(IPO_D1G1-IPO_D0G1))) ),
+                       se( (1-data[,G])/(1-mean(data[,G]))*(IPO_D1G0-IPO_D0G0-mean((1-data[,G])/(1-mean(data[,G]))*(IPO_D1G0-IPO_D0G0))) ),
+                       se( data[,G]/mean(data[,G])*(IPO_D1G1-IPO_D0G1-mean(data[,G]/mean(data[,G])*(IPO_D1G1-IPO_D0G1))) - (1-data[,G])/(1-mean(data[,G]))*(IPO_D1G0-IPO_D0G0-mean((1-data[,G])/(1-mean(data[,G]))*(IPO_D1G0-IPO_D0G0))) ),
+                       se( data[,G]/mean(data[,G])*(data[,Y]-Y_G1)-data[,G]/mean(data[,G])*(IPO_D0G1-psi_01)-EIF_dgg(1,1,1)+EIF_dgg(0,1,1) ),
+                       se( (1-data[,G])/(1-mean(data[,G]))*(data[,Y]-Y_G0)-(1-data[,G])/(1-mean(data[,G]))*(IPO_D0G0-psi_00)-EIF_dgg(1,0,0)+EIF_dgg(0,0,0) ),
+                       Jackson_reduction_se)
 
   CI_lower <- point - stats::qnorm(1-alpha/2)*se_est
   CI_upper <- point + stats::qnorm(1-alpha/2)*se_est
