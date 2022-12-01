@@ -21,20 +21,6 @@
 #'
 #' @export
 #'
-#' @examples
-#' data(exp_data)
-#'
-#' set.seed(1)
-#'
-#' results <- cdgd0_ml(
-#' Y="outcome",
-#' D="treatment",
-#' G="group_a",
-#' X=c("confounder","Q"),
-#' data=exp_data,
-#' algorithm="nnet")
-#'
-#' results[[1]]
 
 
 
