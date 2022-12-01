@@ -42,10 +42,10 @@
 #'
 #' message <- utils::capture.output( YgivenDGX.Model.sample1 <- caret::train(stats::as.formula(paste(Y, paste(D,G,paste(X,collapse="+"),sep="+"), sep="~")), data=data[sample1,], method="ranger",
 #'                                                                           trControl=caret::trainControl(method="cv"),
-#'                                                                           tuneGrid=expand.grid(mtry=c(2,4),splitrule=c("variance"),min.node.size=c(100,200))) )
+#'                                                                           tuneGrid=expand.grid(mtry=c(2,4),splitrule=c("variance"),min.node.size=c(50,100))) )
 #' message <- utils::capture.output( YgivenDGX.Model.sample2 <- caret::train(stats::as.formula(paste(Y, paste(D,G,paste(X,collapse="+"),sep="+"), sep="~")), data=data[sample2,], method="ranger",
 #'                                                                           trControl=caret::trainControl(method="cv"),
-#'                                                                           tuneGrid=expand.grid(mtry=c(2,4),splitrule=c("variance"),min.node.size=c(100,200))) )
+#'                                                                           tuneGrid=expand.grid(mtry=c(2,4),splitrule=c("variance"),min.node.size=c(50,100))) )
 #'
 #' ### propensity score model
 #' data[,D] <- as.factor(data[,D])
@@ -53,10 +53,10 @@
 #'
 #' message <- utils::capture.output( DgivenGX.Model.sample1 <- caret::train(stats::as.formula(paste(D, paste(G,paste(X,collapse="+"),sep="+"), sep="~")), data=data[sample1,], method="ranger",
 #'                                                                          trControl=caret::trainControl(method="cv", classProbs=TRUE),
-#'                                                                          tuneGrid=expand.grid(mtry=c(2,4),splitrule=c("gini"),min.node.size=c(100,200))) )
+#'                                                                          tuneGrid=expand.grid(mtry=c(1,2),splitrule=c("gini"),min.node.size=c(50,100))) )
 #' message <- utils::capture.output( DgivenGX.Model.sample2 <- caret::train(stats::as.formula(paste(D, paste(G,paste(X,collapse="+"),sep="+"), sep="~")), data=data[sample2,], method="ranger",
 #'                                                                          trControl=caret::trainControl(method="cv", classProbs=TRUE),
-#'                                                                          tuneGrid=expand.grid(mtry=c(2,4),splitrule=c("gini"),min.node.size=c(100,200))) )
+#'                                                                          tuneGrid=expand.grid(mtry=c(1,2),splitrule=c("gini"),min.node.size=c(50,100))) )
 #'
 #' data[,D] <- as.numeric(data[,D])-1
 #'
