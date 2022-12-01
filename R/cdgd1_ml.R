@@ -45,8 +45,8 @@ cdgd1_ml <- function(Y,D,G,X,Q,data,algorithm,alpha=0.05) {
 
   data <- as.data.frame(data)
 
-### estimate the nuisance functions within each group, so that the final estimates are independent across groups
-  sample1 <- sample(nrow(data), floor(nrow(data)/2), replace=F)
+### estimate the nuisance functions with cross-fitting
+  sample1 <- sample(nrow(data), floor(nrow(data)/2), replace=FALSE)
   sample2 <- setdiff(1:nrow(data), sample1)
 
 ### outcome regression model

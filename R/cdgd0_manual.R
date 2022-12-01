@@ -3,7 +3,9 @@
 
 #' Perform unconditional decomposition using conditional expectations predicted beforehand.
 #'
-#' The conditional expectations, i.e., the nuisance terms, should be estimated using cross-fitting if Donsker class is not assumed.
+#' This function gives user full control over the estimation of the conditional expectations, i.e., the nuisance terms.
+#' For the unconditional decomposition, six nuisance terms need to be estimated.
+#' The nuisance terms should be estimated using cross-fitting if Donsker class is not assumed.
 #'
 #' @param Y Outcome. The name of a continuous variable.
 #' @param D Treatment status. The name of a binary numeric variable taking values of 0 and 1.
@@ -21,7 +23,90 @@
 #'
 #' @export
 #'
-
+#' @examples
+#' data(exp_data)
+#'
+#' Y="outcome"
+#' D="treatment"
+#' G="group_a"
+#' X=c("confounder","Q")
+#' data=exp_data
+#'
+#' set.seed(1)
+#'
+#' ### estimate the nuisance functions with cross-fitting
+#' sample1 <- sample(nrow(data), floor(nrow(data)/2), replace=FALSE)
+#' sample2 <- setdiff(1:nrow(data), sample1)
+#'
+#' ### outcome regression model
+#'
+#' message <- utils::capture.output( YgivenDGX.Model.sample1 <- caret::train(stats::as.formula(paste(Y, paste(D,G,paste(X,collapse="+"),sep="+"), sep="~")), data=data[sample1,], method="ranger",
+#'                                                                           trControl=caret::trainControl(method="cv"),
+#'                                                                           tuneGrid=expand.grid(mtry=c(2,4),splitrule=c("variance"),min.node.size=c(100,200))) )
+#' message <- utils::capture.output( YgivenDGX.Model.sample2 <- caret::train(stats::as.formula(paste(Y, paste(D,G,paste(X,collapse="+"),sep="+"), sep="~")), data=data[sample2,], method="ranger",
+#'                                                                           trControl=caret::trainControl(method="cv"),
+#'                                                                           tuneGrid=expand.grid(mtry=c(2,4),splitrule=c("variance"),min.node.size=c(100,200))) )
+#'
+#' ### propensity score model
+#' data[,D] <- as.factor(data[,D])
+#' levels(data[,D]) <- c("D0","D1")  # necessary for caret implementation of ranger
+#'
+#' message <- utils::capture.output( DgivenGX.Model.sample1 <- caret::train(stats::as.formula(paste(D, paste(G,paste(X,collapse="+"),sep="+"), sep="~")), data=data[sample1,], method="ranger",
+#'                                                                          trControl=caret::trainControl(method="cv", classProbs=TRUE),
+#'                                                                          tuneGrid=expand.grid(mtry=c(2,4),splitrule=c("gini"),min.node.size=c(100,200))) )
+#' message <- utils::capture.output( DgivenGX.Model.sample2 <- caret::train(stats::as.formula(paste(D, paste(G,paste(X,collapse="+"),sep="+"), sep="~")), data=data[sample2,], method="ranger",
+#'                                                                          trControl=caret::trainControl(method="cv", classProbs=TRUE),
+#'                                                                          tuneGrid=expand.grid(mtry=c(2,4),splitrule=c("gini"),min.node.size=c(100,200))) )
+#'
+#' data[,D] <- as.numeric(data[,D])-1
+#'
+#' ### cross-fitted predictions
+#' YgivenX.Pred_D0G0 <- YgivenX.Pred_D1G0 <- YgivenX.Pred_D0G1 <- YgivenX.Pred_D1G1 <- DgivenX.Pred_G0 <- DgivenX.Pred_G1 <- rep(NA, nrow(data))
+#'
+#' pred_data <- data
+#' pred_data[,D] <- 0
+#' pred_data[,G] <- 0
+#' YgivenX.Pred_D0G0[sample1] <- stats::predict(YgivenDGX.Model.sample1, newdata = pred_data[sample2,])
+#' YgivenX.Pred_D0G0[sample2] <- stats::predict(YgivenDGX.Model.sample2, newdata = pred_data[sample1,])
+#'
+#' pred_data <- data
+#' pred_data[,D] <- 1
+#' pred_data[,G] <- 0
+#' YgivenX.Pred_D1G0[sample1] <- stats::predict(YgivenDGX.Model.sample1, newdata = pred_data[sample2,])
+#' YgivenX.Pred_D1G0[sample2] <- stats::predict(YgivenDGX.Model.sample2, newdata = pred_data[sample1,])
+#'
+#' pred_data <- data
+#' pred_data[,D] <- 0
+#' pred_data[,G] <- 1
+#' YgivenX.Pred_D0G1[sample1] <- stats::predict(YgivenDGX.Model.sample1, newdata = pred_data[sample2,])
+#' YgivenX.Pred_D0G1[sample2] <- stats::predict(YgivenDGX.Model.sample2, newdata = pred_data[sample1,])
+#'
+#' pred_data <- data
+#' pred_data[,D] <- 1
+#' pred_data[,G] <- 1
+#' YgivenX.Pred_D1G1[sample1] <- stats::predict(YgivenDGX.Model.sample1, newdata = pred_data[sample2,])
+#' YgivenX.Pred_D1G1[sample2] <- stats::predict(YgivenDGX.Model.sample2, newdata = pred_data[sample1,])
+#'
+#' pred_data <- data
+#' pred_data[,G] <- 0
+#' DgivenX.Pred_G0[sample1] <- stats::predict(DgivenGX.Model.sample1, newdata = pred_data[sample2,], type="prob")[,2]
+#' DgivenX.Pred_G0[sample2] <- stats::predict(DgivenGX.Model.sample2, newdata = pred_data[sample1,], type="prob")[,2]
+#'
+#' pred_data <- data
+#' pred_data[,G] <- 1
+#' DgivenX.Pred_G1[sample1] <- stats::predict(DgivenGX.Model.sample1, newdata = pred_data[sample2,], type="prob")[,2]
+#' DgivenX.Pred_G1[sample2] <- stats::predict(DgivenGX.Model.sample2, newdata = pred_data[sample1,], type="prob")[,2]
+#'
+#' results <- cdgd0_manual(Y=Y,D=D,G=G,
+#'                        YgivenX.Pred_D0G0=YgivenX.Pred_D0G0,
+#'                        YgivenX.Pred_D1G0=YgivenX.Pred_D1G0,
+#'                        YgivenX.Pred_D0G1=YgivenX.Pred_D0G1,
+#'                        YgivenX.Pred_D1G1=YgivenX.Pred_D1G1,
+#'                        DgivenX.Pred_G0=DgivenX.Pred_G0,
+#'                        DgivenX.Pred_G1=DgivenX.Pred_G1,
+#'                        data=data)
+#'
+#' results
 
 
 
