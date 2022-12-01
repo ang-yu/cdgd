@@ -24,7 +24,7 @@ cdgd1_ml(Y, D, G, X, Q, data, algorithm, alpha = 0.05)
 \item{alpha}{1-alpha confidence interval.}
 }
 \value{
-A list of estimates.
+A dataframe of estimates.
 }
 \description{
 Perform conditional decomposition via Machine Learning

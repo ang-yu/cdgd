@@ -22,7 +22,7 @@ cdgd1_pa(Y, D, G, X, Q, data, alpha = 0.05)
 \item{alpha}{1-alpha confidence interval.}
 }
 \value{
-A list of estimates.
+A dataframe of estimates.
 }
 \description{
 Perform conditional decomposition via parametric models

@@ -3,7 +3,7 @@
 
 #' Perform unconditional decomposition using conditional expectations predicted beforehand.
 #'
-#' The conditional expectations, i.e., the nuisance terms, should be estimated using cross-fitting.
+#' The conditional expectations, i.e., the nuisance terms, should be estimated using cross-fitting if Donsker class is not assumed.
 #'
 #' @param Y Outcome. The name of a continuous variable.
 #' @param D Treatment status. The name of a binary numeric variable taking values of 0 and 1.
