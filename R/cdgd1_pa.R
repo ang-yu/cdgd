@@ -204,6 +204,8 @@ cdgd1_pa <- function(Y,D,G,X,Q,data,alpha=0.05) {
   Q_dist <- psi_dggg(1,0,1,1)-psi_dggg(0,0,1,1)-psi_dggg(1,0,1,0)+psi_dggg(0,0,1,0)
   cond_selection <- total-baseline-cond_prevalence-cond_effect-Q_dist
 
+  cond_Jackson_reduction <- psi_00+psi_dggg(1,0,1,0)-psi_dggg(0,0,1,0)-mean((1-data[,G])/(1-mean(data[,G]))*data[,Y])
+
   ### standard error estimates
   se <- function(x) {sqrt( mean(x^2)/nrow(data) )}
   total_se <- se( data[,G]/mean(data[,G])*(data[,Y]-Y_G1) - (1-data[,G])/(1-mean(data[,G]))*(data[,Y]-Y_G0) )
@@ -263,19 +265,23 @@ cdgd1_pa <- function(Y,D,G,X,Q,data,alpha=0.05) {
                              ( EIF_dggg(1,1,1,1)-EIF_dggg(0,1,1,1)-EIF_dggg(1,0,1,1)+EIF_dggg(0,0,1,1) ) -
                              ( EIF_dggg(1,0,1,1)-EIF_dggg(0,0,1,1)-EIF_dggg(1,0,1,0)+EIF_dggg(0,0,1,0) ))
 
+  cond_Jackson_reduction_se <- se( (1-data[,G])/(1-mean(data[,G]))*(IPO_D0G0-psi_00)+EIF_dggg(1,0,1,0)-EIF_dggg(0,0,1,0)-(1-data[,G])/(1-mean(data[,G]))*(data[,Y]-Y_G0) )
+
   ### output results
   point <- c(total,
              baseline,
              cond_prevalence,
              cond_effect,
              cond_selection,
-             Q_dist)
+             Q_dist,
+             cond_Jackson_reduction)
   se <- c(total_se,
           baseline_se,
           cond_prevalence_se,
           cond_effect_se,
           cond_selection_se,
-          Q_dist_se)
+          Q_dist_se,
+          cond_Jackson_reduction_se)
   CI_lower <- point - stats::qnorm(1-alpha/2)*se
   CI_upper <- point + stats::qnorm(1-alpha/2)*se
   names <- c("total",
@@ -283,7 +289,8 @@ cdgd1_pa <- function(Y,D,G,X,Q,data,alpha=0.05) {
              "conditional prevalence",
              "conditional effect",
              "conditional selection",
-             "Q distribution")
+             "Q distribution",
+             "conditional Jackson reduction")
 
   output <- as.data.frame(cbind(names, point,se,CI_lower,CI_upper))
 

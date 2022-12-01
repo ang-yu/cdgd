@@ -238,6 +238,8 @@ cdgd0_ml <- function(Y,D,G,X,data,algorithm,alpha=0.05) {
   effect <- psi_dgg(1,1,1)-psi_dgg(0,1,1)-psi_dgg(1,0,1)+psi_dgg(0,0,1)
   selection <- total-baseline-prevalence-effect
 
+  Jackson_reduction <- psi_00+psi_dgg(1,0,1)-psi_dgg(0,0,1)-mean((1-data[,G])/(1-mean(data[,G]))*data[,Y])
+
   ### standard error estimates
   se <- function(x) {sqrt( mean(x^2)/nrow(data) )}
   total_se <- se( data[,G]/mean(data[,G])*(data[,Y]-Y_G1) - (1-data[,G])/(1-mean(data[,G]))*(data[,Y]-Y_G0) )
@@ -285,6 +287,8 @@ cdgd0_ml <- function(Y,D,G,X,data,algorithm,alpha=0.05) {
                         ( EIF_dgg(1,0,1)-EIF_dgg(1,0,0)-EIF_dgg(0,0,1)+EIF_dgg(0,0,0) ) -
                         ( EIF_dgg(1,1,1)-EIF_dgg(0,1,1)-EIF_dgg(1,0,1)+EIF_dgg(0,0,1) ) )
 
+  Jackson_reduction_se <- se( (1-data[,G])/(1-mean(data[,G]))*(IPO_D0G0-psi_00)+EIF_dgg(1,0,1)-EIF_dgg(0,0,1)-(1-data[,G])/(1-mean(data[,G]))*(data[,Y]-Y_G0) )
+
   ### output results
   point <- c(total,
              baseline,
@@ -303,7 +307,8 @@ cdgd0_ml <- function(Y,D,G,X,data,algorithm,alpha=0.05) {
                       mean((1-data[,G])/(1-mean(data[,G]))*(IPO_D1G0-IPO_D0G0)),
                       mean(data[,G]/mean(data[,G])*(IPO_D1G1-IPO_D0G1)) - mean((1-data[,G])/(1-mean(data[,G]))*(IPO_D1G0-IPO_D0G0)),
                       Y_G1-psi_01-psi_dgg(1,1,1)+psi_dgg(0,1,1),
-                      Y_G0-psi_00-psi_dgg(1,0,0)+psi_dgg(0,0,0))
+                      Y_G0-psi_00-psi_dgg(1,0,0)+psi_dgg(0,0,0),
+                      Jackson_reduction)
 
   se_est <- c(total_se,
           baseline_se,
@@ -322,7 +327,8 @@ cdgd0_ml <- function(Y,D,G,X,data,algorithm,alpha=0.05) {
                    se( (1-data[,G])/(1-mean(data[,G]))*(IPO_D1G0-IPO_D0G0-mean((1-data[,G])/(1-mean(data[,G]))*(IPO_D1G0-IPO_D0G0))) ),
                    se( data[,G]/mean(data[,G])*(IPO_D1G1-IPO_D0G1-mean(data[,G]/mean(data[,G])*(IPO_D1G1-IPO_D0G1))) - (1-data[,G])/(1-mean(data[,G]))*(IPO_D1G0-IPO_D0G0-mean((1-data[,G])/(1-mean(data[,G]))*(IPO_D1G0-IPO_D0G0))) ),
                    se( data[,G]/mean(data[,G])*(data[,Y]-Y_G1)-data[,G]/mean(data[,G])*(IPO_D0G1-psi_01)-EIF_dgg(1,1,1)+EIF_dgg(0,1,1) ),
-                   se( (1-data[,G])/(1-mean(data[,G]))*(data[,Y]-Y_G0)-(1-data[,G])/(1-mean(data[,G]))*(IPO_D0G0-psi_00)-EIF_dgg(1,0,0)+EIF_dgg(0,0,0) ) )
+                   se( (1-data[,G])/(1-mean(data[,G]))*(data[,Y]-Y_G0)-(1-data[,G])/(1-mean(data[,G]))*(IPO_D0G0-psi_00)-EIF_dgg(1,0,0)+EIF_dgg(0,0,0) ),
+                   Jackson_reduction_se)
 
   CI_lower <- point - stats::qnorm(1-alpha/2)*se_est
   CI_upper <- point + stats::qnorm(1-alpha/2)*se_est
@@ -347,7 +353,8 @@ cdgd0_ml <- function(Y,D,G,X,data,algorithm,alpha=0.05) {
                       "ATE_G0",
                       "ATE_G1-ATE_G0",
                       "Cov_G1",
-                      "Cov_G0")
+                      "Cov_G0",
+                      "Jackson reduction")
 
   results <- as.data.frame(cbind(names,point,se_est,CI_lower,CI_upper))
   results_specific <- as.data.frame(cbind(names_specific, point_specific,se_est_specific,CI_lower_specific,CI_upper_specific))
