@@ -13,7 +13,7 @@ disparities of Yu and Elwert (2022).
 devtools::install_github("ang-yu/cdgd")
 ```
 
-## Example
+## Examples
 
 ``` r
 library(cdgd)
@@ -30,7 +30,7 @@ head(exp_data)
 #> 547 0.1912013         0 -0.02438458 -0.3704544       0
 ```
 
-### Use cdgd0_ml or cdgd0_pa to get unconditional decomposition
+### Use cdgd0_ml, cdgd0_pa, or cdgd0_manual to get unconditional decomposition
 
 ``` r
 results0 <- cdgd0_pa(Y="outcome",D="treatment",G="group_a",X=c("confounder","Q"),data=exp_data,alpha=0.05)
@@ -50,19 +50,20 @@ results0$results
 #> 5  0.134704052831857
 ```
 
-### Use cdgd1_ml or cdgd1_pa to get conditional decomposition
+### Use cdgd1_ml, cdgd1_pa, or cdgd1_manual to get conditional decomposition
 
 ``` r
 results1 <- cdgd1_pa(Y="outcome",D="treatment",G="group_a",X="confounder",Q="Q",data=exp_data,alpha=0.05)
 
 results1
-#>                    names              point                 se
-#> 1                  total  0.267479354808872 0.0389768846815615
-#> 2               baseline  0.039997497539402 0.0129327144177851
-#> 3 conditional prevalence  0.209003240763591 0.0338235692692773
-#> 4     conditional effect 0.0661663537818592 0.0778173202907227
-#> 5  conditional selection 0.0887548333346887 0.0588644397620432
-#> 6         Q distribution -0.136442570610669 0.0726359768772961
+#>                           names              point                 se
+#> 1                         total  0.267479354808872 0.0389768846815615
+#> 2                      baseline  0.039997497539402 0.0129327144177851
+#> 3        conditional prevalence  0.209003240763591 0.0338235692692773
+#> 4            conditional effect 0.0661663537818592 0.0778173202907227
+#> 5         conditional selection 0.0887548333346887 0.0588644397620432
+#> 6                Q distribution -0.136442570610669 0.0726359768772961
+#> 7 conditional Jackson reduction  0.239713914203476 0.0352865635907051
 #>              CI_lower            CI_upper
 #> 1   0.191086064603441   0.343872645014304
 #> 2  0.0146498430582014  0.0653451520206026
@@ -70,4 +71,5 @@ results1
 #> 4 -0.0863527913613753   0.218685498925094
 #> 5 -0.0266173485690436   0.204127015238421
 #> 6  -0.278806469272053 0.00592132805071557
+#> 7   0.170553520427511    0.30887430797944
 ```
