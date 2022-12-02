@@ -25,7 +25,7 @@
 #' Y="outcome",
 #' D="treatment",
 #' G="group_a",
-#' X=c("confounder","Q"),
+#' X="confounder",
 #' Q="Q",
 #' data=exp_data,
 #' algorithm="nnet")

@@ -1,9 +1,7 @@
 
-
-
-#' Perform unconditional decomposition using conditional expectations predicted beforehand.
+#' Perform unconditional decomposition using nuisances predicted beforehand
 #'
-#' This function gives user full control over the estimation of the conditional expectations, i.e., the nuisance terms.
+#' This function gives user full control over the estimation of the nuisance terms.
 #' For the unconditional decomposition, six nuisance terms need to be estimated.
 #' The nuisance terms should be estimated using cross-fitting if Donsker class is not assumed.
 #'

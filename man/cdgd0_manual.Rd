@@ -2,7 +2,7 @@
 % Please edit documentation in R/cdgd0_manual.R
 \name{cdgd0_manual}
 \alias{cdgd0_manual}
-\title{Perform unconditional decomposition using conditional expectations predicted beforehand.}
+\title{Perform unconditional decomposition using nuisances predicted beforehand}
 \usage{
 cdgd0_manual(
   Y,
@@ -45,7 +45,7 @@ cdgd0_manual(
 A list of estimates.
 }
 \description{
-This function gives user full control over the estimation of the conditional expectations, i.e., the nuisance terms.
+This function gives user full control over the estimation of the nuisance terms.
 For the unconditional decomposition, six nuisance terms need to be estimated.
 The nuisance terms should be estimated using cross-fitting if Donsker class is not assumed.
 }
