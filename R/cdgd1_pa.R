@@ -75,24 +75,42 @@ cdgd1_pa <- function(Y,D,G,X,Q,data,alpha=0.05) {
     sum(DgivenXQ.Pred_G0==1)+sum(DgivenXQ.Pred_G1==1)
   if ( zero_one>0 ) {
     stop(
-      paste("D given X and are exact 0 or 1 in", zero_one, "cases.", sep=" "),
+      paste("D given X and Q are exact 0 or 1 in", zero_one, "cases.", sep=" "),
       call. = FALSE
     )
   }
 
   ### Estimate E(Y_d | Q,g)
-  data_temp <- data[,c(G,Q)]
+  YgivenGXQ.Pred_D1 <- YgivenGXQ.Pred_D0 <- DgivenXQ.Pred_G0 <- DgivenXQ.Pred_G1 <- rep(NA, nrow(data))
 
   pred_data <- data
   pred_data[,D] <- 1
-  data_temp$YgivenGXQ.Pred_D0_ncf <- stats::predict(YgivenDGXQ.Model, newdata = pred_data)
+  YgivenGXQ.Pred_D1 <- stats::predict(YgivenDGXQ.Model, newdata = pred_data)
 
   pred_data <- data
   pred_data[,D] <- 0
-  data_temp$YgivenGXQ.Pred_D1_ncf <- stats::predict(YgivenDGXQ.Model, newdata = pred_data)
+  YgivenGXQ.Pred_D0 <- stats::predict(YgivenDGXQ.Model, newdata = pred_data)
 
-  Y0givenGQ.Model <- stats::lm(stats::as.formula(paste("YgivenGXQ.Pred_D0_ncf", paste(G,Q,sep="*"), sep="~")), data=data_temp)
-  Y1givenGQ.Model <- stats::lm(stats::as.formula(paste("YgivenGXQ.Pred_D1_ncf", paste(G,Q,sep="*"), sep="~")), data=data_temp)
+  DgivenXQ.Pred <- stats::predict(DgivenGXQ.Model, newdata = pred_data, type="prob")[,2]
+
+  zero_one <- sum(DgivenXQ.Pred==0)+sum(DgivenXQ.Pred==1)
+  if ( zero_one>0 ) {
+    stop(
+      paste("D given X and Q are exact 0 or 1 in", zero_one, "cases.", sep=" "),
+      call. = FALSE
+    )
+  }
+
+  # IPOs for modelling E(Y_d | Q,g)
+  IPO_D0 <- (1-data[,D])/(1-DgivenXQ.Pred)/mean((1-data[,D])/(1-DgivenXQ.Pred))*(data[,Y]-YgivenGXQ.Pred_D0) + YgivenGXQ.Pred_D0
+  IPO_D1 <- data[,D]/DgivenXQ.Pred/(mean(data[,D]/DgivenXQ.Pred))*(data[,Y]-YgivenGXQ.Pred_D1) + YgivenGXQ.Pred_D1
+
+  data_temp <- data[,c(G,Q)]
+  data_temp$IPO_D0 <- IPO_D0
+  data_temp$IPO_D1 <- IPO_D1
+
+  Y0givenGQ.Model <- stats::lm(stats::as.formula(paste("IPO_D0", paste(G,Q,sep="*"), sep="~")), data=data_temp)
+  Y1givenGQ.Model <- stats::lm(stats::as.formula(paste("IPO_D1", paste(G,Q,sep="*"), sep="~")), data=data_temp)
 
   Y0givenQ.Pred_G0 <- Y0givenQ.Pred_G1 <- Y1givenQ.Pred_G0 <- Y1givenQ.Pred_G1 <- rep(NA, nrow(data))
 
