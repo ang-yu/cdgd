@@ -81,7 +81,7 @@ cdgd1_pa <- function(Y,D,G,X,Q,data,alpha=0.05) {
   }
 
   ### Estimate E(Y_d | Q,g)
-  YgivenGXQ.Pred_D1 <- YgivenGXQ.Pred_D0 <- DgivenXQ.Pred_G0 <- DgivenXQ.Pred_G1 <- rep(NA, nrow(data))
+  YgivenGXQ.Pred_D1 <- YgivenGXQ.Pred_D0 <- DgivenXQ.Pred <- rep(NA, nrow(data))
 
   pred_data <- data
   pred_data[,D] <- 1
@@ -91,7 +91,7 @@ cdgd1_pa <- function(Y,D,G,X,Q,data,alpha=0.05) {
   pred_data[,D] <- 0
   YgivenGXQ.Pred_D0 <- stats::predict(YgivenDGXQ.Model, newdata = pred_data)
 
-  DgivenXQ.Pred <- stats::predict(DgivenGXQ.Model, newdata = pred_data, type="prob")[,2]
+  DgivenXQ.Pred <- stats::predict(DgivenGXQ.Model, newdata = pred_data, type="response")
 
   zero_one <- sum(DgivenXQ.Pred==0)+sum(DgivenXQ.Pred==1)
   if ( zero_one>0 ) {

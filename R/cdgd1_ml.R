@@ -159,7 +159,7 @@ cdgd1_ml <- function(Y,D,G,X,Q,data,algorithm,alpha=0.05) {
   }
 
 ### Estimate E(Y_d | Q,g)
-  YgivenGXQ.Pred_D1_ncf <- YgivenGXQ.Pred_D0_ncf <- DgivenXQ.Pred_G0_ncf <- DgivenXQ.Pred_G1_ncf <- rep(NA, nrow(data)) # ncf stands for non-cross-fitted
+  YgivenGXQ.Pred_D1_ncf <- YgivenGXQ.Pred_D0_ncf <- DgivenXQ.Pred_ncf <- DgivenXQ.Pred_ncf <- rep(NA, nrow(data)) # ncf stands for non-cross-fitted
 
   pred_data <- data
   pred_data[,D] <- 1
@@ -174,8 +174,7 @@ cdgd1_ml <- function(Y,D,G,X,Q,data,algorithm,alpha=0.05) {
   DgivenXQ.Pred_ncf[sample1] <- stats::predict(DgivenGXQ.Model.sample1, newdata = pred_data[sample1,], type="prob")[,2]
   DgivenXQ.Pred_ncf[sample2] <- stats::predict(DgivenGXQ.Model.sample2, newdata = pred_data[sample2,], type="prob")[,2]
 
-  zero_one <- sum(DgivenXQ.Pred_G0_ncf==0)+sum(DgivenXQ.Pred_G1_ncf==0)+
-    sum(DgivenXQ.Pred_G0_ncf==1)+sum(DgivenXQ.Pred_G1_ncf==1)
+  zero_one <- sum(DgivenXQ.Pred_ncf==0)+sum(DgivenXQ.Pred_ncf==1)
   if ( zero_one>0 ) {
     stop(
       paste("D given X and Q are exact 0 or 1 in", zero_one, "cases.", sep=" "),

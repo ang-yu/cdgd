@@ -145,8 +145,7 @@ DgivenXQ.Pred_G1[sample1] <- stats::predict(DgivenGXQ.Model.sample1, newdata = p
 DgivenXQ.Pred_G1[sample2] <- stats::predict(DgivenGXQ.Model.sample2, newdata = pred_data[sample1,], type="prob")[,2]
 
 ### Estimate E(Y_d | Q,g)
-YgivenGXQ.Pred_D1_ncf <- YgivenGXQ.Pred_D0_ncf <- rep(NA, nrow(data)) # ncf stands for non-cross-fitted
-
+YgivenGXQ.Pred_D1_ncf <- YgivenGXQ.Pred_D0_ncf <- DgivenXQ.Pred_ncf <- rep(NA, nrow(data)) # ncf stands for non-cross-fitted
 pred_data <- data
 pred_data[,D] <- 1
 YgivenGXQ.Pred_D1_ncf[sample1] <- stats::predict(YgivenDGXQ.Model.sample1, newdata = pred_data[sample1,])
@@ -157,20 +156,35 @@ pred_data[,D] <- 0
 YgivenGXQ.Pred_D0_ncf[sample1] <- stats::predict(YgivenDGXQ.Model.sample1, newdata = pred_data[sample1,])
 YgivenGXQ.Pred_D0_ncf[sample2] <- stats::predict(YgivenDGXQ.Model.sample2, newdata = pred_data[sample2,])
 
-data_temp <- data[,c(G,Q)]
-data_temp$YgivenGXQ.Pred_D0_ncf <- YgivenGXQ.Pred_D0_ncf
-data_temp$YgivenGXQ.Pred_D1_ncf <- YgivenGXQ.Pred_D1_ncf
+DgivenXQ.Pred_ncf[sample1] <- stats::predict(DgivenGXQ.Model.sample1, newdata = pred_data[sample1,], type="prob")[,2]
+DgivenXQ.Pred_ncf[sample2] <- stats::predict(DgivenGXQ.Model.sample2, newdata = pred_data[sample2,], type="prob")[,2]
 
-message <- utils::capture.output( Y0givenGQ.Model.sample1 <- caret::train(stats::as.formula(paste("YgivenGXQ.Pred_D0_ncf", paste(G,Q,sep="+"), sep="~")), data=data_temp[sample1,], method="ranger",
+zero_one <- sum(DgivenXQ.Pred_ncf==0)+sum(DgivenXQ.Pred_ncf==1)
+if ( zero_one>0 ) {
+  stop(
+    paste("D given X and Q are exact 0 or 1 in", zero_one, "cases.", sep=" "),
+    call. = FALSE
+  )
+}
+
+# IPOs for modelling E(Y_d | Q,g)
+IPO_D0_ncf <- (1-data[,D])/(1-DgivenXQ.Pred_ncf)/mean((1-data[,D])/(1-DgivenXQ.Pred_ncf))*(data[,Y]-YgivenGXQ.Pred_D0_ncf) + YgivenGXQ.Pred_D0_ncf
+IPO_D1_ncf <- data[,D]/DgivenXQ.Pred_ncf/(mean(data[,D]/DgivenXQ.Pred_ncf))*(data[,Y]-YgivenGXQ.Pred_D1_ncf) + YgivenGXQ.Pred_D1_ncf
+
+data_temp <- data[,c(G,Q)]
+data_temp$IPO_D0_ncf <- IPO_D0_ncf
+data_temp$IPO_D1_ncf <- IPO_D1_ncf
+
+message <- utils::capture.output( Y0givenGQ.Model.sample1 <- caret::train(stats::as.formula(paste("IPO_D0_ncf", paste(G,Q,sep="+"), sep="~")), data=data_temp[sample1,], method="ranger",
                                                                           trControl=caret::trainControl(method="cv"),
                                                                           tuneGrid=expand.grid(mtry=1,splitrule=c("variance"),min.node.size=c(25,50))) )
-message <- utils::capture.output( Y0givenGQ.Model.sample2 <- caret::train(stats::as.formula(paste("YgivenGXQ.Pred_D0_ncf", paste(G,Q,sep="+"), sep="~")), data=data_temp[sample2,], method="ranger",
+message <- utils::capture.output( Y0givenGQ.Model.sample2 <- caret::train(stats::as.formula(paste("IPO_D0_ncf", paste(G,Q,sep="+"), sep="~")), data=data_temp[sample2,], method="ranger",
                                                                           trControl=caret::trainControl(method="cv"),
                                                                           tuneGrid=expand.grid(mtry=1,splitrule=c("variance"),min.node.size=c(25,50))) )
-message <- utils::capture.output( Y1givenGQ.Model.sample1 <- caret::train(stats::as.formula(paste("YgivenGXQ.Pred_D1_ncf", paste(G,Q,sep="+"), sep="~")), data=data_temp[sample1,], method="ranger",
+message <- utils::capture.output( Y1givenGQ.Model.sample1 <- caret::train(stats::as.formula(paste("IPO_D1_ncf", paste(G,Q,sep="+"), sep="~")), data=data_temp[sample1,], method="ranger",
                                                                           trControl=caret::trainControl(method="cv"),
                                                                           tuneGrid=expand.grid(mtry=1,splitrule=c("variance"),min.node.size=c(25,50))) )
-message <- utils::capture.output( Y1givenGQ.Model.sample2 <- caret::train(stats::as.formula(paste("YgivenGXQ.Pred_D1_ncf", paste(G,Q,sep="+"), sep="~")), data=data_temp[sample2,], method="ranger",
+message <- utils::capture.output( Y1givenGQ.Model.sample2 <- caret::train(stats::as.formula(paste("IPO_D1_ncf", paste(G,Q,sep="+"), sep="~")), data=data_temp[sample2,], method="ranger",
                                                                           trControl=caret::trainControl(method="cv"),
                                                                           tuneGrid=expand.grid(mtry=1,splitrule=c("variance"),min.node.size=c(25,50))) )
 
