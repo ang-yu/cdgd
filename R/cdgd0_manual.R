@@ -145,6 +145,9 @@ cdgd0_manual <- function(Y,D,G,YgivenX.Pred_D0G0,YgivenX.Pred_D1G0,YgivenX.Pred_
   ### The one-step estimate of \xi_{dg} and \xi_{dgg'}
   psi_00 <- mean( (1-data[,G])/(1-mean(data[,G]))*IPO_D0G0 )
   psi_01 <- mean( data[,G]/mean(data[,G])*IPO_D0G1 )
+  psi_10 <- mean( (1-data[,G])/(1-mean(data[,G]))*IPO_D1G0 )
+  psi_11 <- mean( data[,G]/mean(data[,G])*IPO_D1G1 )
+
   # Note that this is basically DML2. We could also use DML1:
   #psi_00_S1 <- mean( (1-data[sample1,G])/(1-mean(data[sample1,G]))*IPO_D0G0[sample1] )     # sample 1 estimate
   #psi_00_S2 <- mean( (1-data[sample2,G])/(1-mean(data[sample2,G]))*IPO_D0G0[sample2] )     # sample 2 estimate
@@ -168,8 +171,7 @@ cdgd0_manual <- function(Y,D,G,YgivenX.Pred_D0G0,YgivenX.Pred_D1G0,YgivenX.Pred_
       IPO_arg <- IPO_D1G1
       YgivenX.Pred_arg <- YgivenX.Pred_D1G1}
 
-    psi_dgg <- mean( as.numeric(data[,G]==g1)/mean(data[,G]==g1)*IPO_arg*mean(as.numeric(data[,G]==g2)/mean(data[,G]==g2)*data[,D]) +
-                       as.numeric(data[,G]==g2)/mean(data[,G]==g2)*mean(as.numeric(data[,G]==g1)/mean(data[,G]==g1)*YgivenX.Pred_arg)*(data[,D]-mean(as.numeric(data[,G]==g2)/mean(data[,G]==g2)*data[,D])) )
+    psi_dgg <- mean( as.numeric(data[,G]==g1)/mean(data[,G]==g1)*IPO_arg*mean(as.numeric(data[,G]==g2)/mean(data[,G]==g2)*data[,D]) )
     # Note that this is basically DML2. We could also use DML1:
     #psi_dgg_S1 <- mean( as.numeric(data[sample1,G]==g1)/mean(data[sample1,G]==g1)*IPO_arg[sample1]*mean(as.numeric(data[sample1,G]==g2)/mean(data[sample1,G]==g2)*data[sample1,D]) +
     #                      as.numeric(data[sample1,G]==g2)/mean(data[sample1,G]==g2)*mean(as.numeric(data[sample1,G]==g1)/mean(data[sample1,G]==g1)*YgivenX.Pred_arg)*(data[sample1,D]-mean(as.numeric(data[sample1,G]==g2)/mean(data[sample1,G]==g2)*data[sample1,D])) )
@@ -204,20 +206,24 @@ cdgd0_manual <- function(Y,D,G,YgivenX.Pred_D0G0,YgivenX.Pred_D1G0,YgivenX.Pred_
   EIF_dgg <- function(d,g1,g2) {
     if (d==0 & g1==0) {
       IPO_arg <- IPO_D0G0
-      YgivenX.Pred_arg <- YgivenX.Pred_D0G0}
+      YgivenX.Pred_arg <- YgivenX.Pred_D0G0
+      psi_arg <- psi_00}
     if (d==1 & g1==0) {
       IPO_arg <- IPO_D1G0
-      YgivenX.Pred_arg <- YgivenX.Pred_D1G0}
+      YgivenX.Pred_arg <- YgivenX.Pred_D1G0
+      psi_arg <- psi_10}
     if (d==0 & g1==1) {
       IPO_arg <- IPO_D0G1
-      YgivenX.Pred_arg <- YgivenX.Pred_D0G1}
+      YgivenX.Pred_arg <- YgivenX.Pred_D0G1
+      psi_arg <- psi_01}
     if (d==1 & g1==1) {
       IPO_arg <- IPO_D1G1
-      YgivenX.Pred_arg <- YgivenX.Pred_D1G1}
+      YgivenX.Pred_arg <- YgivenX.Pred_D1G1
+      psi_arg <- psi_11}
 
     return(
       as.numeric(data[,G]==g1)/mean(data[,G]==g1)*IPO_arg*mean(as.numeric(data[,G]==g2)/mean(data[,G]==g2)*data[,D]) +
-        as.numeric(data[,G]==g2)/mean(data[,G]==g2)*mean(as.numeric(data[,G]==g1)/mean(data[,G]==g1)*YgivenX.Pred_arg)*(data[,D]-mean(as.numeric(data[,G]==g2)/mean(data[,G]==g2)*data[,D])) -
+        as.numeric(data[,G]==g2)/mean(data[,G]==g2)*psi_arg*(data[,D]-mean(as.numeric(data[,G]==g2)/mean(data[,G]==g2)*data[,D])) -
         as.numeric(data[,G]==g1)/mean(data[,G]==g1)*psi_dgg(d,g1,g2)
     )
   }
