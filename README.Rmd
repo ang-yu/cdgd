@@ -27,7 +27,7 @@ devtools::install_github("ang-yu/cdgd")
 ## Examples 
   
 ```{r example}
-library(cdgd) 
+library(cdgd)  
 
 # load the simulated example data
 data(exp_data)
