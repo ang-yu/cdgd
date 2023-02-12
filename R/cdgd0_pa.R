@@ -206,9 +206,11 @@ cdgd0_pa <- function(Y,D,G,X,data,alpha=0.05) {
                        se( (1-data[,G])/(1-mean(data[,G]))*(data[,Y]-Y_G0)-(1-data[,G])/(1-mean(data[,G]))*(IPO_D0G0-psi_00)-EIF_dgg(1,0,0)+EIF_dgg(0,0,0) ),
                        Jackson_reduction_se)
 
+  p_value <- (1-pnorm(abs(point/se_est)))*2
   CI_lower <- point - stats::qnorm(1-alpha/2)*se_est
   CI_upper <- point + stats::qnorm(1-alpha/2)*se_est
 
+  p_value_specific <- (1-pnorm(abs(point/se_est)))*2
   CI_lower_specific <- point_specific - stats::qnorm(1-alpha/2)*se_est_specific
   CI_upper_specific <- point_specific + stats::qnorm(1-alpha/2)*se_est_specific
 
@@ -232,10 +234,10 @@ cdgd0_pa <- function(Y,D,G,X,data,alpha=0.05) {
                       "Cov_G0",
                       "Jackson reduction")
 
-  results <- as.data.frame(cbind(names,point,se_est,CI_lower,CI_upper))
-  results_specific <- as.data.frame(cbind(names_specific, point_specific,se_est_specific,CI_lower_specific,CI_upper_specific))
-  colnames(results) <- c("names","point","se","CI_lower","CI_upper")
-  colnames(results_specific) <- c("names","point","se","CI_lower","CI_upper")
+  results <- as.data.frame(cbind(names,point,se_est,p_value,CI_lower,CI_upper))
+  results_specific <- as.data.frame(cbind(names_specific, point_specific,se_est_specific,p_value_specific,CI_lower_specific,CI_upper_specific))
+  colnames(results) <- c("names","point","se","p_value","CI_lower","CI_upper")
+  colnames(results_specific) <- c("names","point","se","p_value","CI_lower","CI_upper")
 
   output <- list(results=results, results_specific=results_specific)
 
