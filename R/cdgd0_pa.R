@@ -210,7 +210,7 @@ cdgd0_pa <- function(Y,D,G,X,data,alpha=0.05) {
   CI_lower <- point - stats::qnorm(1-alpha/2)*se_est
   CI_upper <- point + stats::qnorm(1-alpha/2)*se_est
 
-  p_value_specific <- (1-stats::pnorm(abs(point/se_est)))*2
+  p_value_specific <- (1-stats::pnorm(abs(point_specific/se_est_specific)))*2
   CI_lower_specific <- point_specific - stats::qnorm(1-alpha/2)*se_est_specific
   CI_upper_specific <- point_specific + stats::qnorm(1-alpha/2)*se_est_specific
 
