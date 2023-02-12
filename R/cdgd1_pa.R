@@ -300,6 +300,7 @@ cdgd1_pa <- function(Y,D,G,X,Q,data,alpha=0.05) {
           cond_selection_se,
           Q_dist_se,
           cond_Jackson_reduction_se)
+  p_value <- (1-stats::pnorm(abs(point/se)))*2
   CI_lower <- point - stats::qnorm(1-alpha/2)*se
   CI_upper <- point + stats::qnorm(1-alpha/2)*se
   names <- c("total",
@@ -310,7 +311,7 @@ cdgd1_pa <- function(Y,D,G,X,Q,data,alpha=0.05) {
              "Q distribution",
              "conditional Jackson reduction")
 
-  output <- as.data.frame(cbind(names, point,se,CI_lower,CI_upper))
+  output <- as.data.frame(cbind(names,point,se,p_value,CI_lower,CI_upper))
 
   return(output)
 }
