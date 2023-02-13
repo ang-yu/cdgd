@@ -238,7 +238,7 @@ cdgd0_pa <- function(Y,D,G,X,data,alpha=0.05) {
   results_specific <- as.data.frame(cbind(point_specific,se_est_specific,p_value_specific,CI_lower_specific,CI_upper_specific))
   rownames(results) <- names
   rownames(results_specific) <- names_specific
-  colnames(results) <- colnames(results_specific) <- c("point","se","p_value","CI_lower","CI_upper")ß
+  colnames(results) <- colnames(results_specific) <- c("point","se","p_value","CI_lower","CI_upper")
 
   output <- list(results=results, results_specific=results_specific)
 

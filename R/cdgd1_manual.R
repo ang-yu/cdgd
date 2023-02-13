@@ -427,7 +427,7 @@ cdgd1_manual <- function(Y,D,G,
              "conditional Jackson reduction")
 
   output <- as.data.frame(cbind(point,se,p_value,CI_lower,CI_upper))
-  colnames(output) <- names
+  rownames(output) <- names
 
   return(output)
 }
