@@ -39,7 +39,7 @@ head(exp_data)
 ```{r unconditional}
 results0 <- cdgd0_pa(Y="outcome",D="treatment",G="group_a",X=c("confounder","Q"),data=exp_data,alpha=0.05)
 
-results0$results
+round(results0$results, 4)
 ```
 
 ### Use cdgd1_ml, cdgd1_pa, or cdgd1_manual to get conditional decomposition 
@@ -47,5 +47,5 @@ results0$results
 ```{r conditional}
 results1 <- cdgd1_pa(Y="outcome",D="treatment",G="group_a",X="confounder",Q="Q",data=exp_data,alpha=0.05)
 
-results1
+round(results1, 4)
 ```

@@ -35,19 +35,13 @@ head(exp_data)
 ``` r
 results0 <- cdgd0_pa(Y="outcome",D="treatment",G="group_a",X=c("confounder","Q"),data=exp_data,alpha=0.05)
 
-results0$results
-#>        names              point                 se           CI_lower
-#> 1      total  0.267479354808872 0.0389768846815615  0.191086064603441
-#> 2   baseline  0.039997497539402 0.0129327144177851 0.0146498430582013
-#> 3 prevalence  0.256512539568984  0.033532390580103  0.190790261716452
-#> 4     effect -0.136516278368955  0.020809641461047 -0.177302426163798
-#> 5  selection  0.107485596069441 0.0139415961675306  0.080160569694079
-#>              CI_upper
-#> 1   0.343872645014304
-#> 2  0.0653451520206026
-#> 3   0.322234817421516
-#> 4 -0.0957301305741109
-#> 5   0.134810622444802
+round(results0$results, 4)
+#>              point     se p_value CI_lower CI_upper
+#> total       0.2675 0.0390   0.000   0.1911   0.3439
+#> baseline    0.0400 0.0129   0.002   0.0146   0.0653
+#> prevalence  0.2565 0.0335   0.000   0.1908   0.3222
+#> effect     -0.1365 0.0208   0.000  -0.1773  -0.0957
+#> selection   0.1075 0.0139   0.000   0.0802   0.1348
 ```
 
 ### Use cdgd1_ml, cdgd1_pa, or cdgd1_manual to get conditional decomposition
@@ -55,21 +49,13 @@ results0$results
 ``` r
 results1 <- cdgd1_pa(Y="outcome",D="treatment",G="group_a",X="confounder",Q="Q",data=exp_data,alpha=0.05)
 
-results1
-#>                           names              point                 se
-#> 1                         total  0.267479354808872 0.0389768846815615
-#> 2                      baseline  0.039997497539402 0.0129327144177851
-#> 3        conditional prevalence  0.208604685983608 0.0351067274912385
-#> 4            conditional effect -0.152921251811951 0.0204569657882307
-#> 5         conditional selection 0.0887548333345764 0.0134667561793527
-#> 6                Q distribution 0.0830435897632368 0.0109725233258662
-#> 7 conditional Jackson reduction  0.239315359423403 0.0355208384410009
-#>             CI_lower           CI_upper
-#> 1  0.191086064603441  0.343872645014304
-#> 2 0.0146498430582014 0.0653451520206026
-#> 3  0.139796764485719  0.277412607481498
-#> 4 -0.193016167989852 -0.112826335634051
-#> 5 0.0623604762344629   0.11514919043469
-#> 6 0.0615378392250134   0.10454934030146
-#> 7  0.169695795378375   0.30893492346843
+round(results1, 4)
+#>                                 point     se p_value CI_lower CI_upper
+#> total                          0.2675 0.0390   0.000   0.1911   0.3439
+#> baseline                       0.0400 0.0129   0.002   0.0146   0.0653
+#> conditional prevalence         0.2086 0.0351   0.000   0.1398   0.2774
+#> conditional effect            -0.1529 0.0205   0.000  -0.1930  -0.1128
+#> conditional selection          0.0888 0.0135   0.000   0.0624   0.1151
+#> Q distribution                 0.0830 0.0110   0.000   0.0615   0.1045
+#> conditional Jackson reduction  0.2393 0.0355   0.000   0.1697   0.3089
 ```
