@@ -502,7 +502,8 @@ cdgd1_ml <- function(Y,D,G,X,Q,data,algorithm,alpha=0.05) {
              "Q distribution",
              "conditional Jackson reduction")
 
-  output <- as.data.frame(cbind(names, point,se,p_value,CI_lower,CI_upper))
+  output <- as.data.frame(cbind(point,se,p_value,CI_lower,CI_upper))
+  colnames(output) <- names
 
   return(output)
 }

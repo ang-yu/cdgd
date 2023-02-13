@@ -426,7 +426,8 @@ cdgd1_manual <- function(Y,D,G,
              "Q distribution",
              "conditional Jackson reduction")
 
-  output <- as.data.frame(cbind(names, point,se,p_value,CI_lower,CI_upper))
+  output <- as.data.frame(cbind(point,se,p_value,CI_lower,CI_upper))
+  colnames(output) <- names
 
   return(output)
 }
