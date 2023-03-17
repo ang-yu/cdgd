@@ -112,44 +112,22 @@ cdgd0_ml <- function(Y,D,G,X,data,algorithm,alpha=0.05) {
   data[,D] <- as.numeric(data[,D])-1
 
   ### cross-fitted predictions
-  YgivenX.Pred_D0G0 <- YgivenX.Pred_D1G0 <- YgivenX.Pred_D0G1 <- YgivenX.Pred_D1G1 <- DgivenX.Pred_G0 <- DgivenX.Pred_G1 <- rep(NA, nrow(data))
+  YgivenX.Pred_D0 <- YgivenX.Pred_D1 <- YgivenX.Pred_D0 <- YgivenX.Pred_D1 <- DgivenX.Pred <- DgivenX.Pred <- rep(NA, nrow(data))
 
   pred_data <- data
   pred_data[,D] <- 0
-  pred_data[,G] <- 0
-  YgivenX.Pred_D0G0[sample1] <- stats::predict(YgivenDGX.Model.sample1, newdata = pred_data[sample2,])
-  YgivenX.Pred_D0G0[sample2] <- stats::predict(YgivenDGX.Model.sample2, newdata = pred_data[sample1,])
+  YgivenX.Pred_D0[sample2] <- stats::predict(YgivenDGX.Model.sample1, newdata = pred_data[sample2,])
+  YgivenX.Pred_D0[sample1] <- stats::predict(YgivenDGX.Model.sample2, newdata = pred_data[sample1,])
 
   pred_data <- data
   pred_data[,D] <- 1
-  pred_data[,G] <- 0
-  YgivenX.Pred_D1G0[sample1] <- stats::predict(YgivenDGX.Model.sample1, newdata = pred_data[sample2,])
-  YgivenX.Pred_D1G0[sample2] <- stats::predict(YgivenDGX.Model.sample2, newdata = pred_data[sample1,])
+  YgivenX.Pred_D1[sample2] <- stats::predict(YgivenDGX.Model.sample1, newdata = pred_data[sample2,])
+  YgivenX.Pred_D1[sample1] <- stats::predict(YgivenDGX.Model.sample2, newdata = pred_data[sample1,])
 
-  pred_data <- data
-  pred_data[,D] <- 0
-  pred_data[,G] <- 1
-  YgivenX.Pred_D0G1[sample1] <- stats::predict(YgivenDGX.Model.sample1, newdata = pred_data[sample2,])
-  YgivenX.Pred_D0G1[sample2] <- stats::predict(YgivenDGX.Model.sample2, newdata = pred_data[sample1,])
+  DgivenX.Pred[sample2] <- stats::predict(DgivenGX.Model.sample1, newdata = data[sample2,], type="prob")[,2]
+  DgivenX.Pred[sample1] <- stats::predict(DgivenGX.Model.sample2, newdata = data[sample1,], type="prob")[,2]
 
-  pred_data <- data
-  pred_data[,D] <- 1
-  pred_data[,G] <- 1
-  YgivenX.Pred_D1G1[sample1] <- stats::predict(YgivenDGX.Model.sample1, newdata = pred_data[sample2,])
-  YgivenX.Pred_D1G1[sample2] <- stats::predict(YgivenDGX.Model.sample2, newdata = pred_data[sample1,])
-
-  pred_data <- data
-  pred_data[,G] <- 0
-  DgivenX.Pred_G0[sample1] <- stats::predict(DgivenGX.Model.sample1, newdata = pred_data[sample2,], type="prob")[,2]
-  DgivenX.Pred_G0[sample2] <- stats::predict(DgivenGX.Model.sample2, newdata = pred_data[sample1,], type="prob")[,2]
-
-  pred_data <- data
-  pred_data[,G] <- 1
-  DgivenX.Pred_G1[sample1] <- stats::predict(DgivenGX.Model.sample1, newdata = pred_data[sample2,], type="prob")[,2]
-  DgivenX.Pred_G1[sample2] <- stats::predict(DgivenGX.Model.sample2, newdata = pred_data[sample1,], type="prob")[,2]
-
-  zero_one <- sum(DgivenX.Pred_G0==0)+sum(DgivenX.Pred_G1==0)+
-    sum(DgivenX.Pred_G0==1)+sum(DgivenX.Pred_G1==1)
+  zero_one <- sum(DgivenX.Pred==0)+sum(DgivenX.Pred==1)
   if ( zero_one>0 ) {
     stop(
       paste("D given X and are exact 0 or 1 in", zero_one, "cases.", sep=" "),
@@ -161,17 +139,15 @@ cdgd0_ml <- function(Y,D,G,X,data,algorithm,alpha=0.05) {
   # For each d and g value, we have IE(d,g)=\frac{\one(D=d)}{\pi(d,X,g)}[Y-\mu(d,X,g)]+\mu(d,X,g)
   # We stablize the weight by dividing the sample average of estimated weights
 
-  IPO_D0G0 <- (1-data[,D])/(1-DgivenX.Pred_G0)/mean((1-data[,D])/(1-DgivenX.Pred_G0))*(data[,Y]-YgivenX.Pred_D0G0) + YgivenX.Pred_D0G0
-  IPO_D1G0 <- data[,D]/DgivenX.Pred_G0/(mean(data[,D]/DgivenX.Pred_G0))*(data[,Y]-YgivenX.Pred_D1G0) + YgivenX.Pred_D1G0
-  IPO_D0G1 <- (1-data[,D])/(1-DgivenX.Pred_G0)/(mean((1-data[,D])/(1-DgivenX.Pred_G0)))*(data[,Y]-YgivenX.Pred_D0G1) + YgivenX.Pred_D0G1
-  IPO_D1G1 <- data[,D]/DgivenX.Pred_G0/mean(data[,D]/DgivenX.Pred_G0)*(data[,Y]-YgivenX.Pred_D1G1) + YgivenX.Pred_D1G1
+  IPO_D0 <- (1-data[,D])/(1-DgivenX.Pred)/mean((1-data[,D])/(1-DgivenX.Pred))*(data[,Y]-YgivenX.Pred_D0) + YgivenX.Pred_D0
+  IPO_D1 <- data[,D]/DgivenX.Pred/(mean(data[,D]/DgivenX.Pred))*(data[,Y]-YgivenX.Pred_D1) + YgivenX.Pred_D1
 
   ### The cross-fitted substitution estimates of \xi_{dg} and \xi_{dgg'}
   #  xi_D0G0 <- xi_D0G1 <- rep(NA, nrow(data))
-  #  xi_D0G0[sample1] <- mean(YgivenX.Pred_D0G0[intersect(which(data[,G]==0),sample2)])
-  #  xi_D0G0[sample2] <- mean(YgivenX.Pred_D0G0[intersect(which(data[,G]==0),sample1)])
-  #  xi_D0G1[sample1] <- mean(YgivenX.Pred_D0G0[intersect(which(data[,G]==1),sample2)])
-  #  xi_D0G1[sample2] <- mean(YgivenX.Pred_D0G0[intersect(which(data[,G]==1),sample1)])
+  #  xi_D0G0[sample1] <- mean(YgivenX.Pred_D0[intersect(which(data[,G]==0),sample2)])
+  #  xi_D0G0[sample2] <- mean(YgivenX.Pred_D0[intersect(which(data[,G]==0),sample1)])
+  #  xi_D0G1[sample1] <- mean(YgivenX.Pred_D0[intersect(which(data[,G]==1),sample2)])
+  #  xi_D0G1[sample2] <- mean(YgivenX.Pred_D0[intersect(which(data[,G]==1),sample1)])
 
   ### Cross-fitted group proportion
   #  prop_G1 <- rep(NA, nrow(data))
@@ -179,32 +155,32 @@ cdgd0_ml <- function(Y,D,G,X,data,algorithm,alpha=0.05) {
   #  prop_G1[sample2] <- mean(data[sample1,G])
 
   ### The one-step estimate of \xi_{dg} and \xi_{dgg'}
-  psi_00 <- mean( (1-data[,G])/(1-mean(data[,G]))*IPO_D0G0 )
-  psi_01 <- mean( data[,G]/mean(data[,G])*IPO_D0G1 )
-  psi_10 <- mean( (1-data[,G])/(1-mean(data[,G]))*IPO_D1G0 )
-  psi_11 <- mean( data[,G]/mean(data[,G])*IPO_D1G1 )
+  psi_00 <- mean( (1-data[,G])/(1-mean(data[,G]))*IPO_D0 )
+  psi_01 <- mean( data[,G]/mean(data[,G])*IPO_D0 )
+  psi_10 <- mean( (1-data[,G])/(1-mean(data[,G]))*IPO_D1 )
+  psi_11 <- mean( data[,G]/mean(data[,G])*IPO_D1 )
   # Note that this is basically DML2. We could also use DML1:
-  #psi_00_S1 <- mean( (1-data[sample1,G])/(1-mean(data[sample1,G]))*IPO_D0G0[sample1] )     # sample 1 estimate
-  #psi_00_S2 <- mean( (1-data[sample2,G])/(1-mean(data[sample2,G]))*IPO_D0G0[sample2] )     # sample 2 estimate
+  #psi_00_S1 <- mean( (1-data[sample1,G])/(1-mean(data[sample1,G]))*IPO_D0[sample1] )     # sample 1 estimate
+  #psi_00_S2 <- mean( (1-data[sample2,G])/(1-mean(data[sample2,G]))*IPO_D0[sample2] )     # sample 2 estimate
   #psi_00 <- (1/2)*(psi_00_S1+psi_00_S2)
-  #psi_01_S1 <- mean( data[sample1,G]/mean(data[sample1,G])*IPO_D0G1[sample1] )     # sample 1 estimate
-  #psi_01_S2 <- mean( data[sample1,G]/mean(data[sample1,G])*IPO_D0G1[sample2] )     # sample 2 estimate
+  #psi_01_S1 <- mean( data[sample1,G]/mean(data[sample1,G])*IPO_D0[sample1] )     # sample 1 estimate
+  #psi_01_S2 <- mean( data[sample1,G]/mean(data[sample1,G])*IPO_D0[sample2] )     # sample 2 estimate
   #psi_01 <- (1/2)*(psi_01_S1+psi_01_S2)
 
   # There are 8 dgg' combinations, so we define a function first
   psi_dgg <- function(d,g1,g2) {
     if (d==0 & g1==0) {
-      IPO_arg <- IPO_D0G0
-      YgivenX.Pred_arg <- YgivenX.Pred_D0G0}
+      IPO_arg <- IPO_D0
+      YgivenX.Pred_arg <- YgivenX.Pred_D0}
     if (d==1 & g1==0) {
-      IPO_arg <- IPO_D1G0
-      YgivenX.Pred_arg <- YgivenX.Pred_D1G0}
+      IPO_arg <- IPO_D1
+      YgivenX.Pred_arg <- YgivenX.Pred_D1}
     if (d==0 & g1==1) {
-      IPO_arg <- IPO_D0G1
-      YgivenX.Pred_arg <- YgivenX.Pred_D0G1}
+      IPO_arg <- IPO_D0
+      YgivenX.Pred_arg <- YgivenX.Pred_D0}
     if (d==1 & g1==1) {
-      IPO_arg <- IPO_D1G1
-      YgivenX.Pred_arg <- YgivenX.Pred_D1G1}
+      IPO_arg <- IPO_D1
+      YgivenX.Pred_arg <- YgivenX.Pred_D1}
 
     psi_dgg <- mean( as.numeric(data[,G]==g1)/mean(data[,G]==g1)*IPO_arg*mean(as.numeric(data[,G]==g2)/mean(data[,G]==g2)*data[,D]) )
     # Note that this is basically DML2. We could also use DML1:
@@ -232,28 +208,28 @@ cdgd0_ml <- function(Y,D,G,X,data,algorithm,alpha=0.05) {
   ### standard error estimates
   se <- function(x) {sqrt( mean(x^2)/nrow(data) )}
   total_se <- se( data[,G]/mean(data[,G])*(data[,Y]-Y_G1) - (1-data[,G])/(1-mean(data[,G]))*(data[,Y]-Y_G0) )
-  baseline_se <- se( data[,G]/mean(data[,G])*(IPO_D0G1-psi_01) - (1-data[,G])/(1-mean(data[,G]))*(IPO_D0G0-psi_00) )
+  baseline_se <- se( data[,G]/mean(data[,G])*(IPO_D0-psi_01) - (1-data[,G])/(1-mean(data[,G]))*(IPO_D0-psi_00) )
   # Alternatively, we could use
-  # se( c( data[sample1,G]/mean(data[sample1,G])*(IPO_D0G1[sample1]-psi_01) - (1-data[sample1,G])/(1-mean(data[sample1,G]))*(IPO_D0G0[sample1]-psi_00),
-  #         data[sample2,G]/mean(data[sample2,G])*(IPO_D0G1[sample2]-psi_01) - (1-data[sample2,G])/(1-mean(data[sample2,G]))*(IPO_D0G0[sample2]-psi_00) ) )
+  # se( c( data[sample1,G]/mean(data[sample1,G])*(IPO_D0[sample1]-psi_01) - (1-data[sample1,G])/(1-mean(data[sample1,G]))*(IPO_D0[sample1]-psi_00),
+  #         data[sample2,G]/mean(data[sample2,G])*(IPO_D0[sample2]-psi_01) - (1-data[sample2,G])/(1-mean(data[sample2,G]))*(IPO_D0[sample2]-psi_00) ) )
   # But there isn't a theoretically strong reason to prefer one over the other.
 
   EIF_dgg <- function(d,g1,g2) {
     if (d==0 & g1==0) {
-      IPO_arg <- IPO_D0G0
-      YgivenX.Pred_arg <- YgivenX.Pred_D0G0
+      IPO_arg <- IPO_D0
+      YgivenX.Pred_arg <- YgivenX.Pred_D0
       psi_arg <- psi_00}
     if (d==1 & g1==0) {
-      IPO_arg <- IPO_D1G0
-      YgivenX.Pred_arg <- YgivenX.Pred_D1G0
+      IPO_arg <- IPO_D1
+      YgivenX.Pred_arg <- YgivenX.Pred_D1
       psi_arg <- psi_10}
     if (d==0 & g1==1) {
-      IPO_arg <- IPO_D0G1
-      YgivenX.Pred_arg <- YgivenX.Pred_D0G1
+      IPO_arg <- IPO_D0
+      YgivenX.Pred_arg <- YgivenX.Pred_D0
       psi_arg <- psi_01}
     if (d==1 & g1==1) {
-      IPO_arg <- IPO_D1G1
-      YgivenX.Pred_arg <- YgivenX.Pred_D1G1
+      IPO_arg <- IPO_D1
+      YgivenX.Pred_arg <- YgivenX.Pred_D1
       psi_arg <- psi_11}
 
     return(
