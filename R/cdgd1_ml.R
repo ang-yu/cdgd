@@ -113,24 +113,24 @@ cdgd1_ml <- function(Y,D,G,X,Q,data,algorithm,alpha=0.05) {
   data[,D] <- as.numeric(data[,D])-1
 
 ### cross-fitted predictions
-  YgivenXQ.Pred_D0 <- YgivenXQ.Pred_D1 <- DgivenXQ.Pred <- rep(NA, nrow(data))
+  YgivenGXQ.Pred_D0 <- YgivenGXQ.Pred_D1 <- DgivenGXQ.Pred <- rep(NA, nrow(data))
 
   pred_data <- data
   pred_data[,D] <- 0
-  YgivenXQ.Pred_D0[sample2] <- stats::predict(YgivenDGXQ.Model.sample1, newdata = pred_data[sample2,])
-  YgivenXQ.Pred_D0[sample1] <- stats::predict(YgivenDGXQ.Model.sample2, newdata = pred_data[sample1,])
+  YgivenGXQ.Pred_D0[sample2] <- stats::predict(YgivenDGXQ.Model.sample1, newdata = pred_data[sample2,])
+  YgivenGXQ.Pred_D0[sample1] <- stats::predict(YgivenDGXQ.Model.sample2, newdata = pred_data[sample1,])
 
   pred_data <- data
   pred_data[,D] <- 1
-  YgivenXQ.Pred_D1[sample2] <- stats::predict(YgivenDGXQ.Model.sample1, newdata = pred_data[sample2,])
-  YgivenXQ.Pred_D1[sample1] <- stats::predict(YgivenDGXQ.Model.sample2, newdata = pred_data[sample1,])
+  YgivenGXQ.Pred_D1[sample2] <- stats::predict(YgivenDGXQ.Model.sample1, newdata = pred_data[sample2,])
+  YgivenGXQ.Pred_D1[sample1] <- stats::predict(YgivenDGXQ.Model.sample2, newdata = pred_data[sample1,])
 
   pred_data <- data
   pred_data[,G] <- 0
-  DgivenXQ.Pred[sample2] <- stats::predict(DgivenGXQ.Model.sample1, newdata = pred_data[sample2,], type="prob")[,2]
-  DgivenXQ.Pred[sample1] <- stats::predict(DgivenGXQ.Model.sample2, newdata = pred_data[sample1,], type="prob")[,2]
+  DgivenGXQ.Pred[sample2] <- stats::predict(DgivenGXQ.Model.sample1, newdata = pred_data[sample2,], type="prob")[,2]
+  DgivenGXQ.Pred[sample1] <- stats::predict(DgivenGXQ.Model.sample2, newdata = pred_data[sample1,], type="prob")[,2]
 
-  zero_one <- sum(DgivenXQ.Pred==0)+sum(DgivenXQ.Pred==1)
+  zero_one <- sum(DgivenGXQ.Pred==0)+sum(DgivenGXQ.Pred==1)
   if ( zero_one>0 ) {
     stop(
       paste("D given X, Q, and G are exact 0 or 1 in", zero_one, "cases.", sep=" "),
@@ -139,7 +139,7 @@ cdgd1_ml <- function(Y,D,G,X,Q,data,algorithm,alpha=0.05) {
   }
 
 ### Estimate E(Y_d | Q,g)
-  YgivenGXQ.Pred_D1_ncf <- YgivenGXQ.Pred_D0_ncf <- DgivenXQ.Pred_ncf <- rep(NA, nrow(data)) # ncf stands for non-cross-fitted
+  YgivenGXQ.Pred_D1_ncf <- YgivenGXQ.Pred_D0_ncf <- DgivenGXQ.Pred_ncf <- rep(NA, nrow(data)) # ncf stands for non-cross-fitted
 
   pred_data <- data
   pred_data[,D] <- 1
@@ -151,10 +151,10 @@ cdgd1_ml <- function(Y,D,G,X,Q,data,algorithm,alpha=0.05) {
   YgivenGXQ.Pred_D0_ncf[sample1] <- stats::predict(YgivenDGXQ.Model.sample1, newdata = pred_data[sample1,])
   YgivenGXQ.Pred_D0_ncf[sample2] <- stats::predict(YgivenDGXQ.Model.sample2, newdata = pred_data[sample2,])
 
-  DgivenXQ.Pred_ncf[sample1] <- stats::predict(DgivenGXQ.Model.sample1, newdata = pred_data[sample1,], type="prob")[,2]
-  DgivenXQ.Pred_ncf[sample2] <- stats::predict(DgivenGXQ.Model.sample2, newdata = pred_data[sample2,], type="prob")[,2]
+  DgivenGXQ.Pred_ncf[sample1] <- stats::predict(DgivenGXQ.Model.sample1, newdata = pred_data[sample1,], type="prob")[,2]
+  DgivenGXQ.Pred_ncf[sample2] <- stats::predict(DgivenGXQ.Model.sample2, newdata = pred_data[sample2,], type="prob")[,2]
 
-  zero_one <- sum(DgivenXQ.Pred_ncf==0)+sum(DgivenXQ.Pred_ncf==1)
+  zero_one <- sum(DgivenGXQ.Pred_ncf==0)+sum(DgivenGXQ.Pred_ncf==1)
   if ( zero_one>0 ) {
     stop(
       paste("D given X, Q, and G are exact 0 or 1 in", zero_one, "cases.", sep=" "),
@@ -163,8 +163,8 @@ cdgd1_ml <- function(Y,D,G,X,Q,data,algorithm,alpha=0.05) {
   }
 
   # IPOs for modelling E(Y_d | Q,g)
-  IPO_D0_ncf <- (1-data[,D])/(1-DgivenXQ.Pred_ncf)/mean((1-data[,D])/(1-DgivenXQ.Pred_ncf))*(data[,Y]-YgivenGXQ.Pred_D0_ncf) + YgivenGXQ.Pred_D0_ncf
-  IPO_D1_ncf <- data[,D]/DgivenXQ.Pred_ncf/(mean(data[,D]/DgivenXQ.Pred_ncf))*(data[,Y]-YgivenGXQ.Pred_D1_ncf) + YgivenGXQ.Pred_D1_ncf
+  IPO_D0_ncf <- (1-data[,D])/(1-DgivenGXQ.Pred_ncf)/mean((1-data[,D])/(1-DgivenGXQ.Pred_ncf))*(data[,Y]-YgivenGXQ.Pred_D0_ncf) + YgivenGXQ.Pred_D0_ncf
+  IPO_D1_ncf <- data[,D]/DgivenGXQ.Pred_ncf/(mean(data[,D]/DgivenGXQ.Pred_ncf))*(data[,Y]-YgivenGXQ.Pred_D1_ncf) + YgivenGXQ.Pred_D1_ncf
 
   data_temp <- data[,c(G,Q)]
   data_temp$IPO_D0_ncf <- IPO_D0_ncf
@@ -221,8 +221,8 @@ cdgd1_ml <- function(Y,D,G,X,Q,data,algorithm,alpha=0.05) {
   # For each d and g value, we have IE(d,g)=\frac{\one(D=d)}{\pi(d,X,g)}[Y-\mu(d,X,g)]+\mu(d,X,g)
   # We stabilize the weight by dividing the sample average of estimated weights
 
-  IPO_D0 <- (1-data[,D])/(1-DgivenXQ.Pred)/mean((1-data[,D])/(1-DgivenXQ.Pred))*(data[,Y]-YgivenXQ.Pred_D0) + YgivenXQ.Pred_D0
-  IPO_D1 <- data[,D]/DgivenXQ.Pred/mean(data[,D]/DgivenXQ.Pred)*(data[,Y]-YgivenXQ.Pred_D1) + YgivenXQ.Pred_D1
+  IPO_D0 <- (1-data[,D])/(1-DgivenGXQ.Pred)/mean((1-data[,D])/(1-DgivenGXQ.Pred))*(data[,Y]-YgivenGXQ.Pred_D0) + YgivenGXQ.Pred_D0
+  IPO_D1 <- data[,D]/DgivenGXQ.Pred/mean(data[,D]/DgivenGXQ.Pred)*(data[,Y]-YgivenGXQ.Pred_D1) + YgivenGXQ.Pred_D1
 
 ### Estimate E(D | Q,g')
   data[,D] <- as.factor(data[,D])
@@ -287,8 +287,8 @@ cdgd1_ml <- function(Y,D,G,X,Q,data,algorithm,alpha=0.05) {
   data[,G] <- as.numeric(data[,G])-1
 
   GgivenQ.Pred <- rep(NA, nrow(data))
-  GgivenQ.Pred[sample2] <- stats::predict(DgivenGQ.Model.sample1, newdata = data[sample2,], type="prob")[,2]
-  GgivenQ.Pred[sample1] <- stats::predict(DgivenGQ.Model.sample2, newdata = data[sample1,], type="prob")[,2]
+  GgivenQ.Pred[sample2] <- stats::predict(GgivenQ.Model.sample1, newdata = data[sample2,], type="prob")[,2]
+  GgivenQ.Pred[sample1] <- stats::predict(GgivenQ.Model.sample2, newdata = data[sample1,], type="prob")[,2]
 
   zero_one <- sum(GgivenQ.Pred==0)+sum(GgivenQ.Pred==1)
   if ( zero_one>0 ) {

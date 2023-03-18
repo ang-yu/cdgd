@@ -112,22 +112,22 @@ cdgd0_ml <- function(Y,D,G,X,data,algorithm,alpha=0.05) {
   data[,D] <- as.numeric(data[,D])-1
 
   ### cross-fitted predictions
-  YgivenX.Pred_D0 <- YgivenX.Pred_D1 <- YgivenX.Pred_D0 <- YgivenX.Pred_D1 <- DgivenX.Pred <- DgivenX.Pred <- rep(NA, nrow(data))
+  YgivenGX.Pred_D0 <- YgivenGX.Pred_D1 <- YgivenGX.Pred_D0 <- YgivenGX.Pred_D1 <- DgivenGX.Pred <- DgivenGX.Pred <- rep(NA, nrow(data))
 
   pred_data <- data
   pred_data[,D] <- 0
-  YgivenX.Pred_D0[sample2] <- stats::predict(YgivenDGX.Model.sample1, newdata = pred_data[sample2,])
-  YgivenX.Pred_D0[sample1] <- stats::predict(YgivenDGX.Model.sample2, newdata = pred_data[sample1,])
+  YgivenGX.Pred_D0[sample2] <- stats::predict(YgivenDGX.Model.sample1, newdata = pred_data[sample2,])
+  YgivenGX.Pred_D0[sample1] <- stats::predict(YgivenDGX.Model.sample2, newdata = pred_data[sample1,])
 
   pred_data <- data
   pred_data[,D] <- 1
-  YgivenX.Pred_D1[sample2] <- stats::predict(YgivenDGX.Model.sample1, newdata = pred_data[sample2,])
-  YgivenX.Pred_D1[sample1] <- stats::predict(YgivenDGX.Model.sample2, newdata = pred_data[sample1,])
+  YgivenGX.Pred_D1[sample2] <- stats::predict(YgivenDGX.Model.sample1, newdata = pred_data[sample2,])
+  YgivenGX.Pred_D1[sample1] <- stats::predict(YgivenDGX.Model.sample2, newdata = pred_data[sample1,])
 
-  DgivenX.Pred[sample2] <- stats::predict(DgivenGX.Model.sample1, newdata = data[sample2,], type="prob")[,2]
-  DgivenX.Pred[sample1] <- stats::predict(DgivenGX.Model.sample2, newdata = data[sample1,], type="prob")[,2]
+  DgivenGX.Pred[sample2] <- stats::predict(DgivenGX.Model.sample1, newdata = data[sample2,], type="prob")[,2]
+  DgivenGX.Pred[sample1] <- stats::predict(DgivenGX.Model.sample2, newdata = data[sample1,], type="prob")[,2]
 
-  zero_one <- sum(DgivenX.Pred==0)+sum(DgivenX.Pred==1)
+  zero_one <- sum(DgivenGX.Pred==0)+sum(DgivenGX.Pred==1)
   if ( zero_one>0 ) {
     stop(
       paste("D given X and G are exact 0 or 1 in", zero_one, "cases.", sep=" "),
@@ -139,8 +139,8 @@ cdgd0_ml <- function(Y,D,G,X,data,algorithm,alpha=0.05) {
   # For each d and g value, we have IE(d,g)=\frac{\one(D=d)}{\pi(d,X,g)}[Y-\mu(d,X,g)]+\mu(d,X,g)
   # We stablize the weight by dividing the sample average of estimated weights
 
-  IPO_D0 <- (1-data[,D])/(1-DgivenX.Pred)/mean((1-data[,D])/(1-DgivenX.Pred))*(data[,Y]-YgivenX.Pred_D0) + YgivenX.Pred_D0
-  IPO_D1 <- data[,D]/DgivenX.Pred/(mean(data[,D]/DgivenX.Pred))*(data[,Y]-YgivenX.Pred_D1) + YgivenX.Pred_D1
+  IPO_D0 <- (1-data[,D])/(1-DgivenGX.Pred)/mean((1-data[,D])/(1-DgivenGX.Pred))*(data[,Y]-YgivenGX.Pred_D0) + YgivenGX.Pred_D0
+  IPO_D1 <- data[,D]/DgivenGX.Pred/(mean(data[,D]/DgivenGX.Pred))*(data[,Y]-YgivenGX.Pred_D1) + YgivenGX.Pred_D1
 
   ### The one-step estimate of \xi_{dg} and \xi_{dgg'}
   psi_00 <- mean( (1-data[,G])/(1-mean(data[,G]))*IPO_D0 )
@@ -159,16 +159,16 @@ cdgd0_ml <- function(Y,D,G,X,data,algorithm,alpha=0.05) {
   psi_dgg <- function(d,g1,g2) {
     if (d==0 & g1==0) {
       IPO_arg <- IPO_D0
-      YgivenX.Pred_arg <- YgivenX.Pred_D0}
+      YgivenX.Pred_arg <- YgivenGX.Pred_D0}
     if (d==1 & g1==0) {
       IPO_arg <- IPO_D1
-      YgivenX.Pred_arg <- YgivenX.Pred_D1}
+      YgivenX.Pred_arg <- YgivenGX.Pred_D1}
     if (d==0 & g1==1) {
       IPO_arg <- IPO_D0
-      YgivenX.Pred_arg <- YgivenX.Pred_D0}
+      YgivenX.Pred_arg <- YgivenGX.Pred_D0}
     if (d==1 & g1==1) {
       IPO_arg <- IPO_D1
-      YgivenX.Pred_arg <- YgivenX.Pred_D1}
+      YgivenX.Pred_arg <- YgivenGX.Pred_D1}
 
     psi_dgg <- mean( as.numeric(data[,G]==g1)/mean(data[,G]==g1)*IPO_arg*mean(as.numeric(data[,G]==g2)/mean(data[,G]==g2)*data[,D]) )
     # Note that this is basically DML2. We could also use DML1:
@@ -205,19 +205,19 @@ cdgd0_ml <- function(Y,D,G,X,data,algorithm,alpha=0.05) {
   EIF_dgg <- function(d,g1,g2) {
     if (d==0 & g1==0) {
       IPO_arg <- IPO_D0
-      YgivenX.Pred_arg <- YgivenX.Pred_D0
+      YgivenX.Pred_arg <- YgivenGX.Pred_D0
       psi_arg <- psi_00}
     if (d==1 & g1==0) {
       IPO_arg <- IPO_D1
-      YgivenX.Pred_arg <- YgivenX.Pred_D1
+      YgivenX.Pred_arg <- YgivenGX.Pred_D1
       psi_arg <- psi_10}
     if (d==0 & g1==1) {
       IPO_arg <- IPO_D0
-      YgivenX.Pred_arg <- YgivenX.Pred_D0
+      YgivenX.Pred_arg <- YgivenGX.Pred_D0
       psi_arg <- psi_01}
     if (d==1 & g1==1) {
       IPO_arg <- IPO_D1
-      YgivenX.Pred_arg <- YgivenX.Pred_D1
+      YgivenX.Pred_arg <- YgivenGX.Pred_D1
       psi_arg <- psi_11}
 
     return(

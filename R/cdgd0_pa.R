@@ -40,20 +40,20 @@ cdgd0_pa <- function(Y,D,G,X,data,alpha=0.05) {
   DgivenGX.Model <- stats::glm(stats::as.formula(paste(D, paste(G,paste(X,collapse="+"),sep="+"), sep="~")), data=data, family=stats::binomial(link="logit"))
 
   ### predictions
-  YgivenX.Pred_D0 <- YgivenX.Pred_D1 <- YgivenX.Pred_D0 <- YgivenX.Pred_D1 <- DgivenX.Pred <- DgivenX.Pred <- rep(NA, nrow(data))
+  YgivenGX.Pred_D0 <- YgivenGX.Pred_D1 <- YgivenGX.Pred_D0 <- YgivenGX.Pred_D1 <- DgivenGX.Pred <- DgivenGX.Pred <- rep(NA, nrow(data))
 
   pred_data <- data
   pred_data[,D] <- 0
-  YgivenX.Pred_D0 <- stats::predict(YgivenDGX.Model, newdata = pred_data)
+  YgivenGX.Pred_D0 <- stats::predict(YgivenDGX.Model, newdata = pred_data)
 
   pred_data <- data
   pred_data[,D] <- 1
-  YgivenX.Pred_D1 <- stats::predict(YgivenDGX.Model, newdata = pred_data)
+  YgivenGX.Pred_D1 <- stats::predict(YgivenDGX.Model, newdata = pred_data)
 
-  DgivenX.Pred <- stats::predict(DgivenGX.Model, newdata = data, type="prob")[,2]
+  DgivenGX.Pred <- stats::predict(DgivenGX.Model, newdata = data, type="prob")[,2]
 
-  zero_one <- sum(DgivenX.Pred_G0==0)+sum(DgivenX.Pred_G1==0)+
-    sum(DgivenX.Pred_G0==1)+sum(DgivenX.Pred_G1==1)
+  zero_one <- sum(DgivenGX.Pred_G0==0)+sum(DgivenGX.Pred_G1==0)+
+    sum(DgivenGX.Pred_G0==1)+sum(DgivenGX.Pred_G1==1)
   if ( zero_one>0 ) {
     stop(
       paste("D given X and G are exact 0 or 1 in", zero_one, "cases.", sep=" "),
@@ -65,8 +65,8 @@ cdgd0_pa <- function(Y,D,G,X,data,alpha=0.05) {
   # For each d and g value, we have IE(d,g)=\frac{\one(D=d)}{\pi(d,X,g)}[Y-\mu(d,X,g)]+\mu(d,X,g)
   # We stablize the weight by dividing the sample average of estimated weights
 
-  IPO_D0 <- (1-data[,D])/(1-DgivenX.Pred)/mean((1-data[,D])/(1-DgivenX.Pred))*(data[,Y]-YgivenX.Pred_D0) + YgivenX.Pred_D0
-  IPO_D1 <- data[,D]/DgivenX.Pred/(mean(data[,D]/DgivenX.Pred))*(data[,Y]-YgivenX.Pred_D1) + YgivenX.Pred_D1
+  IPO_D0 <- (1-data[,D])/(1-DgivenGX.Pred)/mean((1-data[,D])/(1-DgivenGX.Pred))*(data[,Y]-YgivenGX.Pred_D0) + YgivenGX.Pred_D0
+  IPO_D1 <- data[,D]/DgivenGX.Pred/(mean(data[,D]/DgivenGX.Pred))*(data[,Y]-YgivenGX.Pred_D1) + YgivenGX.Pred_D1
 
   ### The one-step estimate of \xi_{dg} and \xi_{dgg'}
   psi_00 <- mean( (1-data[,G])/(1-mean(data[,G]))*IPO_D0 )
@@ -78,16 +78,16 @@ cdgd0_pa <- function(Y,D,G,X,data,alpha=0.05) {
   psi_dgg <- function(d,g1,g2) {
     if (d==0 & g1==0) {
       IPO_arg <- IPO_D0
-      YgivenX.Pred_arg <- YgivenX.Pred_D0}
+      YgivenX.Pred_arg <- YgivenGX.Pred_D0}
     if (d==1 & g1==0) {
       IPO_arg <- IPO_D1
-      YgivenX.Pred_arg <- YgivenX.Pred_D1}
+      YgivenX.Pred_arg <- YgivenGX.Pred_D1}
     if (d==0 & g1==1) {
       IPO_arg <- IPO_D0
-      YgivenX.Pred_arg <- YgivenX.Pred_D0}
+      YgivenX.Pred_arg <- YgivenGX.Pred_D0}
     if (d==1 & g1==1) {
       IPO_arg <- IPO_D1
-      YgivenX.Pred_arg <- YgivenX.Pred_D1}
+      YgivenX.Pred_arg <- YgivenGX.Pred_D1}
 
     psi_dgg <- mean( as.numeric(data[,G]==g1)/mean(data[,G]==g1)*IPO_arg*mean(as.numeric(data[,G]==g2)/mean(data[,G]==g2)*data[,D]) )
 
@@ -114,19 +114,19 @@ cdgd0_pa <- function(Y,D,G,X,data,alpha=0.05) {
   EIF_dgg <- function(d,g1,g2) {
     if (d==0 & g1==0) {
       IPO_arg <- IPO_D0
-      YgivenX.Pred_arg <- YgivenX.Pred_D0
+      YgivenX.Pred_arg <- YgivenGX.Pred_D0
       psi_arg <- psi_00}
     if (d==1 & g1==0) {
       IPO_arg <- IPO_D1
-      YgivenX.Pred_arg <- YgivenX.Pred_D1
+      YgivenX.Pred_arg <- YgivenGX.Pred_D1
       psi_arg <- psi_10}
     if (d==0 & g1==1) {
       IPO_arg <- IPO_D0
-      YgivenX.Pred_arg <- YgivenX.Pred_D0
+      YgivenX.Pred_arg <- YgivenGX.Pred_D0
       psi_arg <- psi_01}
     if (d==1 & g1==1) {
       IPO_arg <- IPO_D1
-      YgivenX.Pred_arg <- YgivenX.Pred_D1
+      YgivenX.Pred_arg <- YgivenGX.Pred_D1
       psi_arg <- psi_11}
 
     return(
