@@ -57,9 +57,9 @@ cdgd1_ml <- function(Y,D,G,X,Q,data,algorithm,alpha=0.05) {
         call. = FALSE
       )
     }
-    message <- utils::capture.output( YgivenDGXQ.Model.sample1 <- caret::train(stats::as.formula(paste(Y, paste(D,G,Q,paste(X,collapse="+"),sep="+"), sep="~")), data=data[sample1,], method="nnet",
+    message <- utils::capture.output( YgivenDGXQ.Model.sample1 <- caret::train(stats::as.formula(paste(Y, paste(D,G,paste(Q,collapse="+"),paste(X,collapse="+"),sep="+"), sep="~")), data=data[sample1,], method="nnet",
                                                                               preProc=c("center","scale"), trControl=caret::trainControl(method="cv"), linout=TRUE ))
-    message <- utils::capture.output( YgivenDGXQ.Model.sample2 <- caret::train(stats::as.formula(paste(Y, paste(D,G,Q,paste(X,collapse="+"),sep="+"), sep="~")), data=data[sample2,], method="nnet",
+    message <- utils::capture.output( YgivenDGXQ.Model.sample2 <- caret::train(stats::as.formula(paste(Y, paste(D,G,paste(Q,collapse="+"),paste(X,collapse="+"),sep="+"), sep="~")), data=data[sample2,], method="nnet",
                                                                               preProc=c("center","scale"), trControl=caret::trainControl(method="cv"), linout=TRUE ))
   }
   if (algorithm=="ranger") {
@@ -69,9 +69,9 @@ cdgd1_ml <- function(Y,D,G,X,Q,data,algorithm,alpha=0.05) {
         call. = FALSE
       )
     }
-    message <- utils::capture.output( YgivenDGXQ.Model.sample1 <- caret::train(stats::as.formula(paste(Y, paste(D,G,Q,paste(X,collapse="+"),sep="+"), sep="~")), data=data[sample1,], method="ranger",
+    message <- utils::capture.output( YgivenDGXQ.Model.sample1 <- caret::train(stats::as.formula(paste(Y, paste(D,G,paste(Q,collapse="+"),paste(X,collapse="+"),sep="+"), sep="~")), data=data[sample1,], method="ranger",
                                                                               trControl=caret::trainControl(method="cv")) )
-    message <- utils::capture.output( YgivenDGXQ.Model.sample2 <- caret::train(stats::as.formula(paste(Y, paste(D,G,Q,paste(X,collapse="+"),sep="+"), sep="~")), data=data[sample2,], method="ranger",
+    message <- utils::capture.output( YgivenDGXQ.Model.sample2 <- caret::train(stats::as.formula(paste(Y, paste(D,G,paste(Q,collapse="+"),paste(X,collapse="+"),sep="+"), sep="~")), data=data[sample2,], method="ranger",
                                                                               trControl=caret::trainControl(method="cv")) )
   }
   if (algorithm=="gbm") {
@@ -81,9 +81,9 @@ cdgd1_ml <- function(Y,D,G,X,Q,data,algorithm,alpha=0.05) {
         call. = FALSE
       )
     }
-    message <- utils::capture.output( YgivenDGXQ.Model.sample1 <- caret::train(stats::as.formula(paste(Y, paste(D,G,Q,paste(X,collapse="+"),sep="+"), sep="~")), data=data[sample1,], method="gbm",
+    message <- utils::capture.output( YgivenDGXQ.Model.sample1 <- caret::train(stats::as.formula(paste(Y, paste(D,G,paste(Q,collapse="+"),paste(X,collapse="+"),sep="+"), sep="~")), data=data[sample1,], method="gbm",
                                                                               trControl=caret::trainControl(method="cv")) )
-    message <- utils::capture.output( YgivenDGXQ.Model.sample2 <- caret::train(stats::as.formula(paste(Y, paste(D,G,Q,paste(X,collapse="+"),sep="+"), sep="~")), data=data[sample2,], method="gbm",
+    message <- utils::capture.output( YgivenDGXQ.Model.sample2 <- caret::train(stats::as.formula(paste(Y, paste(D,G,paste(Q,collapse="+"),paste(X,collapse="+"),sep="+"), sep="~")), data=data[sample2,], method="gbm",
                                                                               trControl=caret::trainControl(method="cv")) )
   }
 
@@ -92,21 +92,21 @@ cdgd1_ml <- function(Y,D,G,X,Q,data,algorithm,alpha=0.05) {
   levels(data[,D]) <- c("D0","D1")  # necessary for caret implementation of ranger
 
   if (algorithm=="nnet") {
-    message <- utils::capture.output( DgivenGXQ.Model.sample1 <- caret::train(stats::as.formula(paste(D, paste(G,Q,paste(X,collapse="+"),sep="+"), sep="~")), data=data[sample1,], method="nnet",
+    message <- utils::capture.output( DgivenGXQ.Model.sample1 <- caret::train(stats::as.formula(paste(D, paste(G,paste(Q,collapse="+"),paste(X,collapse="+"),sep="+"), sep="~")), data=data[sample1,], method="nnet",
                                                                              preProc=c("center","scale"), trControl=caret::trainControl(method="cv"), linout=FALSE ))
-    message <- utils::capture.output( DgivenGXQ.Model.sample2 <- caret::train(stats::as.formula(paste(D, paste(G,Q,paste(X,collapse="+"),sep="+"), sep="~")), data=data[sample2,], method="nnet",
+    message <- utils::capture.output( DgivenGXQ.Model.sample2 <- caret::train(stats::as.formula(paste(D, paste(G,paste(Q,collapse="+"),paste(X,collapse="+"),sep="+"), sep="~")), data=data[sample2,], method="nnet",
                                                                              preProc=c("center","scale"), trControl=caret::trainControl(method="cv"), linout=FALSE ))
   }
   if (algorithm=="ranger") {
-    message <- utils::capture.output( DgivenGXQ.Model.sample1 <- caret::train(stats::as.formula(paste(D, paste(G,Q,paste(X,collapse="+"),sep="+"), sep="~")), data=data[sample1,], method="ranger",
+    message <- utils::capture.output( DgivenGXQ.Model.sample1 <- caret::train(stats::as.formula(paste(D, paste(G,paste(Q,collapse="+"),paste(X,collapse="+"),sep="+"), sep="~")), data=data[sample1,], method="ranger",
                                                                              trControl=caret::trainControl(method="cv", classProbs=TRUE)) )
-    message <- utils::capture.output( DgivenGXQ.Model.sample2 <- caret::train(stats::as.formula(paste(D, paste(G,Q,paste(X,collapse="+"),sep="+"), sep="~")), data=data[sample2,], method="ranger",
+    message <- utils::capture.output( DgivenGXQ.Model.sample2 <- caret::train(stats::as.formula(paste(D, paste(G,paste(Q,collapse="+"),paste(X,collapse="+"),sep="+"), sep="~")), data=data[sample2,], method="ranger",
                                                                              trControl=caret::trainControl(method="cv", classProbs=TRUE)) )
   }
   if (algorithm=="gbm") {
-    message <- utils::capture.output( DgivenGXQ.Model.sample1 <- caret::train(stats::as.formula(paste(D, paste(G,Q,paste(X,collapse="+"),sep="+"), sep="~")), data=data[sample1,], method="gbm",
+    message <- utils::capture.output( DgivenGXQ.Model.sample1 <- caret::train(stats::as.formula(paste(D, paste(G,paste(Q,collapse="+"),paste(X,collapse="+"),sep="+"), sep="~")), data=data[sample1,], method="gbm",
                                                                              trControl=caret::trainControl(method="cv")) )
-    message <- utils::capture.output( DgivenGXQ.Model.sample2 <- caret::train(stats::as.formula(paste(D, paste(G,Q,paste(X,collapse="+"),sep="+"), sep="~")), data=data[sample2,], method="gbm",
+    message <- utils::capture.output( DgivenGXQ.Model.sample2 <- caret::train(stats::as.formula(paste(D, paste(G,paste(Q,collapse="+"),paste(X,collapse="+"),sep="+"), sep="~")), data=data[sample2,], method="gbm",
                                                                              trControl=caret::trainControl(method="cv")) )
   }
 
@@ -191,33 +191,33 @@ cdgd1_ml <- function(Y,D,G,X,Q,data,algorithm,alpha=0.05) {
   data_temp$IPO_D1_ncf <- IPO_D1_ncf
 
   if (algorithm=="nnet") {
-    message <- utils::capture.output( Y0givenGQ.Model.sample1 <- caret::train(stats::as.formula(paste("IPO_D0_ncf", paste(G,Q,sep="+"), sep="~")), data=data_temp[sample1,], method="nnet",
+    message <- utils::capture.output( Y0givenGQ.Model.sample1 <- caret::train(stats::as.formula(paste("IPO_D0_ncf", paste(G,paste(Q,collapse="+"),sep="+"), sep="~")), data=data_temp[sample1,], method="nnet",
                                                                               preProc=c("center","scale"), trControl=caret::trainControl(method="cv"), linout=TRUE ))
-    message <- utils::capture.output( Y0givenGQ.Model.sample2 <- caret::train(stats::as.formula(paste("IPO_D0_ncf", paste(G,Q,sep="+"), sep="~")), data=data_temp[sample2,], method="nnet",
+    message <- utils::capture.output( Y0givenGQ.Model.sample2 <- caret::train(stats::as.formula(paste("IPO_D0_ncf", paste(G,paste(Q,collapse="+"),sep="+"), sep="~")), data=data_temp[sample2,], method="nnet",
                                                                               preProc=c("center","scale"), trControl=caret::trainControl(method="cv"), linout=TRUE ))
-    message <- utils::capture.output( Y1givenGQ.Model.sample1 <- caret::train(stats::as.formula(paste("IPO_D1_ncf", paste(G,Q,sep="+"), sep="~")), data=data_temp[sample1,], method="nnet",
+    message <- utils::capture.output( Y1givenGQ.Model.sample1 <- caret::train(stats::as.formula(paste("IPO_D1_ncf", paste(G,paste(Q,collapse="+"),sep="+"), sep="~")), data=data_temp[sample1,], method="nnet",
                                                                               preProc=c("center","scale"), trControl=caret::trainControl(method="cv"), linout=TRUE ))
-    message <- utils::capture.output( Y1givenGQ.Model.sample2 <- caret::train(stats::as.formula(paste("IPO_D1_ncf", paste(G,Q,sep="+"), sep="~")), data=data_temp[sample2,], method="nnet",
+    message <- utils::capture.output( Y1givenGQ.Model.sample2 <- caret::train(stats::as.formula(paste("IPO_D1_ncf", paste(G,paste(Q,collapse="+"),sep="+"), sep="~")), data=data_temp[sample2,], method="nnet",
                                                                               preProc=c("center","scale"), trControl=caret::trainControl(method="cv"), linout=TRUE ))
   }
   if (algorithm=="ranger") {
-    message <- utils::capture.output( Y0givenGQ.Model.sample1 <- caret::train(stats::as.formula(paste("IPO_D0_ncf", paste(G,Q,sep="+"), sep="~")), data=data_temp[sample1,], method="ranger",
+    message <- utils::capture.output( Y0givenGQ.Model.sample1 <- caret::train(stats::as.formula(paste("IPO_D0_ncf", paste(G,paste(Q,collapse="+"),sep="+"), sep="~")), data=data_temp[sample1,], method="ranger",
                                                                               trControl=caret::trainControl(method="cv")) )
-    message <- utils::capture.output( Y0givenGQ.Model.sample2 <- caret::train(stats::as.formula(paste("IPO_D0_ncf", paste(G,Q,sep="+"), sep="~")), data=data_temp[sample2,], method="ranger",
+    message <- utils::capture.output( Y0givenGQ.Model.sample2 <- caret::train(stats::as.formula(paste("IPO_D0_ncf", paste(G,paste(Q,collapse="+"),sep="+"), sep="~")), data=data_temp[sample2,], method="ranger",
                                                                               trControl=caret::trainControl(method="cv")) )
-    message <- utils::capture.output( Y1givenGQ.Model.sample1 <- caret::train(stats::as.formula(paste("IPO_D1_ncf", paste(G,Q,sep="+"), sep="~")), data=data_temp[sample1,], method="ranger",
+    message <- utils::capture.output( Y1givenGQ.Model.sample1 <- caret::train(stats::as.formula(paste("IPO_D1_ncf", paste(G,paste(Q,collapse="+"),sep="+"), sep="~")), data=data_temp[sample1,], method="ranger",
                                                                               trControl=caret::trainControl(method="cv")) )
-    message <- utils::capture.output( Y1givenGQ.Model.sample2 <- caret::train(stats::as.formula(paste("IPO_D1_ncf", paste(G,Q,sep="+"), sep="~")), data=data_temp[sample2,], method="ranger",
+    message <- utils::capture.output( Y1givenGQ.Model.sample2 <- caret::train(stats::as.formula(paste("IPO_D1_ncf", paste(G,paste(Q,collapse="+"),sep="+"), sep="~")), data=data_temp[sample2,], method="ranger",
                                                                               trControl=caret::trainControl(method="cv")) )
   }
   if (algorithm=="gbm") {
-    message <- utils::capture.output( Y0givenGQ.Model.sample1 <- caret::train(stats::as.formula(paste("IPO_D0_ncf", paste(G,Q,sep="+"), sep="~")), data=data_temp[sample1,], method="gbm",
+    message <- utils::capture.output( Y0givenGQ.Model.sample1 <- caret::train(stats::as.formula(paste("IPO_D0_ncf", paste(G,paste(Q,collapse="+"),sep="+"), sep="~")), data=data_temp[sample1,], method="gbm",
                                                                               trControl=caret::trainControl(method="cv")) )
-    message <- utils::capture.output( Y0givenGQ.Model.sample2 <- caret::train(stats::as.formula(paste("IPO_D0_ncf", paste(G,Q,sep="+"), sep="~")), data=data_temp[sample2,], method="gbm",
+    message <- utils::capture.output( Y0givenGQ.Model.sample2 <- caret::train(stats::as.formula(paste("IPO_D0_ncf", paste(G,paste(Q,collapse="+"),sep="+"), sep="~")), data=data_temp[sample2,], method="gbm",
                                                                               trControl=caret::trainControl(method="cv")) )
-    message <- utils::capture.output( Y1givenGQ.Model.sample1 <- caret::train(stats::as.formula(paste("IPO_D1_ncf", paste(G,Q,sep="+"), sep="~")), data=data_temp[sample1,], method="gbm",
+    message <- utils::capture.output( Y1givenGQ.Model.sample1 <- caret::train(stats::as.formula(paste("IPO_D1_ncf", paste(G,paste(Q,collapse="+"),sep="+"), sep="~")), data=data_temp[sample1,], method="gbm",
                                                                               trControl=caret::trainControl(method="cv")) )
-    message <- utils::capture.output( Y1givenGQ.Model.sample2 <- caret::train(stats::as.formula(paste("IPO_D1_ncf", paste(G,Q,sep="+"), sep="~")), data=data_temp[sample2,], method="gbm",
+    message <- utils::capture.output( Y1givenGQ.Model.sample2 <- caret::train(stats::as.formula(paste("IPO_D1_ncf", paste(G,paste(Q,collapse="+"),sep="+"), sep="~")), data=data_temp[sample2,], method="gbm",
                                                                               trControl=caret::trainControl(method="cv")) )
   }
 
@@ -263,21 +263,21 @@ cdgd1_ml <- function(Y,D,G,X,Q,data,algorithm,alpha=0.05) {
   levels(data[,D]) <- c("D0","D1")  # necessary for caret implementation of ranger
 
   if (algorithm=="nnet") {
-    message <- utils::capture.output( DgivenGQ.Model.sample1 <- caret::train(stats::as.formula(paste(D, paste(G,Q,sep="+"), sep="~")), data=data[sample1,], method="nnet",
+    message <- utils::capture.output( DgivenGQ.Model.sample1 <- caret::train(stats::as.formula(paste(D, paste(G,paste(Q,collapse="+"),sep="+"), sep="~")), data=data[sample1,], method="nnet",
                                                                              preProc=c("center","scale"), trControl=caret::trainControl(method="cv"), linout=FALSE ))
-    message <- utils::capture.output( DgivenGQ.Model.sample2 <- caret::train(stats::as.formula(paste(D, paste(G,Q,sep="+"), sep="~")), data=data[sample2,], method="nnet",
+    message <- utils::capture.output( DgivenGQ.Model.sample2 <- caret::train(stats::as.formula(paste(D, paste(G,paste(Q,collapse="+"),sep="+"), sep="~")), data=data[sample2,], method="nnet",
                                                                              preProc=c("center","scale"), trControl=caret::trainControl(method="cv"), linout=FALSE ))
   }
   if (algorithm=="ranger") {
-    message <- utils::capture.output( DgivenGQ.Model.sample1 <- caret::train(stats::as.formula(paste(D, paste(G,Q,sep="+"), sep="~")), data=data[sample1,], method="ranger",
+    message <- utils::capture.output( DgivenGQ.Model.sample1 <- caret::train(stats::as.formula(paste(D, paste(G,paste(Q,collapse="+")sep="+"), sep="~")), data=data[sample1,], method="ranger",
                                                                               trControl=caret::trainControl(method="cv", classProbs=TRUE)) )
-    message <- utils::capture.output( DgivenGQ.Model.sample2 <- caret::train(stats::as.formula(paste(D, paste(G,Q,sep="+"), sep="~")), data=data[sample2,], method="ranger",
+    message <- utils::capture.output( DgivenGQ.Model.sample2 <- caret::train(stats::as.formula(paste(D, paste(G,paste(Q,collapse="+"),sep="+"), sep="~")), data=data[sample2,], method="ranger",
                                                                               trControl=caret::trainControl(method="cv", classProbs=TRUE)) )
   }
   if (algorithm=="gbm") {
-    message <- utils::capture.output( DgivenGQ.Model.sample1 <- caret::train(stats::as.formula(paste(D, paste(G,Q,sep="+"), sep="~")), data=data[sample1,], method="gbm",
+    message <- utils::capture.output( DgivenGQ.Model.sample1 <- caret::train(stats::as.formula(paste(D, paste(G,paste(Q,collapse="+"),sep="+"), sep="~")), data=data[sample1,], method="gbm",
                                                                               trControl=caret::trainControl(method="cv")) )
-    message <- utils::capture.output( DgivenGQ.Model.sample2 <- caret::train(stats::as.formula(paste(D, paste(G,Q,sep="+"), sep="~")), data=data[sample2,], method="gbm",
+    message <- utils::capture.output( DgivenGQ.Model.sample2 <- caret::train(stats::as.formula(paste(D, paste(G,paste(Q,collapse="+"),sep="+"), sep="~")), data=data[sample2,], method="gbm",
                                                                               trControl=caret::trainControl(method="cv")) )
   }
 
@@ -300,21 +300,21 @@ cdgd1_ml <- function(Y,D,G,X,Q,data,algorithm,alpha=0.05) {
   levels(data[,G]) <- c("G0","G1")  # necessary for caret implementation of ranger
 
   if (algorithm=="nnet") {
-    message <- utils::capture.output( GgivenQ.Model.sample1 <- caret::train(stats::as.formula(paste(G, paste(Q,sep="+"), sep="~")), data=data[sample1,], method="nnet",
+    message <- utils::capture.output( GgivenQ.Model.sample1 <- caret::train(stats::as.formula(paste(G, paste(Q,collapse="+"), sep="~")), data=data[sample1,], method="nnet",
                                                                             preProc=c("center","scale"), trControl=caret::trainControl(method="cv"), linout=FALSE ))
-    message <- utils::capture.output( GgivenQ.Model.sample2 <- caret::train(stats::as.formula(paste(G, paste(Q,sep="+"), sep="~")), data=data[sample2,], method="nnet",
+    message <- utils::capture.output( GgivenQ.Model.sample2 <- caret::train(stats::as.formula(paste(G, paste(Q,collapse="+"), sep="~")), data=data[sample2,], method="nnet",
                                                                             preProc=c("center","scale"), trControl=caret::trainControl(method="cv"), linout=FALSE ))
   }
   if (algorithm=="ranger") {
-    message <- utils::capture.output( GgivenQ.Model.sample1 <- caret::train(stats::as.formula(paste(G, paste(Q,sep="+"), sep="~")), data=data[sample1,], method="ranger",
+    message <- utils::capture.output( GgivenQ.Model.sample1 <- caret::train(stats::as.formula(paste(G, paste(Q,collapse="+"), sep="~")), data=data[sample1,], method="ranger",
                                                                              trControl=caret::trainControl(method="cv", classProbs=TRUE)) )
-    message <- utils::capture.output( GgivenQ.Model.sample2 <- caret::train(stats::as.formula(paste(G, paste(Q,sep="+"), sep="~")), data=data[sample2,], method="ranger",
+    message <- utils::capture.output( GgivenQ.Model.sample2 <- caret::train(stats::as.formula(paste(G, paste(Q,collapse="+"), sep="~")), data=data[sample2,], method="ranger",
                                                                              trControl=caret::trainControl(method="cv", classProbs=TRUE)) )
   }
   if (algorithm=="gbm") {
-    message <- utils::capture.output( GgivenQ.Model.sample1 <- caret::train(stats::as.formula(paste(G, paste(Q,sep="+"), sep="~")), data=data[sample1,], method="gbm",
+    message <- utils::capture.output( GgivenQ.Model.sample1 <- caret::train(stats::as.formula(paste(G, paste(Q,collapse="+"), sep="~")), data=data[sample1,], method="gbm",
                                                                              trControl=caret::trainControl(method="cv")) )
-    message <- utils::capture.output( GgivenQ.Model.sample2 <- caret::train(stats::as.formula(paste(G, paste(Q,sep="+"), sep="~")), data=data[sample2,], method="gbm",
+    message <- utils::capture.output( GgivenQ.Model.sample2 <- caret::train(stats::as.formula(paste(G, paste(Q,collapse="+"), sep="~")), data=data[sample2,], method="gbm",
                                                                              trControl=caret::trainControl(method="cv")) )
   }
 
