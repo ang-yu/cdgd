@@ -50,10 +50,9 @@ cdgd0_pa <- function(Y,D,G,X,data,alpha=0.05) {
   pred_data[,D] <- 1
   YgivenGX.Pred_D1 <- stats::predict(YgivenDGX.Model, newdata = pred_data)
 
-  DgivenGX.Pred <- stats::predict(DgivenGX.Model, newdata = data, type="prob")[,2]
+  DgivenGX.Pred <- stats::predict(DgivenGX.Model, newdata = data, type="response")
 
-  zero_one <- sum(DgivenGX.Pred_G0==0)+sum(DgivenGX.Pred_G1==0)+
-    sum(DgivenGX.Pred_G0==1)+sum(DgivenGX.Pred_G1==1)
+  zero_one <- sum(DgivenGX.Pred==0)+sum(DgivenGX.Pred==1)
   if ( zero_one>0 ) {
     stop(
       paste("D given X and G are exact 0 or 1 in", zero_one, "cases.", sep=" "),
