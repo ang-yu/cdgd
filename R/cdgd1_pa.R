@@ -147,7 +147,7 @@ cdgd1_pa <- function(Y,D,G,X,Q,data,alpha=0.05) {
   DgivenQ.Pred_G1 <- stats::predict(DgivenGQ.Model, newdata = pred_data, type="response")
 
   ### Estimate p_g(Q)=Pr(G=g | Q)
-  GgivenQ.Model <- stats::glm(stats::as.formula(paste(G, paste(Q,sep="+"), sep="~")), data=data, family=stats::binomial(link="logit"))
+  GgivenQ.Model <- stats::glm(stats::as.formula(paste(G, paste(Q,collapse="+"), sep="~")), data=data, family=stats::binomial(link="logit"))
 
   GgivenQ.Pred <- rep(NA, nrow(data))
   GgivenQ.Pred <- stats::predict(DgivenGQ.Model, newdata = data, type="response")
