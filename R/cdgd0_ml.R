@@ -130,7 +130,7 @@ cdgd0_ml <- function(Y,D,G,X,data,algorithm,alpha=0.05) {
   zero_one <- sum(DgivenX.Pred==0)+sum(DgivenX.Pred==1)
   if ( zero_one>0 ) {
     stop(
-      paste("D given X and are exact 0 or 1 in", zero_one, "cases.", sep=" "),
+      paste("D given X and G are exact 0 or 1 in", zero_one, "cases.", sep=" "),
       call. = FALSE
     )
   }
