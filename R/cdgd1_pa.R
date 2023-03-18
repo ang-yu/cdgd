@@ -38,7 +38,7 @@ cdgd1_pa <- function(Y,D,G,X,Q,data,alpha=0.05) {
   YgivenDGXQ.Model <- stats::lm(stats::as.formula(paste(Y, paste(paste(D,c(G,Q,X),sep="*"),collapse="+"), sep="~")), data=data)
 
   ### propensity score model
-  DgivenGXQ.Model <- stats::glm(stats::as.formula(paste(D, paste(G,Q,paste(X,collapse="+"),sep="+"), sep="~")), data=data, family=stats::binomial(link="logit"))
+  DgivenGXQ.Model <- stats::glm(stats::as.formula(paste(D, paste(G,paste(Q,collapse="+"),paste(X,collapse="+"),sep="+"), sep="~")), data=data, family=stats::binomial(link="logit"))
 
   ### predictions
   YgivenXQ.Pred_D0G0 <- YgivenXQ.Pred_D1G0 <- YgivenXQ.Pred_D0G1 <- YgivenXQ.Pred_D1G1 <- DgivenXQ.Pred_G0 <- DgivenXQ.Pred_G1 <- rep(NA, nrow(data))
@@ -109,8 +109,8 @@ cdgd1_pa <- function(Y,D,G,X,Q,data,alpha=0.05) {
   data_temp$IPO_D0 <- IPO_D0
   data_temp$IPO_D1 <- IPO_D1
 
-  Y0givenGQ.Model <- stats::lm(stats::as.formula(paste("IPO_D0", paste(G,Q,sep="*"), sep="~")), data=data_temp)
-  Y1givenGQ.Model <- stats::lm(stats::as.formula(paste("IPO_D1", paste(G,Q,sep="*"), sep="~")), data=data_temp)
+  Y0givenGQ.Model <- stats::lm(stats::as.formula(paste("IPO_D0", paste(paste(G,Q,sep="*"),collapse="+"), sep="~")), data=data_temp)
+  Y1givenGQ.Model <- stats::lm(stats::as.formula(paste("IPO_D1", paste(paste(G,Q,sep="*"),collapse="+"), sep="~")), data=data_temp)
 
   Y0givenQ.Pred_G0 <- Y0givenQ.Pred_G1 <- Y1givenQ.Pred_G0 <- Y1givenQ.Pred_G1 <- rep(NA, nrow(data))
 
@@ -134,7 +134,7 @@ cdgd1_pa <- function(Y,D,G,X,Q,data,alpha=0.05) {
   IPO_D1G1 <- data[,D]/DgivenXQ.Pred_G0/mean(data[,D]/DgivenXQ.Pred_G0)*(data[,Y]-YgivenXQ.Pred_D1G1) + YgivenXQ.Pred_D1G1
 
   ### Estimate E(D | Q,g')
-  DgivenGQ.Model <- stats::glm(stats::as.formula(paste(D, paste(G,Q,sep="*"), sep="~")), data=data, family=stats::binomial(link="logit"))
+  DgivenGQ.Model <- stats::glm(stats::as.formula(paste(D, paste(paste(G,Q,sep="*"),collapse="+"), sep="~")), data=data, family=stats::binomial(link="logit"))
 
   DgivenQ.Pred_G0 <- DgivenQ.Pred_G1 <- rep(NA, nrow(data))
 

@@ -153,7 +153,7 @@ cdgd1_ml <- function(Y,D,G,X,Q,data,algorithm,alpha=0.05) {
     sum(DgivenXQ.Pred_G0==1)+sum(DgivenXQ.Pred_G1==1)
   if ( zero_one>0 ) {
     stop(
-      paste("D given X and Q are exact 0 or 1 in", zero_one, "cases.", sep=" "),
+      paste("D given X, Q, and G are exact 0 or 1 in", zero_one, "cases.", sep=" "),
       call. = FALSE
     )
   }
@@ -177,7 +177,7 @@ cdgd1_ml <- function(Y,D,G,X,Q,data,algorithm,alpha=0.05) {
   zero_one <- sum(DgivenXQ.Pred_ncf==0)+sum(DgivenXQ.Pred_ncf==1)
   if ( zero_one>0 ) {
     stop(
-      paste("D given X and Q are exact 0 or 1 in", zero_one, "cases.", sep=" "),
+      paste("D given X, Q, and G are exact 0 or 1 in", zero_one, "cases.", sep=" "),
       call. = FALSE
     )
   }
