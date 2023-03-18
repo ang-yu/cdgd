@@ -142,18 +142,6 @@ cdgd0_ml <- function(Y,D,G,X,data,algorithm,alpha=0.05) {
   IPO_D0 <- (1-data[,D])/(1-DgivenX.Pred)/mean((1-data[,D])/(1-DgivenX.Pred))*(data[,Y]-YgivenX.Pred_D0) + YgivenX.Pred_D0
   IPO_D1 <- data[,D]/DgivenX.Pred/(mean(data[,D]/DgivenX.Pred))*(data[,Y]-YgivenX.Pred_D1) + YgivenX.Pred_D1
 
-  ### The cross-fitted substitution estimates of \xi_{dg} and \xi_{dgg'}
-  #  xi_D0G0 <- xi_D0G1 <- rep(NA, nrow(data))
-  #  xi_D0G0[sample1] <- mean(YgivenX.Pred_D0[intersect(which(data[,G]==0),sample2)])
-  #  xi_D0G0[sample2] <- mean(YgivenX.Pred_D0[intersect(which(data[,G]==0),sample1)])
-  #  xi_D0G1[sample1] <- mean(YgivenX.Pred_D0[intersect(which(data[,G]==1),sample2)])
-  #  xi_D0G1[sample2] <- mean(YgivenX.Pred_D0[intersect(which(data[,G]==1),sample1)])
-
-  ### Cross-fitted group proportion
-  #  prop_G1 <- rep(NA, nrow(data))
-  #  prop_G1[sample1] <- mean(data[sample2,G])
-  #  prop_G1[sample2] <- mean(data[sample1,G])
-
   ### The one-step estimate of \xi_{dg} and \xi_{dgg'}
   psi_00 <- mean( (1-data[,G])/(1-mean(data[,G]))*IPO_D0 )
   psi_01 <- mean( data[,G]/mean(data[,G])*IPO_D0 )

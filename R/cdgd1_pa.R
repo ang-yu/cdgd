@@ -126,7 +126,7 @@ cdgd1_pa <- function(Y,D,G,X,Q,data,alpha=0.05) {
 
   ### The "IPO" (individual potential outcome) function
   # For each d and g value, we have IE(d,g)=\frac{\one(D=d)}{\pi(d,X,g)}[Y-\mu(d,X,g)]+\mu(d,X,g)
-  # We stablize the weight by dividing the sample average of estimated weights
+  # We stabilize the weight by dividing the sample average of estimated weights
 
   IPO_D0G0 <- (1-data[,D])/(1-DgivenXQ.Pred_G0)/mean((1-data[,D])/(1-DgivenXQ.Pred_G0))*(data[,Y]-YgivenXQ.Pred_D0G0) + YgivenXQ.Pred_D0G0
   IPO_D1G0 <- data[,D]/DgivenXQ.Pred_G0/(mean(data[,D]/DgivenXQ.Pred_G0))*(data[,Y]-YgivenXQ.Pred_D1G0) + YgivenXQ.Pred_D1G0
