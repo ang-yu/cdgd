@@ -41,15 +41,15 @@ cdgd1_pa <- function(Y,D,G,X,Q,data,alpha=0.05) {
   DgivenGXQ.Model <- stats::glm(stats::as.formula(paste(D, paste(G,paste(Q,collapse="+"),paste(X,collapse="+"),sep="+"), sep="~")), data=data, family=stats::binomial(link="logit"))
 
   ### predictions
-  YgivenXQ.Pred_D0 <- YgivenXQ.Pred_D1 <- DgivenGXQ.Pred <- rep(NA, nrow(data))
+  YgivenGXQ.Pred_D0 <- YgivenGXQ.Pred_D1 <- DgivenGXQ.Pred <- rep(NA, nrow(data))
 
   pred_data <- data
   pred_data[,D] <- 0
-  YgivenXQ.Pred_D0 <- stats::predict(YgivenDGXQ.Model, newdata = pred_data)
+  YgivenGXQ.Pred_D0 <- stats::predict(YgivenDGXQ.Model, newdata = pred_data)
 
   pred_data <- data
   pred_data[,D] <- 1
-  YgivenXQ.Pred_D1 <- stats::predict(YgivenDGXQ.Model, newdata = pred_data)
+  YgivenGXQ.Pred_D1 <- stats::predict(YgivenDGXQ.Model, newdata = pred_data)
 
   pred_data <- data
   pred_data[,G] <- 0
@@ -111,8 +111,8 @@ cdgd1_pa <- function(Y,D,G,X,Q,data,alpha=0.05) {
   # For each d and g value, we have IE(d,g)=\frac{\one(D=d)}{\pi(d,X,g)}[Y-\mu(d,X,g)]+\mu(d,X,g)
   # We stabilize the weight by dividing the sample average of estimated weights
 
-  IPO_D0 <- (1-data[,D])/(1-DgivenGXQ.Pred)/mean((1-data[,D])/(1-DgivenGXQ.Pred))*(data[,Y]-YgivenXQ.Pred_D0) + YgivenXQ.Pred_D0
-  IPO_D1 <- data[,D]/DgivenGXQ.Pred/mean(data[,D]/DgivenGXQ.Pred)*(data[,Y]-YgivenXQ.Pred_D1) + YgivenXQ.Pred_D1
+  IPO_D0 <- (1-data[,D])/(1-DgivenGXQ.Pred)/mean((1-data[,D])/(1-DgivenGXQ.Pred))*(data[,Y]-YgivenGXQ.Pred_D0) + YgivenGXQ.Pred_D0
+  IPO_D1 <- data[,D]/DgivenGXQ.Pred/mean(data[,D]/DgivenGXQ.Pred)*(data[,Y]-YgivenGXQ.Pred_D1) + YgivenGXQ.Pred_D1
 
   ### Estimate E(D | Q,g')
   DgivenGQ.Model <- stats::glm(stats::as.formula(paste(D, paste(paste(G,Q,sep="*"),collapse="+"), sep="~")), data=data, family=stats::binomial(link="logit"))
