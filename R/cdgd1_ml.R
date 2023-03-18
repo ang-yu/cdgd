@@ -164,7 +164,7 @@ cdgd1_ml <- function(Y,D,G,X,Q,data,algorithm,alpha=0.05) {
 
   # IPOs for modelling E(Y_d | Q,g)
   IPO_D0_ncf <- (1-data[,D])/(1-DgivenGXQ.Pred_ncf)/mean((1-data[,D])/(1-DgivenGXQ.Pred_ncf))*(data[,Y]-YgivenGXQ.Pred_D0_ncf) + YgivenGXQ.Pred_D0_ncf
-  IPO_D1_ncf <- data[,D]/DgivenGXQ.Pred_ncf/(mean(data[,D]/DgivenGXQ.Pred_ncf))*(data[,Y]-YgivenGXQ.Pred_D1_ncf) + YgivenGXQ.Pred_D1_ncf
+  IPO_D1_ncf <- data[,D]/DgivenGXQ.Pred_ncf/mean(data[,D]/DgivenGXQ.Pred_ncf)*(data[,Y]-YgivenGXQ.Pred_D1_ncf) + YgivenGXQ.Pred_D1_ncf
 
   data_temp <- data[,c(G,Q)]
   data_temp$IPO_D0_ncf <- IPO_D0_ncf

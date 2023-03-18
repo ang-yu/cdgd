@@ -140,7 +140,7 @@ cdgd0_ml <- function(Y,D,G,X,data,algorithm,alpha=0.05) {
   # We stablize the weight by dividing the sample average of estimated weights
 
   IPO_D0 <- (1-data[,D])/(1-DgivenGX.Pred)/mean((1-data[,D])/(1-DgivenGX.Pred))*(data[,Y]-YgivenGX.Pred_D0) + YgivenGX.Pred_D0
-  IPO_D1 <- data[,D]/DgivenGX.Pred/(mean(data[,D]/DgivenGX.Pred))*(data[,Y]-YgivenGX.Pred_D1) + YgivenGX.Pred_D1
+  IPO_D1 <- data[,D]/DgivenGX.Pred/mean(data[,D]/DgivenGX.Pred)*(data[,Y]-YgivenGX.Pred_D1) + YgivenGX.Pred_D1
 
   ### The one-step estimate of \xi_{dg} and \xi_{dgg'}
   psi_00 <- mean( (1-data[,G])/(1-mean(data[,G]))*IPO_D0 )
