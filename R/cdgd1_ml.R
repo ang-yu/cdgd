@@ -269,7 +269,7 @@ cdgd1_ml <- function(Y,D,G,X,Q,data,algorithm,alpha=0.05) {
                                                                              preProc=c("center","scale"), trControl=caret::trainControl(method="cv"), linout=FALSE ))
   }
   if (algorithm=="ranger") {
-    message <- utils::capture.output( DgivenGQ.Model.sample1 <- caret::train(stats::as.formula(paste(D, paste(G,paste(Q,collapse="+")sep="+"), sep="~")), data=data[sample1,], method="ranger",
+    message <- utils::capture.output( DgivenGQ.Model.sample1 <- caret::train(stats::as.formula(paste(D, paste(G,paste(Q,collapse="+"),sep="+"), sep="~")), data=data[sample1,], method="ranger",
                                                                               trControl=caret::trainControl(method="cv", classProbs=TRUE)) )
     message <- utils::capture.output( DgivenGQ.Model.sample2 <- caret::train(stats::as.formula(paste(D, paste(G,paste(Q,collapse="+"),sep="+"), sep="~")), data=data[sample2,], method="ranger",
                                                                               trControl=caret::trainControl(method="cv", classProbs=TRUE)) )
