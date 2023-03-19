@@ -205,17 +205,17 @@ cdgd1_ml <- function(Y,D,G,X,Q,data,algorithm,alpha=0.05) {
 
   pred_data <- data
   pred_data[,G] <- 1
-  Y0givenQ.Pred_G1[sample1] <- stats::predict(Y0givenGQ.Model.sample1, newdata = pred_data[sample2,])  # cross-fitting is used
-  Y0givenQ.Pred_G1[sample2] <- stats::predict(Y0givenGQ.Model.sample2, newdata = pred_data[sample1,])
-  Y1givenQ.Pred_G1[sample1] <- stats::predict(Y1givenGQ.Model.sample1, newdata = pred_data[sample2,])
-  Y1givenQ.Pred_G1[sample2] <- stats::predict(Y1givenGQ.Model.sample2, newdata = pred_data[sample1,])
+  Y0givenQ.Pred_G1[sample2] <- stats::predict(Y0givenGQ.Model.sample1, newdata = pred_data[sample2,])  # cross-fitting is used
+  Y0givenQ.Pred_G1[sample1] <- stats::predict(Y0givenGQ.Model.sample2, newdata = pred_data[sample1,])
+  Y1givenQ.Pred_G1[sample2] <- stats::predict(Y1givenGQ.Model.sample1, newdata = pred_data[sample2,])
+  Y1givenQ.Pred_G1[sample1] <- stats::predict(Y1givenGQ.Model.sample2, newdata = pred_data[sample1,])
 
   pred_data <- data
   pred_data[,G] <- 0
-  Y0givenQ.Pred_G0[sample1] <- stats::predict(Y0givenGQ.Model.sample1, newdata = pred_data[sample2,])  # cross-fitting is used
-  Y0givenQ.Pred_G0[sample2] <- stats::predict(Y0givenGQ.Model.sample2, newdata = pred_data[sample1,])
-  Y1givenQ.Pred_G0[sample1] <- stats::predict(Y1givenGQ.Model.sample1, newdata = pred_data[sample2,])
-  Y1givenQ.Pred_G0[sample2] <- stats::predict(Y1givenGQ.Model.sample2, newdata = pred_data[sample1,])
+  Y0givenQ.Pred_G0[sample2] <- stats::predict(Y0givenGQ.Model.sample1, newdata = pred_data[sample2,])  # cross-fitting is used
+  Y0givenQ.Pred_G0[sample1] <- stats::predict(Y0givenGQ.Model.sample2, newdata = pred_data[sample1,])
+  Y1givenQ.Pred_G0[sample2] <- stats::predict(Y1givenGQ.Model.sample1, newdata = pred_data[sample2,])
+  Y1givenQ.Pred_G0[sample1] <- stats::predict(Y1givenGQ.Model.sample2, newdata = pred_data[sample1,])
 
 ### The "IPO" (individual potential outcome) function
   # For each d and g value, we have IE(d,g)=\frac{\one(D=d)}{\pi(d,X,g)}[Y-\mu(d,X,g)]+\mu(d,X,g)
