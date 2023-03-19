@@ -21,7 +21,7 @@
 #' Y="outcome",
 #' D="treatment",
 #' G="group_a",
-#' X=c("confounder","Q"),
+#' X=c(,"Q","confounder"),
 #' data=exp_data)
 #'
 #' results[[1]]
