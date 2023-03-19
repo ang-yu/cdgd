@@ -1,5 +1,5 @@
 
-#' Perform unconditional decomposition using nuisances predicted beforehand
+#' Perform unconditional decomposition with nuisance functions estimated beforehand
 #'
 #' This function gives the user full control over the estimation of the nuisance functions.
 #' For the unconditional decomposition, three nuisance functions (YgivenGX.Pred_D0, YgivenGX.Pred_D1, and DgivenGX.Pred) need to be estimated.

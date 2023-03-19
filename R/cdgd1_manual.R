@@ -1,5 +1,5 @@
 
-#' Perform conditional decomposition using nuisances predicted beforehand
+#' Perform conditional decomposition with nuisance functions estimated beforehand
 #'
 #' This function gives user full control over the estimation of the nuisance functions.
 #' For the unconditional decomposition, ten nuisance functions need to be estimated.
