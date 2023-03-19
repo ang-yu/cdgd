@@ -60,18 +60,15 @@
 #'
 #' pred_data <- data
 #' pred_data[,D] <- 0
-#' pred_data[,G] <- 0
 #' YgivenGX.Pred_D0[sample2] <- stats::predict(YgivenDGX.Model.sample1, newdata = pred_data[sample2,])
 #' YgivenGX.Pred_D0[sample1] <- stats::predict(YgivenDGX.Model.sample2, newdata = pred_data[sample1,])
 #'
 #' pred_data <- data
 #' pred_data[,D] <- 1
-#' pred_data[,G] <- 0
 #' YgivenGX.Pred_D1[sample2] <- stats::predict(YgivenDGX.Model.sample1, newdata = pred_data[sample2,])
 #' YgivenGX.Pred_D1[sample1] <- stats::predict(YgivenDGX.Model.sample2, newdata = pred_data[sample1,])
 #'
 #' pred_data <- data
-#' pred_data[,G] <- 0
 #' DgivenGX.Pred[sample2] <- stats::predict(DgivenGX.Model.sample1, newdata = pred_data[sample2,], type="prob")[,2]
 #' DgivenGX.Pred[sample1] <- stats::predict(DgivenGX.Model.sample2, newdata = pred_data[sample1,], type="prob")[,2]
 #'
