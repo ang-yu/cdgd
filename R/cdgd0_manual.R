@@ -1,19 +1,16 @@
 
 #' Perform unconditional decomposition using nuisances predicted beforehand
 #'
-#' This function gives user full control over the estimation of the nuisance terms.
-#' For the unconditional decomposition, six nuisance terms need to be estimated.
-#' The nuisance terms should be estimated using cross-fitting if Donsker class is not assumed.
+#' This function gives the user full control over the estimation of the nuisance functions.
+#' For the unconditional decomposition, three nuisance functions (YgivenGX.Pred_D0, YgivenGX.Pred_D1, and DgivenGX.Pred) need to be estimated.
+#' The nuisance functions should be estimated using cross-fitting if Donsker class is not assumed.
 #'
 #' @param Y Outcome. The name of a continuous variable.
 #' @param D Treatment status. The name of a binary numeric variable taking values of 0 and 1.
 #' @param G Advantaged group membership. The name of a binary numeric variable taking values of 0 and 1.
-#' @param YgivenX.Pred_D0G0 A numeric vector of predicted Y values given X, D=0, and G=0. Vector length=nrow(data).
-#' @param YgivenX.Pred_D1G0 A numeric vector of predicted Y values given X, D=1, and G=0. Vector length=nrow(data).
-#' @param YgivenX.Pred_D0G1 A numeric vector of predicted Y values given X, D=0, and G=1. Vector length=nrow(data).
-#' @param YgivenX.Pred_D1G1 A numeric vector of predicted Y values given X, D=1, and G=1. Vector length=nrow(data).
-#' @param DgivenX.Pred_G0 A numeric vector of predicted D values given X and G=1. Vector length=nrow(data).
-#' @param DgivenX.Pred_G1 A numeric vector of predicted D values given X and G=0. Vector length=nrow(data).
+#' @param YgivenGX.Pred_D0 A numeric vector of predicted Y values given X, G, and D=0. Vector length=nrow(data).
+#' @param YgivenGX.Pred_D1 A numeric vector of predicted Y values given X, G, and D=1. Vector length=nrow(data).
+#' @param DgivenGX.Pred A numeric vector of predicted D values given X and G. Vector length=nrow(data).
 #' @param data A data frame.
 #' @param alpha 1-alpha confidence interval.
 #'
@@ -59,117 +56,82 @@
 #' data[,D] <- as.numeric(data[,D])-1
 #'
 #' ### cross-fitted predictions
-#' YgivenX.Pred_D0G0 <- YgivenX.Pred_D1G0 <- YgivenX.Pred_D0G1 <- YgivenX.Pred_D1G1 <- DgivenX.Pred_G0 <- DgivenX.Pred_G1 <- rep(NA, nrow(data))
+#' YgivenGX.Pred_D0 <- YgivenGX.Pred_D1 <- DgivenGX.Pred <- rep(NA, nrow(data))
 #'
 #' pred_data <- data
 #' pred_data[,D] <- 0
 #' pred_data[,G] <- 0
-#' YgivenX.Pred_D0G0[sample1] <- stats::predict(YgivenDGX.Model.sample1, newdata = pred_data[sample2,])
-#' YgivenX.Pred_D0G0[sample2] <- stats::predict(YgivenDGX.Model.sample2, newdata = pred_data[sample1,])
+#' YgivenGX.Pred_D0[sample2] <- stats::predict(YgivenDGX.Model.sample1, newdata = pred_data[sample2,])
+#' YgivenGX.Pred_D0[sample1] <- stats::predict(YgivenDGX.Model.sample2, newdata = pred_data[sample1,])
 #'
 #' pred_data <- data
 #' pred_data[,D] <- 1
 #' pred_data[,G] <- 0
-#' YgivenX.Pred_D1G0[sample1] <- stats::predict(YgivenDGX.Model.sample1, newdata = pred_data[sample2,])
-#' YgivenX.Pred_D1G0[sample2] <- stats::predict(YgivenDGX.Model.sample2, newdata = pred_data[sample1,])
-#'
-#' pred_data <- data
-#' pred_data[,D] <- 0
-#' pred_data[,G] <- 1
-#' YgivenX.Pred_D0G1[sample1] <- stats::predict(YgivenDGX.Model.sample1, newdata = pred_data[sample2,])
-#' YgivenX.Pred_D0G1[sample2] <- stats::predict(YgivenDGX.Model.sample2, newdata = pred_data[sample1,])
-#'
-#' pred_data <- data
-#' pred_data[,D] <- 1
-#' pred_data[,G] <- 1
-#' YgivenX.Pred_D1G1[sample1] <- stats::predict(YgivenDGX.Model.sample1, newdata = pred_data[sample2,])
-#' YgivenX.Pred_D1G1[sample2] <- stats::predict(YgivenDGX.Model.sample2, newdata = pred_data[sample1,])
+#' YgivenGX.Pred_D1[sample2] <- stats::predict(YgivenDGX.Model.sample1, newdata = pred_data[sample2,])
+#' YgivenGX.Pred_D1[sample1] <- stats::predict(YgivenDGX.Model.sample2, newdata = pred_data[sample1,])
 #'
 #' pred_data <- data
 #' pred_data[,G] <- 0
-#' DgivenX.Pred_G0[sample1] <- stats::predict(DgivenGX.Model.sample1, newdata = pred_data[sample2,], type="prob")[,2]
-#' DgivenX.Pred_G0[sample2] <- stats::predict(DgivenGX.Model.sample2, newdata = pred_data[sample1,], type="prob")[,2]
-#'
-#' pred_data <- data
-#' pred_data[,G] <- 1
-#' DgivenX.Pred_G1[sample1] <- stats::predict(DgivenGX.Model.sample1, newdata = pred_data[sample2,], type="prob")[,2]
-#' DgivenX.Pred_G1[sample2] <- stats::predict(DgivenGX.Model.sample2, newdata = pred_data[sample1,], type="prob")[,2]
+#' DgivenGX.Pred[sample2] <- stats::predict(DgivenGX.Model.sample1, newdata = pred_data[sample2,], type="prob")[,2]
+#' DgivenGX.Pred[sample1] <- stats::predict(DgivenGX.Model.sample2, newdata = pred_data[sample1,], type="prob")[,2]
 #'
 #' results <- cdgd0_manual(Y=Y,D=D,G=G,
-#'                        YgivenX.Pred_D0G0=YgivenX.Pred_D0G0,
-#'                        YgivenX.Pred_D1G0=YgivenX.Pred_D1G0,
-#'                        YgivenX.Pred_D0G1=YgivenX.Pred_D0G1,
-#'                        YgivenX.Pred_D1G1=YgivenX.Pred_D1G1,
-#'                        DgivenX.Pred_G0=DgivenX.Pred_G0,
-#'                        DgivenX.Pred_G1=DgivenX.Pred_G1,
+#'                        YgivenGX.Pred_D0=YgivenGX.Pred_D0,
+#'                        YgivenGX.Pred_D1=YgivenGX.Pred_D1,
+#'                        DgivenGX.Pred=DgivenGX.Pred,
 #'                        data=data)
 #'
 #' results
 
 
 
-cdgd0_manual <- function(Y,D,G,YgivenX.Pred_D0G0,YgivenX.Pred_D1G0,YgivenX.Pred_D0G1,YgivenX.Pred_D1G1,DgivenX.Pred_G0,DgivenX.Pred_G1,data,alpha=0.05) {
+cdgd0_manual <- function(Y,D,G,YgivenGX.Pred_D1,YgivenGX.Pred_D0,DgivenGX.Pred,data,alpha=0.05) {
 
   data <- as.data.frame(data)
 
-  zero_one <- sum(DgivenX.Pred_G0==0)+sum(DgivenX.Pred_G1==0)+
-    sum(DgivenX.Pred_G0==1)+sum(DgivenX.Pred_G1==1)
+  zero_one <- sum(DgivenGX.Pred==0)+sum(DgivenGX.Pred==1)
   if ( zero_one>0 ) {
     stop(
-      paste("D given X and are exact 0 or 1 in", zero_one, "cases.", sep=" "),
+      paste("D given G and X and are exact 0 or 1 in", zero_one, "cases.", sep=" "),
       call. = FALSE
     )
   }
 
   ### The "IPO" (individual potential outcome) function
   # For each d and g value, we have IE(d,g)=\frac{\one(D=d)}{\pi(d,X,g)}[Y-\mu(d,X,g)]+\mu(d,X,g)
-  # We stablize the weight by dividing the sample average of estimated weights
+  # We stabilize the weight by dividing the sample average of estimated weights
 
-  IPO_D0G0 <- (1-data[,D])/(1-DgivenX.Pred_G0)/mean((1-data[,D])/(1-DgivenX.Pred_G0))*(data[,Y]-YgivenX.Pred_D0G0) + YgivenX.Pred_D0G0
-  IPO_D1G0 <- data[,D]/DgivenX.Pred_G0/(mean(data[,D]/DgivenX.Pred_G0))*(data[,Y]-YgivenX.Pred_D1G0) + YgivenX.Pred_D1G0
-  IPO_D0G1 <- (1-data[,D])/(1-DgivenX.Pred_G0)/(mean((1-data[,D])/(1-DgivenX.Pred_G0)))*(data[,Y]-YgivenX.Pred_D0G1) + YgivenX.Pred_D0G1
-  IPO_D1G1 <- data[,D]/DgivenX.Pred_G0/mean(data[,D]/DgivenX.Pred_G0)*(data[,Y]-YgivenX.Pred_D1G1) + YgivenX.Pred_D1G1
-
-  ### The cross-fitted substitution estimates of \xi_{dg} and \xi_{dgg'}
-  #  xi_D0G0 <- xi_D0G1 <- rep(NA, nrow(data))
-  #  xi_D0G0[sample1] <- mean(YgivenX.Pred_D0G0[intersect(which(data[,G]==0),sample2)])
-  #  xi_D0G0[sample2] <- mean(YgivenX.Pred_D0G0[intersect(which(data[,G]==0),sample1)])
-  #  xi_D0G1[sample1] <- mean(YgivenX.Pred_D0G0[intersect(which(data[,G]==1),sample2)])
-  #  xi_D0G1[sample2] <- mean(YgivenX.Pred_D0G0[intersect(which(data[,G]==1),sample1)])
-
-  ### Cross-fitted group proportion
-  #  prop_G1 <- rep(NA, nrow(data))
-  #  prop_G1[sample1] <- mean(data[sample2,G])
-  #  prop_G1[sample2] <- mean(data[sample1,G])
+  IPO_D0 <- (1-data[,D])/(1-DgivenGX.Pred)/mean((1-data[,D])/(1-DgivenGX.Pred))*(data[,Y]-YgivenGX.Pred_D0) + YgivenGX.Pred_D0
+  IPO_D1 <- data[,D]/DgivenGX.Pred/mean(data[,D]/DgivenGX.Pred)*(data[,Y]-YgivenGX.Pred_D1) + YgivenGX.Pred_D1
 
   ### The one-step estimate of \xi_{dg} and \xi_{dgg'}
-  psi_00 <- mean( (1-data[,G])/(1-mean(data[,G]))*IPO_D0G0 )
-  psi_01 <- mean( data[,G]/mean(data[,G])*IPO_D0G1 )
-  psi_10 <- mean( (1-data[,G])/(1-mean(data[,G]))*IPO_D1G0 )
-  psi_11 <- mean( data[,G]/mean(data[,G])*IPO_D1G1 )
+  psi_00 <- mean( (1-data[,G])/(1-mean(data[,G]))*IPO_D0 )
+  psi_01 <- mean( data[,G]/mean(data[,G])*IPO_D0 )
+  psi_10 <- mean( (1-data[,G])/(1-mean(data[,G]))*IPO_D1 )
+  psi_11 <- mean( data[,G]/mean(data[,G])*IPO_D1 )
 
   # Note that this is basically DML2. We could also use DML1:
-  #psi_00_S1 <- mean( (1-data[sample1,G])/(1-mean(data[sample1,G]))*IPO_D0G0[sample1] )     # sample 1 estimate
-  #psi_00_S2 <- mean( (1-data[sample2,G])/(1-mean(data[sample2,G]))*IPO_D0G0[sample2] )     # sample 2 estimate
+  #psi_00_S1 <- mean( (1-data[sample1,G])/(1-mean(data[sample1,G]))*IPO_D0[sample1] )     # sample 1 estimate
+  #psi_00_S2 <- mean( (1-data[sample2,G])/(1-mean(data[sample2,G]))*IPO_D0[sample2] )     # sample 2 estimate
   #psi_00 <- (1/2)*(psi_00_S1+psi_00_S2)
-  #psi_01_S1 <- mean( data[sample1,G]/mean(data[sample1,G])*IPO_D0G1[sample1] )     # sample 1 estimate
-  #psi_01_S2 <- mean( data[sample1,G]/mean(data[sample1,G])*IPO_D0G1[sample2] )     # sample 2 estimate
+  #psi_01_S1 <- mean( data[sample1,G]/mean(data[sample1,G])*IPO_D0[sample1] )     # sample 1 estimate
+  #psi_01_S2 <- mean( data[sample1,G]/mean(data[sample1,G])*IPO_D0[sample2] )     # sample 2 estimate
   #psi_01 <- (1/2)*(psi_01_S1+psi_01_S2)
 
   # There are 8 dgg' combinations, so we define a function first
   psi_dgg <- function(d,g1,g2) {
     if (d==0 & g1==0) {
-      IPO_arg <- IPO_D0G0
-      YgivenX.Pred_arg <- YgivenX.Pred_D0G0}
+      IPO_arg <- IPO_D0
+      YgivenX.Pred_arg <- YgivenGX.Pred_D0}
     if (d==1 & g1==0) {
-      IPO_arg <- IPO_D1G0
-      YgivenX.Pred_arg <- YgivenX.Pred_D1G0}
+      IPO_arg <- IPO_D1
+      YgivenX.Pred_arg <- YgivenGX.Pred_D1}
     if (d==0 & g1==1) {
-      IPO_arg <- IPO_D0G1
-      YgivenX.Pred_arg <- YgivenX.Pred_D0G1}
+      IPO_arg <- IPO_D0
+      YgivenX.Pred_arg <- YgivenGX.Pred_D0}
     if (d==1 & g1==1) {
-      IPO_arg <- IPO_D1G1
-      YgivenX.Pred_arg <- YgivenX.Pred_D1G1}
+      IPO_arg <- IPO_D1
+      YgivenX.Pred_arg <- YgivenGX.Pred_D1}
 
     psi_dgg <- mean( as.numeric(data[,G]==g1)/mean(data[,G]==g1)*IPO_arg*mean(as.numeric(data[,G]==g2)/mean(data[,G]==g2)*data[,D]) )
     # Note that this is basically DML2. We could also use DML1:
@@ -197,28 +159,28 @@ cdgd0_manual <- function(Y,D,G,YgivenX.Pred_D0G0,YgivenX.Pred_D1G0,YgivenX.Pred_
   ### standard error estimates
   se <- function(x) {sqrt( mean(x^2)/nrow(data) )}
   total_se <- se( data[,G]/mean(data[,G])*(data[,Y]-Y_G1) - (1-data[,G])/(1-mean(data[,G]))*(data[,Y]-Y_G0) )
-  baseline_se <- se( data[,G]/mean(data[,G])*(IPO_D0G1-psi_01) - (1-data[,G])/(1-mean(data[,G]))*(IPO_D0G0-psi_00) )
+  baseline_se <- se( data[,G]/mean(data[,G])*(IPO_D0-psi_01) - (1-data[,G])/(1-mean(data[,G]))*(IPO_D0-psi_00) )
   # Alternatively, we could use
-  # se( c( data[sample1,G]/mean(data[sample1,G])*(IPO_D0G1[sample1]-psi_01) - (1-data[sample1,G])/(1-mean(data[sample1,G]))*(IPO_D0G0[sample1]-psi_00),
-  #         data[sample2,G]/mean(data[sample2,G])*(IPO_D0G1[sample2]-psi_01) - (1-data[sample2,G])/(1-mean(data[sample2,G]))*(IPO_D0G0[sample2]-psi_00) ) )
+  # se( c( data[sample1,G]/mean(data[sample1,G])*(IPO_D0[sample1]-psi_01) - (1-data[sample1,G])/(1-mean(data[sample1,G]))*(IPO_D0[sample1]-psi_00),
+  #         data[sample2,G]/mean(data[sample2,G])*(IPO_D0[sample2]-psi_01) - (1-data[sample2,G])/(1-mean(data[sample2,G]))*(IPO_D0[sample2]-psi_00) ) )
   # But there isn't a theoretically strong reason to prefer one over the other.
 
   EIF_dgg <- function(d,g1,g2) {
     if (d==0 & g1==0) {
-      IPO_arg <- IPO_D0G0
-      YgivenX.Pred_arg <- YgivenX.Pred_D0G0
+      IPO_arg <- IPO_D0
+      YgivenX.Pred_arg <- YgivenGX.Pred_D0
       psi_arg <- psi_00}
     if (d==1 & g1==0) {
-      IPO_arg <- IPO_D1G0
-      YgivenX.Pred_arg <- YgivenX.Pred_D1G0
+      IPO_arg <- IPO_D1
+      YgivenX.Pred_arg <- YgivenGX.Pred_D1
       psi_arg <- psi_10}
     if (d==0 & g1==1) {
-      IPO_arg <- IPO_D0G1
-      YgivenX.Pred_arg <- YgivenX.Pred_D0G1
+      IPO_arg <- IPO_D0
+      YgivenX.Pred_arg <- YgivenGX.Pred_D0
       psi_arg <- psi_01}
     if (d==1 & g1==1) {
-      IPO_arg <- IPO_D1G1
-      YgivenX.Pred_arg <- YgivenX.Pred_D1G1
+      IPO_arg <- IPO_D1
+      YgivenX.Pred_arg <- YgivenGX.Pred_D1
       psi_arg <- psi_11}
 
     return(
@@ -241,11 +203,11 @@ cdgd0_manual <- function(Y,D,G,YgivenX.Pred_D0G0,YgivenX.Pred_D1G0,YgivenX.Pred_
   prevalence_se <- se( EIF_dgg(1,0,1)-EIF_dgg(1,0,0)-EIF_dgg(0,0,1)+EIF_dgg(0,0,0) )
   effect_se <- se( EIF_dgg(1,1,1)-EIF_dgg(0,1,1)-EIF_dgg(1,0,1)+EIF_dgg(0,0,1) )
   selection_se <- se( data[,G]/mean(data[,G])*(data[,Y]-Y_G1) - (1-data[,G])/(1-mean(data[,G]))*(data[,Y]-Y_G0) -
-                        ( data[,G]/mean(data[,G])*(IPO_D0G1-psi_01) - (1-data[,G])/(1-mean(data[,G]))*(IPO_D0G0-psi_00) ) -
+                        ( data[,G]/mean(data[,G])*(IPO_D0-psi_01) - (1-data[,G])/(1-mean(data[,G]))*(IPO_D0-psi_00) ) -
                         ( EIF_dgg(1,0,1)-EIF_dgg(1,0,0)-EIF_dgg(0,0,1)+EIF_dgg(0,0,0) ) -
                         ( EIF_dgg(1,1,1)-EIF_dgg(0,1,1)-EIF_dgg(1,0,1)+EIF_dgg(0,0,1) ) )
 
-  Jackson_reduction_se <- se( (1-data[,G])/(1-mean(data[,G]))*(IPO_D0G0-psi_00)+EIF_dgg(1,0,1)-EIF_dgg(0,0,1)-(1-data[,G])/(1-mean(data[,G]))*(data[,Y]-Y_G0) )
+  Jackson_reduction_se <- se( (1-data[,G])/(1-mean(data[,G]))*(IPO_D0-psi_00)+EIF_dgg(1,0,1)-EIF_dgg(0,0,1)-(1-data[,G])/(1-mean(data[,G]))*(data[,Y]-Y_G0) )
 
   ### output results
   point <- c(total,
@@ -261,9 +223,9 @@ cdgd0_manual <- function(Y,D,G,YgivenX.Pred_D0G0,YgivenX.Pred_D1G0,YgivenX.Pred_
                       mean(data[,G]/mean(data[,G])*data[,D]),
                       mean((1-data[,G])/(1-mean(data[,G]))*data[,D]),
                       mean(data[,G]/mean(data[,G])*data[,D])-mean((1-data[,G])/(1-mean(data[,G]))*data[,D]),
-                      mean(data[,G]/mean(data[,G])*(IPO_D1G1-IPO_D0G1)),
-                      mean((1-data[,G])/(1-mean(data[,G]))*(IPO_D1G0-IPO_D0G0)),
-                      mean(data[,G]/mean(data[,G])*(IPO_D1G1-IPO_D0G1)) - mean((1-data[,G])/(1-mean(data[,G]))*(IPO_D1G0-IPO_D0G0)),
+                      mean(data[,G]/mean(data[,G])*(IPO_D1-IPO_D0)),
+                      mean((1-data[,G])/(1-mean(data[,G]))*(IPO_D1-IPO_D0)),
+                      mean(data[,G]/mean(data[,G])*(IPO_D1-IPO_D0)) - mean((1-data[,G])/(1-mean(data[,G]))*(IPO_D1-IPO_D0)),
                       Y_G1-psi_01-psi_dgg(1,1,1)+psi_dgg(0,1,1),
                       Y_G0-psi_00-psi_dgg(1,0,0)+psi_dgg(0,0,0),
                       Jackson_reduction)
@@ -276,16 +238,16 @@ cdgd0_manual <- function(Y,D,G,YgivenX.Pred_D0G0,YgivenX.Pred_D1G0,YgivenX.Pred_
 
   se_est_specific <- c(se( data[,G]/mean(data[,G])*(data[,Y]-Y_G1) ),
                        se( (1-data[,G])/(1-mean(data[,G]))*(data[,Y]-Y_G0) ),
-                       se( data[,G]/mean(data[,G])*(IPO_D0G1-psi_01)),
-                       se( (1-data[,G])/(1-mean(data[,G]))*(IPO_D0G0-psi_00)),
+                       se( data[,G]/mean(data[,G])*(IPO_D0-psi_01)),
+                       se( (1-data[,G])/(1-mean(data[,G]))*(IPO_D0-psi_00)),
                        se( data[,G]/mean(data[,G])*(data[,D]-mean(data[,G]/mean(data[,G])*data[,D])) ),
                        se( (1-data[,G])/(1-mean(data[,G]))*(data[,D]-mean((1-data[,G])/(1-mean(data[,G]))*data[,D])) ),
                        se( data[,G]/mean(data[,G])*(data[,D]-mean(data[,G]/mean(data[,G])*data[,D])) - (1-data[,G])/(1-mean(data[,G]))*(data[,D]-mean((1-data[,G])/(1-mean(data[,G]))*data[,D])) ),
-                       se( data[,G]/mean(data[,G])*(IPO_D1G1-IPO_D0G1-mean(data[,G]/mean(data[,G])*(IPO_D1G1-IPO_D0G1))) ),
-                       se( (1-data[,G])/(1-mean(data[,G]))*(IPO_D1G0-IPO_D0G0-mean((1-data[,G])/(1-mean(data[,G]))*(IPO_D1G0-IPO_D0G0))) ),
-                       se( data[,G]/mean(data[,G])*(IPO_D1G1-IPO_D0G1-mean(data[,G]/mean(data[,G])*(IPO_D1G1-IPO_D0G1))) - (1-data[,G])/(1-mean(data[,G]))*(IPO_D1G0-IPO_D0G0-mean((1-data[,G])/(1-mean(data[,G]))*(IPO_D1G0-IPO_D0G0))) ),
-                       se( data[,G]/mean(data[,G])*(data[,Y]-Y_G1)-data[,G]/mean(data[,G])*(IPO_D0G1-psi_01)-EIF_dgg(1,1,1)+EIF_dgg(0,1,1) ),
-                       se( (1-data[,G])/(1-mean(data[,G]))*(data[,Y]-Y_G0)-(1-data[,G])/(1-mean(data[,G]))*(IPO_D0G0-psi_00)-EIF_dgg(1,0,0)+EIF_dgg(0,0,0) ),
+                       se( data[,G]/mean(data[,G])*(IPO_D1-IPO_D0-mean(data[,G]/mean(data[,G])*(IPO_D1-IPO_D0))) ),
+                       se( (1-data[,G])/(1-mean(data[,G]))*(IPO_D1-IPO_D0-mean((1-data[,G])/(1-mean(data[,G]))*(IPO_D1-IPO_D0))) ),
+                       se( data[,G]/mean(data[,G])*(IPO_D1-IPO_D0-mean(data[,G]/mean(data[,G])*(IPO_D1-IPO_D0))) - (1-data[,G])/(1-mean(data[,G]))*(IPO_D1-IPO_D0-mean((1-data[,G])/(1-mean(data[,G]))*(IPO_D1-IPO_D0))) ),
+                       se( data[,G]/mean(data[,G])*(data[,Y]-Y_G1)-data[,G]/mean(data[,G])*(IPO_D0-psi_01)-EIF_dgg(1,1,1)+EIF_dgg(0,1,1) ),
+                       se( (1-data[,G])/(1-mean(data[,G]))*(data[,Y]-Y_G0)-(1-data[,G])/(1-mean(data[,G]))*(IPO_D0-psi_00)-EIF_dgg(1,0,0)+EIF_dgg(0,0,0) ),
                        Jackson_reduction_se)
 
   p_value <- (1-stats::pnorm(abs(point/se_est)))*2

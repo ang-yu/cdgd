@@ -1,9 +1,9 @@
 
 #' Perform conditional decomposition using nuisances predicted beforehand
 #'
-#' This function gives user full control over the estimation of the nuisance terms.
-#' For the unconditional decomposition, six nuisance terms need to be estimated.
-#' The nuisance terms should be estimated using cross-fitting if Donsker class is not assumed.
+#' This function gives user full control over the estimation of the nuisance functions.
+#' For the unconditional decomposition, six nuisance functions need to be estimated.
+#' The nuisance functions should be estimated using cross-fitting if Donsker class is not assumed.
 #'
 #' @param Y Outcome. The name of a continuous variable.
 #' @param D Treatment status. The name of a binary numeric variable taking values of 0 and 1.
@@ -249,7 +249,7 @@ cdgd1_manual <- function(Y,D,G,
 
   ### The "IPO" (individual potential outcome) function
   # For each d and g value, we have IE(d,g)=\frac{\one(D=d)}{\pi(d,X,g)}[Y-\mu(d,X,g)]+\mu(d,X,g)
-  # We stablize the weight by dividing the sample average of estimated weights
+  # We stabilize the weight by dividing the sample average of estimated weights
 
   IPO_D0G0 <- (1-data[,D])/(1-DgivenXQ.Pred_G0)/mean((1-data[,D])/(1-DgivenXQ.Pred_G0))*(data[,Y]-YgivenXQ.Pred_D0G0) + YgivenXQ.Pred_D0G0
   IPO_D1G0 <- data[,D]/DgivenXQ.Pred_G0/(mean(data[,D]/DgivenXQ.Pred_G0))*(data[,Y]-YgivenXQ.Pred_D1G0) + YgivenXQ.Pred_D1G0

@@ -8,12 +8,9 @@ cdgd0_manual(
   Y,
   D,
   G,
-  YgivenX.Pred_D0G0,
-  YgivenX.Pred_D1G0,
-  YgivenX.Pred_D0G1,
-  YgivenX.Pred_D1G1,
-  DgivenX.Pred_G0,
-  DgivenX.Pred_G1,
+  YgivenGX.Pred_D1,
+  YgivenGX.Pred_D0,
+  DgivenGX.Pred,
   data,
   alpha = 0.05
 )
@@ -25,17 +22,11 @@ cdgd0_manual(
 
 \item{G}{Advantaged group membership. The name of a binary numeric variable taking values of 0 and 1.}
 
-\item{YgivenX.Pred_D0G0}{A numeric vector of predicted Y values given X, D=0, and G=0. Vector length=nrow(data).}
+\item{YgivenGX.Pred_D1}{A numeric vector of predicted Y values given X, G, and D=1. Vector length=nrow(data).}
 
-\item{YgivenX.Pred_D1G0}{A numeric vector of predicted Y values given X, D=1, and G=0. Vector length=nrow(data).}
+\item{YgivenGX.Pred_D0}{A numeric vector of predicted Y values given X, G, and D=0. Vector length=nrow(data).}
 
-\item{YgivenX.Pred_D0G1}{A numeric vector of predicted Y values given X, D=0, and G=1. Vector length=nrow(data).}
-
-\item{YgivenX.Pred_D1G1}{A numeric vector of predicted Y values given X, D=1, and G=1. Vector length=nrow(data).}
-
-\item{DgivenX.Pred_G0}{A numeric vector of predicted D values given X and G=1. Vector length=nrow(data).}
-
-\item{DgivenX.Pred_G1}{A numeric vector of predicted D values given X and G=0. Vector length=nrow(data).}
+\item{DgivenGX.Pred}{A numeric vector of predicted D values given X and G. Vector length=nrow(data).}
 
 \item{data}{A data frame.}
 
@@ -45,9 +36,9 @@ cdgd0_manual(
 A list of estimates.
 }
 \description{
-This function gives user full control over the estimation of the nuisance terms.
-For the unconditional decomposition, six nuisance terms need to be estimated.
-The nuisance terms should be estimated using cross-fitting if Donsker class is not assumed.
+This function gives the user full control over the estimation of the nuisance functions.
+For the unconditional decomposition, three nuisance functions (YgivenGX.Pred_D0, YgivenGX.Pred_D1, and DgivenGX.Pred) need to be estimated.
+The nuisance functions should be estimated using cross-fitting if Donsker class is not assumed.
 }
 \examples{
 data(exp_data)
@@ -87,49 +78,29 @@ message <- utils::capture.output( DgivenGX.Model.sample2 <- caret::train(stats::
 data[,D] <- as.numeric(data[,D])-1
 
 ### cross-fitted predictions
-YgivenX.Pred_D0G0 <- YgivenX.Pred_D1G0 <- YgivenX.Pred_D0G1 <- YgivenX.Pred_D1G1 <- DgivenX.Pred_G0 <- DgivenX.Pred_G1 <- rep(NA, nrow(data))
+YgivenGX.Pred_D0 <- YgivenGX.Pred_D1 <- DgivenGX.Pred <- rep(NA, nrow(data))
 
 pred_data <- data
 pred_data[,D] <- 0
 pred_data[,G] <- 0
-YgivenX.Pred_D0G0[sample1] <- stats::predict(YgivenDGX.Model.sample1, newdata = pred_data[sample2,])
-YgivenX.Pred_D0G0[sample2] <- stats::predict(YgivenDGX.Model.sample2, newdata = pred_data[sample1,])
+YgivenGX.Pred_D0[sample2] <- stats::predict(YgivenDGX.Model.sample1, newdata = pred_data[sample2,])
+YgivenGX.Pred_D0[sample1] <- stats::predict(YgivenDGX.Model.sample2, newdata = pred_data[sample1,])
 
 pred_data <- data
 pred_data[,D] <- 1
 pred_data[,G] <- 0
-YgivenX.Pred_D1G0[sample1] <- stats::predict(YgivenDGX.Model.sample1, newdata = pred_data[sample2,])
-YgivenX.Pred_D1G0[sample2] <- stats::predict(YgivenDGX.Model.sample2, newdata = pred_data[sample1,])
-
-pred_data <- data
-pred_data[,D] <- 0
-pred_data[,G] <- 1
-YgivenX.Pred_D0G1[sample1] <- stats::predict(YgivenDGX.Model.sample1, newdata = pred_data[sample2,])
-YgivenX.Pred_D0G1[sample2] <- stats::predict(YgivenDGX.Model.sample2, newdata = pred_data[sample1,])
-
-pred_data <- data
-pred_data[,D] <- 1
-pred_data[,G] <- 1
-YgivenX.Pred_D1G1[sample1] <- stats::predict(YgivenDGX.Model.sample1, newdata = pred_data[sample2,])
-YgivenX.Pred_D1G1[sample2] <- stats::predict(YgivenDGX.Model.sample2, newdata = pred_data[sample1,])
+YgivenGX.Pred_D1[sample2] <- stats::predict(YgivenDGX.Model.sample1, newdata = pred_data[sample2,])
+YgivenGX.Pred_D1[sample1] <- stats::predict(YgivenDGX.Model.sample2, newdata = pred_data[sample1,])
 
 pred_data <- data
 pred_data[,G] <- 0
-DgivenX.Pred_G0[sample1] <- stats::predict(DgivenGX.Model.sample1, newdata = pred_data[sample2,], type="prob")[,2]
-DgivenX.Pred_G0[sample2] <- stats::predict(DgivenGX.Model.sample2, newdata = pred_data[sample1,], type="prob")[,2]
-
-pred_data <- data
-pred_data[,G] <- 1
-DgivenX.Pred_G1[sample1] <- stats::predict(DgivenGX.Model.sample1, newdata = pred_data[sample2,], type="prob")[,2]
-DgivenX.Pred_G1[sample2] <- stats::predict(DgivenGX.Model.sample2, newdata = pred_data[sample1,], type="prob")[,2]
+DgivenGX.Pred[sample2] <- stats::predict(DgivenGX.Model.sample1, newdata = pred_data[sample2,], type="prob")[,2]
+DgivenGX.Pred[sample1] <- stats::predict(DgivenGX.Model.sample2, newdata = pred_data[sample1,], type="prob")[,2]
 
 results <- cdgd0_manual(Y=Y,D=D,G=G,
-                       YgivenX.Pred_D0G0=YgivenX.Pred_D0G0,
-                       YgivenX.Pred_D1G0=YgivenX.Pred_D1G0,
-                       YgivenX.Pred_D0G1=YgivenX.Pred_D0G1,
-                       YgivenX.Pred_D1G1=YgivenX.Pred_D1G1,
-                       DgivenX.Pred_G0=DgivenX.Pred_G0,
-                       DgivenX.Pred_G1=DgivenX.Pred_G1,
+                       YgivenGX.Pred_D0=YgivenGX.Pred_D0,
+                       YgivenGX.Pred_D1=YgivenGX.Pred_D1,
+                       DgivenGX.Pred=DgivenGX.Pred,
                        data=data)
 
 results
