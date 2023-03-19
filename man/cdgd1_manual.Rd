@@ -8,12 +8,9 @@ cdgd1_manual(
   Y,
   D,
   G,
-  YgivenXQ.Pred_D0G0,
-  YgivenXQ.Pred_D1G0,
-  YgivenXQ.Pred_D0G1,
-  YgivenXQ.Pred_D1G1,
-  DgivenXQ.Pred_G0,
-  DgivenXQ.Pred_G1,
+  YgivenGXQ.Pred_D0,
+  YgivenGXQ.Pred_D1,
+  DgivenGXQ.Pred,
   Y0givenQ.Pred_G0,
   Y0givenQ.Pred_G1,
   Y1givenQ.Pred_G0,
@@ -32,17 +29,11 @@ cdgd1_manual(
 
 \item{G}{Advantaged group membership. The name of a binary numeric variable taking values of 0 and 1.}
 
-\item{YgivenXQ.Pred_D0G0}{A numeric vector of predicted Y values given X, D=0, and G=0. Vector length=nrow(data).}
+\item{YgivenGXQ.Pred_D0}{A numeric vector of predicted Y values given X, G, and D=0. Vector length=nrow(data).}
 
-\item{YgivenXQ.Pred_D1G0}{A numeric vector of predicted Y values given X, D=1, and G=0. Vector length=nrow(data).}
+\item{YgivenGXQ.Pred_D1}{A numeric vector of predicted Y values given X, G, and D=1. Vector length=nrow(data).}
 
-\item{YgivenXQ.Pred_D0G1}{A numeric vector of predicted Y values given X, D=0, and G=1. Vector length=nrow(data).}
-
-\item{YgivenXQ.Pred_D1G1}{A numeric vector of predicted Y values given X, D=1, and G=1. Vector length=nrow(data).}
-
-\item{DgivenXQ.Pred_G0}{A numeric vector of predicted D values given X and G=1. Vector length=nrow(data).}
-
-\item{DgivenXQ.Pred_G1}{A numeric vector of predicted D values given X and G=0. Vector length=nrow(data).}
+\item{DgivenGXQ.Pred}{A numeric vector of predicted D values given X and G. Vector length=nrow(data).}
 
 \item{Y0givenQ.Pred_G0}{A numeric vector of predicted Y(0) values given Q and G=0. Vector length=nrow(data).}
 
@@ -66,9 +57,9 @@ cdgd1_manual(
 A dataframe of estimates.
 }
 \description{
-This function gives user full control over the estimation of the nuisance terms.
-For the unconditional decomposition, six nuisance terms need to be estimated.
-The nuisance terms should be estimated using cross-fitting if Donsker class is not assumed.
+This function gives user full control over the estimation of the nuisance functions.
+For the unconditional decomposition, ten nuisance functions need to be estimated.
+The nuisance functions should be estimated using cross-fitting if Donsker class is not assumed.
 }
 \examples{
 data(exp_data)
@@ -108,44 +99,25 @@ message <- utils::capture.output( DgivenGXQ.Model.sample2 <- caret::train(stats:
 data[,D] <- as.numeric(data[,D])-1
 
 ### cross-fitted predictions
-YgivenXQ.Pred_D0G0 <- YgivenXQ.Pred_D1G0 <- YgivenXQ.Pred_D0G1 <- YgivenXQ.Pred_D1G1 <- DgivenXQ.Pred_G0 <- DgivenXQ.Pred_G1 <- rep(NA, nrow(data))
+YgivenGXQ.Pred_D0 <- YgivenGXQ.Pred_D1 <- DgivenGXQ.Pred <- rep(NA, nrow(data))
 
 pred_data <- data
 pred_data[,D] <- 0
-pred_data[,G] <- 0
-YgivenXQ.Pred_D0G0[sample1] <- stats::predict(YgivenDGXQ.Model.sample1, newdata = pred_data[sample2,])
-YgivenXQ.Pred_D0G0[sample2] <- stats::predict(YgivenDGXQ.Model.sample2, newdata = pred_data[sample1,])
+YgivenGXQ.Pred_D0[sample2] <- stats::predict(YgivenDGXQ.Model.sample1, newdata = pred_data[sample2,])
+YgivenGXQ.Pred_D0[sample1] <- stats::predict(YgivenDGXQ.Model.sample2, newdata = pred_data[sample1,])
 
 pred_data <- data
 pred_data[,D] <- 1
-pred_data[,G] <- 0
-YgivenXQ.Pred_D1G0[sample1] <- stats::predict(YgivenDGXQ.Model.sample1, newdata = pred_data[sample2,])
-YgivenXQ.Pred_D1G0[sample2] <- stats::predict(YgivenDGXQ.Model.sample2, newdata = pred_data[sample1,])
+YgivenGXQ.Pred_D1[sample2] <- stats::predict(YgivenDGXQ.Model.sample1, newdata = pred_data[sample2,])
+YgivenGXQ.Pred_D1[sample1] <- stats::predict(YgivenDGXQ.Model.sample2, newdata = pred_data[sample1,])
 
 pred_data <- data
-pred_data[,D] <- 0
-pred_data[,G] <- 1
-YgivenXQ.Pred_D0G1[sample1] <- stats::predict(YgivenDGXQ.Model.sample1, newdata = pred_data[sample2,])
-YgivenXQ.Pred_D0G1[sample2] <- stats::predict(YgivenDGXQ.Model.sample2, newdata = pred_data[sample1,])
-
-pred_data <- data
-pred_data[,D] <- 1
-pred_data[,G] <- 1
-YgivenXQ.Pred_D1G1[sample1] <- stats::predict(YgivenDGXQ.Model.sample1, newdata = pred_data[sample2,])
-YgivenXQ.Pred_D1G1[sample2] <- stats::predict(YgivenDGXQ.Model.sample2, newdata = pred_data[sample1,])
-
-pred_data <- data
-pred_data[,G] <- 0
-DgivenXQ.Pred_G0[sample1] <- stats::predict(DgivenGXQ.Model.sample1, newdata = pred_data[sample2,], type="prob")[,2]
-DgivenXQ.Pred_G0[sample2] <- stats::predict(DgivenGXQ.Model.sample2, newdata = pred_data[sample1,], type="prob")[,2]
-
-pred_data <- data
-pred_data[,G] <- 1
-DgivenXQ.Pred_G1[sample1] <- stats::predict(DgivenGXQ.Model.sample1, newdata = pred_data[sample2,], type="prob")[,2]
-DgivenXQ.Pred_G1[sample2] <- stats::predict(DgivenGXQ.Model.sample2, newdata = pred_data[sample1,], type="prob")[,2]
+DgivenGXQ.Pred[sample2] <- stats::predict(DgivenGXQ.Model.sample1, newdata = pred_data[sample2,], type="prob")[,2]
+DgivenGXQ.Pred[sample1] <- stats::predict(DgivenGXQ.Model.sample2, newdata = pred_data[sample1,], type="prob")[,2]
 
 ### Estimate E(Y_d | Q,g)
-YgivenGXQ.Pred_D1_ncf <- YgivenGXQ.Pred_D0_ncf <- DgivenXQ.Pred_ncf <- rep(NA, nrow(data)) # ncf stands for non-cross-fitted
+YgivenGXQ.Pred_D1_ncf <- YgivenGXQ.Pred_D0_ncf <- DgivenGXQ.Pred_ncf <- rep(NA, nrow(data)) # ncf stands for non-cross-fitted
+
 pred_data <- data
 pred_data[,D] <- 1
 YgivenGXQ.Pred_D1_ncf[sample1] <- stats::predict(YgivenDGXQ.Model.sample1, newdata = pred_data[sample1,])
@@ -156,20 +128,12 @@ pred_data[,D] <- 0
 YgivenGXQ.Pred_D0_ncf[sample1] <- stats::predict(YgivenDGXQ.Model.sample1, newdata = pred_data[sample1,])
 YgivenGXQ.Pred_D0_ncf[sample2] <- stats::predict(YgivenDGXQ.Model.sample2, newdata = pred_data[sample2,])
 
-DgivenXQ.Pred_ncf[sample1] <- stats::predict(DgivenGXQ.Model.sample1, newdata = pred_data[sample1,], type="prob")[,2]
-DgivenXQ.Pred_ncf[sample2] <- stats::predict(DgivenGXQ.Model.sample2, newdata = pred_data[sample2,], type="prob")[,2]
-
-zero_one <- sum(DgivenXQ.Pred_ncf==0)+sum(DgivenXQ.Pred_ncf==1)
-if ( zero_one>0 ) {
-  stop(
-    paste("D given X and Q are exact 0 or 1 in", zero_one, "cases.", sep=" "),
-    call. = FALSE
-  )
-}
+DgivenGXQ.Pred_ncf[sample1] <- stats::predict(DgivenGXQ.Model.sample1, newdata = pred_data[sample1,], type="prob")[,2]
+DgivenGXQ.Pred_ncf[sample2] <- stats::predict(DgivenGXQ.Model.sample2, newdata = pred_data[sample2,], type="prob")[,2]
 
 # IPOs for modelling E(Y_d | Q,g)
-IPO_D0_ncf <- (1-data[,D])/(1-DgivenXQ.Pred_ncf)/mean((1-data[,D])/(1-DgivenXQ.Pred_ncf))*(data[,Y]-YgivenGXQ.Pred_D0_ncf) + YgivenGXQ.Pred_D0_ncf
-IPO_D1_ncf <- data[,D]/DgivenXQ.Pred_ncf/(mean(data[,D]/DgivenXQ.Pred_ncf))*(data[,Y]-YgivenGXQ.Pred_D1_ncf) + YgivenGXQ.Pred_D1_ncf
+IPO_D0_ncf <- (1-data[,D])/(1-DgivenGXQ.Pred_ncf)/mean((1-data[,D])/(1-DgivenGXQ.Pred_ncf))*(data[,Y]-YgivenGXQ.Pred_D0_ncf) + YgivenGXQ.Pred_D0_ncf
+IPO_D1_ncf <- data[,D]/DgivenGXQ.Pred_ncf/mean(data[,D]/DgivenGXQ.Pred_ncf)*(data[,Y]-YgivenGXQ.Pred_D1_ncf) + YgivenGXQ.Pred_D1_ncf
 
 data_temp <- data[,c(G,Q)]
 data_temp$IPO_D0_ncf <- IPO_D0_ncf
@@ -192,17 +156,17 @@ Y0givenQ.Pred_G0 <- Y0givenQ.Pred_G1 <- Y1givenQ.Pred_G0 <- Y1givenQ.Pred_G1 <- 
 
 pred_data <- data
 pred_data[,G] <- 1
-Y0givenQ.Pred_G1[sample1] <- stats::predict(Y0givenGQ.Model.sample1, newdata = pred_data[sample2,])  # cross-fitting is used
-Y0givenQ.Pred_G1[sample2] <- stats::predict(Y0givenGQ.Model.sample2, newdata = pred_data[sample1,])
-Y1givenQ.Pred_G1[sample1] <- stats::predict(Y1givenGQ.Model.sample1, newdata = pred_data[sample2,])
-Y1givenQ.Pred_G1[sample2] <- stats::predict(Y1givenGQ.Model.sample2, newdata = pred_data[sample1,])
+Y0givenQ.Pred_G1[sample2] <- stats::predict(Y0givenGQ.Model.sample1, newdata = pred_data[sample2,])  # cross-fitting is used
+Y0givenQ.Pred_G1[sample1] <- stats::predict(Y0givenGQ.Model.sample2, newdata = pred_data[sample1,])
+Y1givenQ.Pred_G1[sample2] <- stats::predict(Y1givenGQ.Model.sample1, newdata = pred_data[sample2,])
+Y1givenQ.Pred_G1[sample1] <- stats::predict(Y1givenGQ.Model.sample2, newdata = pred_data[sample1,])
 
 pred_data <- data
 pred_data[,G] <- 0
-Y0givenQ.Pred_G0[sample1] <- stats::predict(Y0givenGQ.Model.sample1, newdata = pred_data[sample2,])  # cross-fitting is used
-Y0givenQ.Pred_G0[sample2] <- stats::predict(Y0givenGQ.Model.sample2, newdata = pred_data[sample1,])
-Y1givenQ.Pred_G0[sample1] <- stats::predict(Y1givenGQ.Model.sample1, newdata = pred_data[sample2,])
-Y1givenQ.Pred_G0[sample2] <- stats::predict(Y1givenGQ.Model.sample2, newdata = pred_data[sample1,])
+Y0givenQ.Pred_G0[sample2] <- stats::predict(Y0givenGQ.Model.sample1, newdata = pred_data[sample2,])  # cross-fitting is used
+Y0givenQ.Pred_G0[sample1] <- stats::predict(Y0givenGQ.Model.sample2, newdata = pred_data[sample1,])
+Y1givenQ.Pred_G0[sample2] <- stats::predict(Y1givenGQ.Model.sample1, newdata = pred_data[sample2,])
+Y1givenQ.Pred_G0[sample1] <- stats::predict(Y1givenGQ.Model.sample2, newdata = pred_data[sample1,])
 
 ### Estimate E(D | Q,g')
 data[,D] <- as.factor(data[,D])
@@ -220,13 +184,13 @@ DgivenQ.Pred_G0 <- DgivenQ.Pred_G1 <- rep(NA, nrow(data))
 
 pred_data <- data
 pred_data[,G] <- 0
-DgivenQ.Pred_G0[sample1] <- stats::predict(DgivenGQ.Model.sample1, newdata = pred_data[sample2,], type="prob")[,2]
-DgivenQ.Pred_G0[sample2] <- stats::predict(DgivenGQ.Model.sample2, newdata = pred_data[sample1,], type="prob")[,2]
+DgivenQ.Pred_G0[sample2] <- stats::predict(DgivenGQ.Model.sample1, newdata = pred_data[sample2,], type="prob")[,2]
+DgivenQ.Pred_G0[sample1] <- stats::predict(DgivenGQ.Model.sample2, newdata = pred_data[sample1,], type="prob")[,2]
 
 pred_data <- data
 pred_data[,G] <- 1
-DgivenQ.Pred_G1[sample1] <- stats::predict(DgivenGQ.Model.sample1, newdata = pred_data[sample2,], type="prob")[,2]
-DgivenQ.Pred_G1[sample2] <- stats::predict(DgivenGQ.Model.sample2, newdata = pred_data[sample1,], type="prob")[,2]
+DgivenQ.Pred_G1[sample2] <- stats::predict(DgivenGQ.Model.sample1, newdata = pred_data[sample2,], type="prob")[,2]
+DgivenQ.Pred_G1[sample1] <- stats::predict(DgivenGQ.Model.sample2, newdata = pred_data[sample1,], type="prob")[,2]
 
 ### Estimate p_g(Q)=Pr(G=g | Q)
 data[,G] <- as.factor(data[,G])
@@ -241,17 +205,14 @@ message <- utils::capture.output( GgivenQ.Model.sample2 <- caret::train(stats::a
 data[,G] <- as.numeric(data[,G])-1
 
 GgivenQ.Pred <- rep(NA, nrow(data))
-GgivenQ.Pred[sample1] <- stats::predict(DgivenGQ.Model.sample1, newdata = data[sample2,], type="prob")[,2]
-GgivenQ.Pred[sample2] <- stats::predict(DgivenGQ.Model.sample2, newdata = data[sample1,], type="prob")[,2]
+GgivenQ.Pred[sample2] <- stats::predict(DgivenGQ.Model.sample1, newdata = data[sample2,], type="prob")[,2]
+GgivenQ.Pred[sample1] <- stats::predict(DgivenGQ.Model.sample2, newdata = data[sample1,], type="prob")[,2]
 
 
 results <- cdgd1_manual(Y=Y,D=D,G=G,
-                        YgivenXQ.Pred_D0G0=YgivenXQ.Pred_D0G0,
-                        YgivenXQ.Pred_D1G0=YgivenXQ.Pred_D1G0,
-                        YgivenXQ.Pred_D0G1=YgivenXQ.Pred_D0G1,
-                        YgivenXQ.Pred_D1G1=YgivenXQ.Pred_D1G1,
-                        DgivenXQ.Pred_G0=DgivenXQ.Pred_G0,
-                        DgivenXQ.Pred_G1=DgivenXQ.Pred_G1,
+                        YgivenGXQ.Pred_D0=YgivenGXQ.Pred_D0,
+                        YgivenGXQ.Pred_D1=YgivenGXQ.Pred_D1,
+                        DgivenGXQ.Pred=DgivenGXQ.Pred,
                         Y0givenQ.Pred_G0=Y0givenQ.Pred_G0,
                         Y0givenQ.Pred_G1=Y0givenQ.Pred_G1,
                         Y1givenQ.Pred_G0=Y1givenQ.Pred_G0,
