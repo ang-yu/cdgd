@@ -112,7 +112,7 @@ cdgd0_ml <- function(Y,D,G,X,data,algorithm,alpha=0.05) {
   data[,D] <- as.numeric(data[,D])-1
 
   ### cross-fitted predictions
-  YgivenGX.Pred_D0 <- YgivenGX.Pred_D1 <- YgivenGX.Pred_D0 <- YgivenGX.Pred_D1 <- DgivenGX.Pred <- DgivenGX.Pred <- rep(NA, nrow(data))
+  YgivenGX.Pred_D0 <- YgivenGX.Pred_D1 <- DgivenGX.Pred <- rep(NA, nrow(data))
 
   pred_data <- data
   pred_data[,D] <- 0
