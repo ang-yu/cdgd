@@ -2,7 +2,7 @@
 % Please edit documentation in R/cdgd1_manual.R
 \name{cdgd1_manual}
 \alias{cdgd1_manual}
-\title{Perform conditional decomposition using nuisances predicted beforehand}
+\title{Perform conditional decomposition with nuisance functions estimated beforehand}
 \usage{
 cdgd1_manual(
   Y,
