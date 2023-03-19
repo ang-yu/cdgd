@@ -41,7 +41,7 @@ G="group_a",
 X="confounder",
 Q="Q",
 data=exp_data,
-algorithm="nnet")
+algorithm="gbm")
 
 results
 }

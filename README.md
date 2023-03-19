@@ -30,32 +30,32 @@ head(exp_data)
 #> 547 0.1912013         0 -0.02438458 -0.3704544       0
 ```
 
-### Use cdgd0_ml, cdgd0_pa, or cdgd0_manual to get unconditional decomposition
+### Use cdgd0_ml, cdgd0_pa, or cdgd0_manual for unconditional decomposition
 
 ``` r
 results0 <- cdgd0_pa(Y="outcome",D="treatment",G="group_a",X=c("confounder","Q"),data=exp_data,alpha=0.05)
 
 round(results0$results, 4)
 #>              point     se p_value CI_lower CI_upper
-#> total       0.2675 0.0390   0.000   0.1911   0.3439
-#> baseline    0.0400 0.0129   0.002   0.0146   0.0653
-#> prevalence  0.2565 0.0335   0.000   0.1908   0.3222
-#> effect     -0.1365 0.0208   0.000  -0.1773  -0.0957
-#> selection   0.1075 0.0139   0.000   0.0802   0.1348
+#> total       0.2675 0.0390  0.0000   0.1911   0.3439
+#> baseline    0.0421 0.0131  0.0013   0.0164   0.0678
+#> prevalence  0.2579 0.0337  0.0000   0.1919   0.3240
+#> effect     -0.1372 0.0209  0.0000  -0.1781  -0.0963
+#> selection   0.1047 0.0150  0.0000   0.0754   0.1340
 ```
 
-### Use cdgd1_ml, cdgd1_pa, or cdgd1_manual to get conditional decomposition
+### Use cdgd1_ml, cdgd1_pa, or cdgd1_manual for conditional decomposition
 
 ``` r
 results1 <- cdgd1_pa(Y="outcome",D="treatment",G="group_a",X="confounder",Q="Q",data=exp_data,alpha=0.05)
 
 round(results1, 4)
 #>                                 point     se p_value CI_lower CI_upper
-#> total                          0.2675 0.0390   0.000   0.1911   0.3439
-#> baseline                       0.0400 0.0129   0.002   0.0146   0.0653
-#> conditional prevalence         0.2086 0.0351   0.000   0.1398   0.2774
-#> conditional effect            -0.1529 0.0205   0.000  -0.1930  -0.1128
-#> conditional selection          0.0888 0.0135   0.000   0.0624   0.1151
-#> Q distribution                 0.0830 0.0110   0.000   0.0615   0.1045
-#> conditional Jackson reduction  0.2393 0.0355   0.000   0.1697   0.3089
+#> total                          0.2675 0.0390  0.0000   0.1911   0.3439
+#> baseline                       0.0421 0.0131  0.0013   0.0164   0.0678
+#> conditional prevalence         0.2032 0.0371  0.0000   0.1305   0.2760
+#> conditional effect            -0.1644 0.0220  0.0000  -0.2076  -0.1212
+#> conditional selection          0.0875 0.0143  0.0000   0.0595   0.1156
+#> Q distribution                 0.0990 0.0188  0.0000   0.0621   0.1359
+#> conditional Jackson reduction  0.2362 0.0378  0.0000   0.1621   0.3103
 ```
