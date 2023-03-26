@@ -43,8 +43,8 @@ cdgd0_pa <- function(Y,D,G,X,data,alpha=0.05,trim=0) {
 
   # trim the sample based on the propensity score
   dropped <- sum(DgivenGX.Pred<trim | DgivenGX.Pred>1-trim)  # the number of dropped obs
-  DgivenGX.Pred <- DgivenGX.Pred[DgivenGX.Pred>=trim & DgivenGX.Pred<=1-trim]
   data <- data[DgivenGX.Pred>=trim & DgivenGX.Pred<=1-trim, ]
+  DgivenGX.Pred <- DgivenGX.Pred[DgivenGX.Pred>=trim & DgivenGX.Pred<=1-trim]
 
   zero_one <- sum(DgivenGX.Pred==0)+sum(DgivenGX.Pred==1)
   if ( zero_one>0 ) {
