@@ -145,6 +145,7 @@ cdgd1_ml <- function(Y,D,G,X,Q,data,algorithm,alpha=0.05,trim1=0,trim2=0) {
   sample2 <- setdiff(1:nrow(data), sample1)
 
   DgivenGXQ.Pred <- DgivenGXQ.Pred[GgivenQ.Pred>=trim2 & GgivenQ.Pred<=1-trim2]
+  DgivenGXQ.Pred_ncf <- DgivenGXQ.Pred_ncf[GgivenQ.Pred>=trim2 & GgivenQ.Pred<=1-trim2]
   GgivenQ.Pred <- GgivenQ.Pred[GgivenQ.Pred>=trim2 & GgivenQ.Pred<=1-trim2]
 
   zero_one <- sum(GgivenQ.Pred==0)+sum(GgivenQ.Pred==1)
