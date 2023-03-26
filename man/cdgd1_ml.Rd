@@ -4,7 +4,7 @@
 \alias{cdgd1_ml}
 \title{Perform conditional decomposition via Machine Learning}
 \usage{
-cdgd1_ml(Y, D, G, X, Q, data, algorithm, alpha = 0.05)
+cdgd1_ml(Y, D, G, X, Q, data, algorithm, alpha = 0.05, trim1 = 0, trim2 = 0)
 }
 \arguments{
 \item{Y}{Outcome. The name of a continuous variable.}
@@ -23,7 +23,9 @@ cdgd1_ml(Y, D, G, X, Q, data, algorithm, alpha = 0.05)
 
 \item{alpha}{1-alpha confidence interval.}
 
-\item{trim}{Threshold for trimming the propensity score. When trim=a, individuals with propensity scores lower than a or higher than 1-a will be dropped.}
+\item{trim1}{Threshold for trimming the propensity score. When trim1=a, individuals with propensity scores lower than a or higher than 1-a will be dropped.}
+
+\item{trim2}{Threshold for trimming the G given Q predictions. When trim2=a, individuals with G given Q predictions lower than a or higher than 1-a will be dropped.}
 }
 \value{
 A dataframe of estimates.

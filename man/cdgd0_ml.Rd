@@ -4,7 +4,7 @@
 \alias{cdgd0_ml}
 \title{Perform unconditional decomposition via Machine Learning}
 \usage{
-cdgd0_ml(Y, D, G, X, data, algorithm, alpha = 0.05)
+cdgd0_ml(Y, D, G, X, data, algorithm, alpha = 0.05, trim = 0)
 }
 \arguments{
 \item{Y}{Outcome. The name of a continuous variable.}

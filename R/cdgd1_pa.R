@@ -10,7 +10,8 @@
 #' @param X Confounders. The vector of the names of numeric variables.
 #' @param data A data frame.
 #' @param alpha 1-alpha confidence interval.
-#' @param trim Threshold for trimming the propensity score. When trim=a, individuals with propensity scores lower than a or higher than 1-a will be dropped.
+#' @param trim1 Threshold for trimming the propensity score. When trim1=a, individuals with propensity scores lower than a or higher than 1-a will be dropped.
+#' @param trim2 Threshold for trimming the G given Q predictions. When trim2=a, individuals with G given Q predictions lower than a or higher than 1-a will be dropped.
 #'
 #' @return A dataframe of estimates.
 #'
@@ -31,11 +32,11 @@
 
 
 
-cdgd1_pa <- function(Y,D,G,X,Q,data,alpha=0.05,trim=0) {
+cdgd1_pa <- function(Y,D,G,X,Q,data,alpha=0.05,trim1=0,trim2=0) {
 
   data <- as.data.frame(data)
 
-  # treatment model
+  ### treatment model
   DgivenGXQ.Model <- stats::glm(stats::as.formula(paste(D, paste(G,paste(Q,collapse="+"),paste(X,collapse="+"),sep="+"), sep="~")), data=data, family=stats::binomial(link="logit"))
 
   # treatment predictions
@@ -43,9 +44,9 @@ cdgd1_pa <- function(Y,D,G,X,Q,data,alpha=0.05,trim=0) {
   DgivenGXQ.Pred <- stats::predict(DgivenGXQ.Model, newdata = data, type="response")
 
   # trim the sample based on the propensity score
-  dropped <- sum(DgivenGXQ.Pred<trim | DgivenGXQ.Pred>1-trim)  # the number of dropped obs
-  data <- data[DgivenGXQ.Pred>=trim & DgivenGXQ.Pred<=1-trim, ]
-  DgivenGXQ.Pred <- DgivenGXQ.Pred[DgivenGXQ.Pred>=trim & DgivenGXQ.Pred<=1-trim]
+  dropped <- sum(DgivenGXQ.Pred<trim1 | DgivenGXQ.Pred>1-trim1)  # the number of dropped obs
+  data <- data[DgivenGXQ.Pred>=trim1 & DgivenGXQ.Pred<=1-trim1, ]
+  DgivenGXQ.Pred <- DgivenGXQ.Pred[DgivenGXQ.Pred>=trim1 & DgivenGXQ.Pred<=1-trim1]
 
   zero_one <- sum(DgivenGXQ.Pred==0)+sum(DgivenGXQ.Pred==1)
   if ( zero_one>0 ) {
@@ -55,7 +56,27 @@ cdgd1_pa <- function(Y,D,G,X,Q,data,alpha=0.05,trim=0) {
     )
   }
 
-  # outcome regression model
+  ### Estimate p_g(Q)=Pr(G=g | Q)
+  GgivenQ.Model <- stats::glm(stats::as.formula(paste(G, paste(Q,collapse="+"), sep="~")), data=data, family=stats::binomial(link="logit"))
+
+  GgivenQ.Pred <- rep(NA, nrow(data))
+  GgivenQ.Pred <- stats::predict(GgivenQ.Model, newdata = data, type="response")
+
+  # trim the sample based on the G given Q predictions
+  dropped <- dropped + sum(GgivenQ.Pred<trim2 | GgivenQ.Pred>1-trim2)  # update the number of dropped obs
+  data <- data[GgivenQ.Pred>=trim2 & GgivenQ.Pred<=1-trim2, ]
+  DgivenGXQ.Pred <- DgivenGXQ.Pred[GgivenQ.Pred>=trim2 & GgivenQ.Pred<=1-trim2]
+  GgivenQ.Pred <- GgivenQ.Pred[GgivenQ.Pred>=trim2 & GgivenQ.Pred<=1-trim2]
+
+  zero_one <- sum(GgivenQ.Pred==0)+sum(GgivenQ.Pred==1)
+  if ( zero_one>0 ) {
+    stop(
+      paste("G given Q are exact 0 or 1 in", zero_one, "cases.", sep=" "),
+      call. = FALSE
+    )
+  }
+
+  ### outcome regression model
   YgivenDGXQ.Model <- stats::lm(stats::as.formula(paste(Y, paste(paste(D,c(G,Q,X),sep="*"),collapse="+"), sep="~")), data=data)
 
   # outcome predictions
@@ -132,20 +153,6 @@ cdgd1_pa <- function(Y,D,G,X,Q,data,alpha=0.05,trim=0) {
   pred_data <- data
   pred_data[,G] <- 1
   DgivenQ.Pred_G1 <- stats::predict(DgivenGQ.Model, newdata = pred_data, type="response")
-
-  ### Estimate p_g(Q)=Pr(G=g | Q)
-  GgivenQ.Model <- stats::glm(stats::as.formula(paste(G, paste(Q,collapse="+"), sep="~")), data=data, family=stats::binomial(link="logit"))
-
-  GgivenQ.Pred <- rep(NA, nrow(data))
-  GgivenQ.Pred <- stats::predict(GgivenQ.Model, newdata = data, type="response")
-
-  zero_one <- sum(GgivenQ.Pred==0)+sum(GgivenQ.Pred==1)
-  if ( zero_one>0 ) {
-    stop(
-      paste("G given Q are exact 0 or 1 in", zero_one, "cases.", sep=" "),
-      call. = FALSE
-    )
-  }
 
   ### The one-step estimate of \xi_{dg}
   psi_00 <- mean( (1-data[,G])/(1-mean(data[,G]))*IPO_D0 )

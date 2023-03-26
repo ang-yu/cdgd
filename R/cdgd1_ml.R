@@ -11,7 +11,8 @@
 #' @param data A data frame.
 #' @param algorithm The ML algorithm for modelling. "nnet" for neural network, "ranger" for random forests, "gbm" for generalized boosted models.
 #' @param alpha 1-alpha confidence interval.
-#' @param trim Threshold for trimming the propensity score. When trim=a, individuals with propensity scores lower than a or higher than 1-a will be dropped.
+#' @param trim1 Threshold for trimming the propensity score. When trim1=a, individuals with propensity scores lower than a or higher than 1-a will be dropped.
+#' @param trim2 Threshold for trimming the G given Q predictions. When trim2=a, individuals with G given Q predictions lower than a or higher than 1-a will be dropped.
 #'
 #' @return A dataframe of estimates.
 #'
@@ -35,7 +36,7 @@
 
 
 
-cdgd1_ml <- function(Y,D,G,X,Q,data,algorithm,alpha=0.05,trim=0) {
+cdgd1_ml <- function(Y,D,G,X,Q,data,algorithm,alpha=0.05,trim1=0,trim2=0) {
 
   if (!requireNamespace("caret", quietly=TRUE)) {
     stop(
@@ -82,19 +83,67 @@ cdgd1_ml <- function(Y,D,G,X,Q,data,algorithm,alpha=0.05,trim=0) {
   DgivenGXQ.Pred[sample1] <- stats::predict(DgivenGXQ.Model.sample2, newdata = data[sample1,], type="prob")[,2]
 
   # trim the sample based on the propensity score
-  dropped <- sum(DgivenGXQ.Pred<trim | DgivenGXQ.Pred>1-trim)  # the number of dropped obs
+  dropped <- sum(DgivenGXQ.Pred<trim1 | DgivenGXQ.Pred>1-trim1)  # the number of dropped obs
 
   data$sample1 <- 1:nrow(data) %in% sample1    # sample 1 indicator for the new data
-  data <- data[DgivenGXQ.Pred>=trim & DgivenGXQ.Pred<=1-trim, ]
+  data <- data[DgivenGXQ.Pred>=trim1 & DgivenGXQ.Pred<=1-trim1, ]
   sample1 <- which(data$sample1)
   sample2 <- setdiff(1:nrow(data), sample1)
 
-  DgivenGXQ.Pred <- DgivenGXQ.Pred[DgivenGXQ.Pred>=trim & DgivenGXQ.Pred<=1-trim]
+  DgivenGXQ.Pred <- DgivenGXQ.Pred[DgivenGXQ.Pred>=trim1 & DgivenGXQ.Pred<=1-trim1]
 
   zero_one <- sum(DgivenGXQ.Pred==0)+sum(DgivenGXQ.Pred==1)
   if ( zero_one>0 ) {
     stop(
       paste("D given X, Q, and G are exact 0 or 1 in", zero_one, "cases.", sep=" "),
+      call. = FALSE
+    )
+  }
+
+### Estimate p_g(Q)=Pr(G=g | Q)
+  data[,G] <- as.factor(data[,G])
+  levels(data[,G]) <- c("G0","G1")  # necessary for caret implementation of ranger
+
+  if (algorithm=="nnet") {
+    message <- utils::capture.output( GgivenQ.Model.sample1 <- caret::train(stats::as.formula(paste(G, paste(Q,collapse="+"), sep="~")), data=data[sample1,], method="nnet",
+                                                                            preProc=c("center","scale"), trControl=caret::trainControl(method="cv"), linout=FALSE ))
+    message <- utils::capture.output( GgivenQ.Model.sample2 <- caret::train(stats::as.formula(paste(G, paste(Q,collapse="+"), sep="~")), data=data[sample2,], method="nnet",
+                                                                            preProc=c("center","scale"), trControl=caret::trainControl(method="cv"), linout=FALSE ))
+  }
+  if (algorithm=="ranger") {
+    message <- utils::capture.output( GgivenQ.Model.sample1 <- caret::train(stats::as.formula(paste(G, paste(Q,collapse="+"), sep="~")), data=data[sample1,], method="ranger",
+                                                                            trControl=caret::trainControl(method="cv", classProbs=TRUE)) )
+    message <- utils::capture.output( GgivenQ.Model.sample2 <- caret::train(stats::as.formula(paste(G, paste(Q,collapse="+"), sep="~")), data=data[sample2,], method="ranger",
+                                                                            trControl=caret::trainControl(method="cv", classProbs=TRUE)) )
+  }
+  if (algorithm=="gbm") {
+    message <- utils::capture.output( GgivenQ.Model.sample1 <- caret::train(stats::as.formula(paste(G, paste(Q,collapse="+"), sep="~")), data=data[sample1,], method="gbm",
+                                                                            trControl=caret::trainControl(method="cv")) )
+    message <- utils::capture.output( GgivenQ.Model.sample2 <- caret::train(stats::as.formula(paste(G, paste(Q,collapse="+"), sep="~")), data=data[sample2,], method="gbm",
+                                                                            trControl=caret::trainControl(method="cv")) )
+  }
+
+  data[,G] <- as.numeric(data[,G])-1
+
+  GgivenQ.Pred <- rep(NA, nrow(data))
+  GgivenQ.Pred[sample2] <- stats::predict(GgivenQ.Model.sample1, newdata = data[sample2,], type="prob")[,2]
+  GgivenQ.Pred[sample1] <- stats::predict(GgivenQ.Model.sample2, newdata = data[sample1,], type="prob")[,2]
+
+  # trim the sample based on the G given Q predictions
+  dropped <- dropped + sum(GgivenQ.Pred<trim2 | GgivenQ.Pred>1-trim2)  # update the number of dropped obs
+
+  data$sample1 <- 1:nrow(data) %in% sample1    # sample 1 indicator for the new data
+  data <- data[GgivenQ.Pred>=trim2 & GgivenQ.Pred<=1-trim2, ]
+  sample1 <- which(data$sample1)
+  sample2 <- setdiff(1:nrow(data), sample1)
+
+  DgivenGXQ.Pred <- DgivenGXQ.Pred[GgivenQ.Pred>=trim2 & GgivenQ.Pred<=1-trim2]
+  GgivenQ.Pred <- GgivenQ.Pred[GgivenQ.Pred>=trim2 & GgivenQ.Pred<=1-trim2]
+
+  zero_one <- sum(GgivenQ.Pred==0)+sum(GgivenQ.Pred==1)
+  if ( zero_one>0 ) {
+    stop(
+      paste("G given Q are exact 0 or 1 in", zero_one, "cases.", sep=" "),
       call. = FALSE
     )
   }
@@ -273,43 +322,6 @@ cdgd1_ml <- function(Y,D,G,X,Q,data,algorithm,alpha=0.05,trim=0) {
   pred_data[,G] <- 1
   DgivenQ.Pred_G1[sample2] <- stats::predict(DgivenGQ.Model.sample1, newdata = pred_data[sample2,], type="prob")[,2]
   DgivenQ.Pred_G1[sample1] <- stats::predict(DgivenGQ.Model.sample2, newdata = pred_data[sample1,], type="prob")[,2]
-
-### Estimate p_g(Q)=Pr(G=g | Q)
-  data[,G] <- as.factor(data[,G])
-  levels(data[,G]) <- c("G0","G1")  # necessary for caret implementation of ranger
-
-  if (algorithm=="nnet") {
-    message <- utils::capture.output( GgivenQ.Model.sample1 <- caret::train(stats::as.formula(paste(G, paste(Q,collapse="+"), sep="~")), data=data[sample1,], method="nnet",
-                                                                            preProc=c("center","scale"), trControl=caret::trainControl(method="cv"), linout=FALSE ))
-    message <- utils::capture.output( GgivenQ.Model.sample2 <- caret::train(stats::as.formula(paste(G, paste(Q,collapse="+"), sep="~")), data=data[sample2,], method="nnet",
-                                                                            preProc=c("center","scale"), trControl=caret::trainControl(method="cv"), linout=FALSE ))
-  }
-  if (algorithm=="ranger") {
-    message <- utils::capture.output( GgivenQ.Model.sample1 <- caret::train(stats::as.formula(paste(G, paste(Q,collapse="+"), sep="~")), data=data[sample1,], method="ranger",
-                                                                             trControl=caret::trainControl(method="cv", classProbs=TRUE)) )
-    message <- utils::capture.output( GgivenQ.Model.sample2 <- caret::train(stats::as.formula(paste(G, paste(Q,collapse="+"), sep="~")), data=data[sample2,], method="ranger",
-                                                                             trControl=caret::trainControl(method="cv", classProbs=TRUE)) )
-  }
-  if (algorithm=="gbm") {
-    message <- utils::capture.output( GgivenQ.Model.sample1 <- caret::train(stats::as.formula(paste(G, paste(Q,collapse="+"), sep="~")), data=data[sample1,], method="gbm",
-                                                                             trControl=caret::trainControl(method="cv")) )
-    message <- utils::capture.output( GgivenQ.Model.sample2 <- caret::train(stats::as.formula(paste(G, paste(Q,collapse="+"), sep="~")), data=data[sample2,], method="gbm",
-                                                                             trControl=caret::trainControl(method="cv")) )
-  }
-
-  data[,G] <- as.numeric(data[,G])-1
-
-  GgivenQ.Pred <- rep(NA, nrow(data))
-  GgivenQ.Pred[sample2] <- stats::predict(GgivenQ.Model.sample1, newdata = data[sample2,], type="prob")[,2]
-  GgivenQ.Pred[sample1] <- stats::predict(GgivenQ.Model.sample2, newdata = data[sample1,], type="prob")[,2]
-
-  zero_one <- sum(GgivenQ.Pred==0)+sum(GgivenQ.Pred==1)
-  if ( zero_one>0 ) {
-    stop(
-      paste("G given Q are exact 0 or 1 in", zero_one, "cases.", sep=" "),
-      call. = FALSE
-    )
-  }
 
 ### The one-step estimate of \xi_{dg}
   psi_00 <- mean( (1-data[,G])/(1-mean(data[,G]))*IPO_D0 )

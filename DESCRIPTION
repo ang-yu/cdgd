@@ -1,6 +1,6 @@
 Package: cdgd
 Title: Causal Decomposition of Group Disparities
-Version: 0.2.5
+Version: 0.2.6
 Authors@R: 
     person("Ang", "Yu", email = "ayu33@wisc.edu", role = c("aut", "cre"),
            comment = c(website = "https://ang-yu.github.io/",
