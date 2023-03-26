@@ -84,8 +84,8 @@ cdgd1_ml <- function(Y,D,G,X,Q,data,algorithm,alpha=0.05,trim1=0,trim2=0) {
 
   DgivenGXQ.Pred_ncf <- rep(NA, nrow(data)) # ncf stands for non-cross-fitted
 
-  DgivenGXQ.Pred_ncf[sample1] <- stats::predict(DgivenGXQ.Model.sample1, newdata = pred_data[sample1,], type="prob")[,2]
-  DgivenGXQ.Pred_ncf[sample2] <- stats::predict(DgivenGXQ.Model.sample2, newdata = pred_data[sample2,], type="prob")[,2]
+  DgivenGXQ.Pred_ncf[sample1] <- stats::predict(DgivenGXQ.Model.sample1, newdata = data[sample1,], type="prob")[,2]
+  DgivenGXQ.Pred_ncf[sample2] <- stats::predict(DgivenGXQ.Model.sample2, newdata = data[sample2,], type="prob")[,2]
 
   # trim the sample based on the propensity score
   dropped <- sum(DgivenGXQ.Pred<trim1 | DgivenGXQ.Pred>1-trim1 | DgivenGXQ.Pred_ncf<trim1 | DgivenGXQ.Pred_ncf>1-trim)  # the number of dropped obs
