@@ -88,7 +88,7 @@ cdgd1_ml <- function(Y,D,G,X,Q,data,algorithm,alpha=0.05,trim1=0,trim2=0) {
   DgivenGXQ.Pred_ncf[sample2] <- stats::predict(DgivenGXQ.Model.sample2, newdata = data[sample2,], type="prob")[,2]
 
   # trim the sample based on the propensity score
-  dropped <- sum(DgivenGXQ.Pred<trim1 | DgivenGXQ.Pred>1-trim1 | DgivenGXQ.Pred_ncf<trim1 | DgivenGXQ.Pred_ncf>1-trim)  # the number of dropped obs
+  dropped <- sum(DgivenGXQ.Pred<trim1 | DgivenGXQ.Pred>1-trim1 | DgivenGXQ.Pred_ncf<trim1 | DgivenGXQ.Pred_ncf>1-trim1)  # the number of dropped obs
 
   data$sample1 <- 1:nrow(data) %in% sample1    # sample 1 indicator for the new data
   data <- data[DgivenGXQ.Pred>=trim1 & DgivenGXQ.Pred<=1-trim1 & DgivenGXQ.Pred_ncf>=trim1 & DgivenGXQ.Pred_ncf<=1-trim1, ]
