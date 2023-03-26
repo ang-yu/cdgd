@@ -91,12 +91,13 @@ cdgd1_ml <- function(Y,D,G,X,Q,data,algorithm,alpha=0.05,trim1=0,trim2=0) {
   dropped <- sum(DgivenGXQ.Pred<trim1 | DgivenGXQ.Pred>1-trim1 | DgivenGXQ.Pred_ncf<trim1 | DgivenGXQ.Pred_ncf>1-trim1)  # the number of dropped obs
 
   data$sample1 <- 1:nrow(data) %in% sample1    # sample 1 indicator for the new data
-  data <- data[DgivenGXQ.Pred>=trim1 & DgivenGXQ.Pred<=1-trim1 & DgivenGXQ.Pred_ncf>=trim1 & DgivenGXQ.Pred_ncf<=1-trim1, ]
+  keeping_ind <- DgivenGXQ.Pred>=trim1 & DgivenGXQ.Pred<=1-trim1 & DgivenGXQ.Pred_ncf>=trim1 & DgivenGXQ.Pred_ncf<=1-trim1 # must have this for cdgd1_ml
+  data <- data[keeping_ind, ]
   sample1 <- which(data$sample1)
   sample2 <- setdiff(1:nrow(data), sample1)
 
-  DgivenGXQ.Pred <- DgivenGXQ.Pred[DgivenGXQ.Pred>=trim1 & DgivenGXQ.Pred<=1-trim1 & DgivenGXQ.Pred_ncf>=trim1 & DgivenGXQ.Pred_ncf<=1-trim1]
-  DgivenGXQ.Pred_ncf <- DgivenGXQ.Pred_ncf[DgivenGXQ.Pred>=trim1 & DgivenGXQ.Pred<=1-trim1 & DgivenGXQ.Pred_ncf>=trim1 & DgivenGXQ.Pred_ncf<=1-trim1]
+  DgivenGXQ.Pred <- DgivenGXQ.Pred[keeping_ind]
+  DgivenGXQ.Pred_ncf <- DgivenGXQ.Pred_ncf[keeping_ind]
 
   zero_one <- sum(DgivenGXQ.Pred==0 | DgivenGXQ.Pred==1 | DgivenGXQ.Pred_ncf==0 | DgivenGXQ.Pred_ncf==1)
   if ( zero_one>0 ) {
