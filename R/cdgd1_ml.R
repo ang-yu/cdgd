@@ -82,17 +82,23 @@ cdgd1_ml <- function(Y,D,G,X,Q,data,algorithm,alpha=0.05,trim1=0,trim2=0) {
   DgivenGXQ.Pred[sample2] <- stats::predict(DgivenGXQ.Model.sample1, newdata = data[sample2,], type="prob")[,2]
   DgivenGXQ.Pred[sample1] <- stats::predict(DgivenGXQ.Model.sample2, newdata = data[sample1,], type="prob")[,2]
 
+  DgivenGXQ.Pred_ncf <- rep(NA, nrow(data)) # ncf stands for non-cross-fitted
+
+  DgivenGXQ.Pred_ncf[sample1] <- stats::predict(DgivenGXQ.Model.sample1, newdata = pred_data[sample1,], type="prob")[,2]
+  DgivenGXQ.Pred_ncf[sample2] <- stats::predict(DgivenGXQ.Model.sample2, newdata = pred_data[sample2,], type="prob")[,2]
+
   # trim the sample based on the propensity score
-  dropped <- sum(DgivenGXQ.Pred<trim1 | DgivenGXQ.Pred>1-trim1)  # the number of dropped obs
+  dropped <- sum(DgivenGXQ.Pred<trim1 | DgivenGXQ.Pred>1-trim1 | DgivenGXQ.Pred_ncf<trim1 | DgivenGXQ.Pred_ncf>1-trim)  # the number of dropped obs
 
   data$sample1 <- 1:nrow(data) %in% sample1    # sample 1 indicator for the new data
-  data <- data[DgivenGXQ.Pred>=trim1 & DgivenGXQ.Pred<=1-trim1, ]
+  data <- data[DgivenGXQ.Pred>=trim1 & DgivenGXQ.Pred<=1-trim1 & DgivenGXQ.Pred_ncf>=trim1 & DgivenGXQ.Pred_ncf<=1-trim1, ]
   sample1 <- which(data$sample1)
   sample2 <- setdiff(1:nrow(data), sample1)
 
-  DgivenGXQ.Pred <- DgivenGXQ.Pred[DgivenGXQ.Pred>=trim1 & DgivenGXQ.Pred<=1-trim1]
+  DgivenGXQ.Pred <- DgivenGXQ.Pred[DgivenGXQ.Pred>=trim1 & DgivenGXQ.Pred<=1-trim1 & DgivenGXQ.Pred_ncf>=trim1 & DgivenGXQ.Pred_ncf<=1-trim1]
+  DgivenGXQ.Pred_ncf <- DgivenGXQ.Pred_ncf[DgivenGXQ.Pred>=trim1 & DgivenGXQ.Pred<=1-trim1 & DgivenGXQ.Pred_ncf>=trim1 & DgivenGXQ.Pred_ncf<=1-trim1]
 
-  zero_one <- sum(DgivenGXQ.Pred==0)+sum(DgivenGXQ.Pred==1)
+  zero_one <- sum(DgivenGXQ.Pred==0 | DgivenGXQ.Pred==1 | DgivenGXQ.Pred_ncf==0 | DgivenGXQ.Pred_ncf==1)
   if ( zero_one>0 ) {
     stop(
       paste("D given X, Q, and G are exact 0 or 1 in", zero_one, "cases.", sep=" "),
@@ -201,7 +207,7 @@ cdgd1_ml <- function(Y,D,G,X,Q,data,algorithm,alpha=0.05,trim1=0,trim2=0) {
   YgivenGXQ.Pred_D1[sample1] <- stats::predict(YgivenDGXQ.Model.sample2, newdata = pred_data[sample1,])
 
 ### Estimate E(Y_d | Q,g)
-  YgivenGXQ.Pred_D1_ncf <- YgivenGXQ.Pred_D0_ncf <- DgivenGXQ.Pred_ncf <- rep(NA, nrow(data)) # ncf stands for non-cross-fitted
+  YgivenGXQ.Pred_D1_ncf <- YgivenGXQ.Pred_D0_ncf <- rep(NA, nrow(data)) # ncf stands for non-cross-fitted
 
   pred_data <- data
   pred_data[,D] <- 1
@@ -212,17 +218,6 @@ cdgd1_ml <- function(Y,D,G,X,Q,data,algorithm,alpha=0.05,trim1=0,trim2=0) {
   pred_data[,D] <- 0
   YgivenGXQ.Pred_D0_ncf[sample1] <- stats::predict(YgivenDGXQ.Model.sample1, newdata = pred_data[sample1,])
   YgivenGXQ.Pred_D0_ncf[sample2] <- stats::predict(YgivenDGXQ.Model.sample2, newdata = pred_data[sample2,])
-
-  DgivenGXQ.Pred_ncf[sample1] <- stats::predict(DgivenGXQ.Model.sample1, newdata = pred_data[sample1,], type="prob")[,2]
-  DgivenGXQ.Pred_ncf[sample2] <- stats::predict(DgivenGXQ.Model.sample2, newdata = pred_data[sample2,], type="prob")[,2]
-
-  zero_one <- sum(DgivenGXQ.Pred_ncf==0)+sum(DgivenGXQ.Pred_ncf==1)
-  if ( zero_one>0 ) {
-    stop(
-      paste("D given X, Q, and G are exact 0 or 1 in", zero_one, "cases.", sep=" "),
-      call. = FALSE
-    )
-  }
 
   # IPOs for modelling E(Y_d | Q,g)
   IPO_D0_ncf <- (1-data[,D])/(1-DgivenGXQ.Pred_ncf)/mean((1-data[,D])/(1-DgivenGXQ.Pred_ncf))*(data[,Y]-YgivenGXQ.Pred_D0_ncf) + YgivenGXQ.Pred_D0_ncf
