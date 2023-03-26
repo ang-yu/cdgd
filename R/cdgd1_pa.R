@@ -308,7 +308,7 @@ cdgd1_pa <- function(Y,D,G,X,Q,data,alpha=0.05,trim1=0,trim2=0) {
   output <- as.data.frame(cbind(point,se,p_value,CI_lower,CI_upper))
   rownames(output) <- names
 
-  if (trim==0) {
+  if (trim1==0 & trim2==0) {
     output <- output
   } else {
     output <- list(results=output, dropped=dropped)
