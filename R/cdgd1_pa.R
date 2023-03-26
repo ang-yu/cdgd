@@ -31,7 +31,7 @@
 
 
 
-cdgd1_pa <- function(Y,D,G,X,Q,data,alpha=0.05) {
+cdgd1_pa <- function(Y,D,G,X,Q,data,alpha=0.05,trim=0) {
 
   data <- as.data.frame(data)
 
