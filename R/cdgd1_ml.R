@@ -11,6 +11,7 @@
 #' @param data A data frame.
 #' @param algorithm The ML algorithm for modelling. "nnet" for neural network, "ranger" for random forests, "gbm" for generalized boosted models.
 #' @param alpha 1-alpha confidence interval.
+#' @param trim Threshold for trimming the propensity score. When trim=a, individuals with propensity scores lower than a or higher than 1-a will be dropped.
 #'
 #' @return A dataframe of estimates.
 #'
@@ -48,6 +49,55 @@ cdgd1_ml <- function(Y,D,G,X,Q,data,algorithm,alpha=0.05) {
 ### estimate the nuisance functions with cross-fitting
   sample1 <- sample(nrow(data), floor(nrow(data)/2), replace=FALSE)
   sample2 <- setdiff(1:nrow(data), sample1)
+
+### propensity score model
+  data[,D] <- as.factor(data[,D])
+  levels(data[,D]) <- c("D0","D1")  # necessary for caret implementation of ranger
+
+  if (algorithm=="nnet") {
+    message <- utils::capture.output( DgivenGXQ.Model.sample1 <- caret::train(stats::as.formula(paste(D, paste(G,paste(Q,collapse="+"),paste(X,collapse="+"),sep="+"), sep="~")), data=data[sample1,], method="nnet",
+                                                                              preProc=c("center","scale"), trControl=caret::trainControl(method="cv"), linout=FALSE ))
+    message <- utils::capture.output( DgivenGXQ.Model.sample2 <- caret::train(stats::as.formula(paste(D, paste(G,paste(Q,collapse="+"),paste(X,collapse="+"),sep="+"), sep="~")), data=data[sample2,], method="nnet",
+                                                                              preProc=c("center","scale"), trControl=caret::trainControl(method="cv"), linout=FALSE ))
+  }
+  if (algorithm=="ranger") {
+    message <- utils::capture.output( DgivenGXQ.Model.sample1 <- caret::train(stats::as.formula(paste(D, paste(G,paste(Q,collapse="+"),paste(X,collapse="+"),sep="+"), sep="~")), data=data[sample1,], method="ranger",
+                                                                              trControl=caret::trainControl(method="cv", classProbs=TRUE)) )
+    message <- utils::capture.output( DgivenGXQ.Model.sample2 <- caret::train(stats::as.formula(paste(D, paste(G,paste(Q,collapse="+"),paste(X,collapse="+"),sep="+"), sep="~")), data=data[sample2,], method="ranger",
+                                                                              trControl=caret::trainControl(method="cv", classProbs=TRUE)) )
+  }
+  if (algorithm=="gbm") {
+    message <- utils::capture.output( DgivenGXQ.Model.sample1 <- caret::train(stats::as.formula(paste(D, paste(G,paste(Q,collapse="+"),paste(X,collapse="+"),sep="+"), sep="~")), data=data[sample1,], method="gbm",
+                                                                              trControl=caret::trainControl(method="cv")) )
+    message <- utils::capture.output( DgivenGXQ.Model.sample2 <- caret::train(stats::as.formula(paste(D, paste(G,paste(Q,collapse="+"),paste(X,collapse="+"),sep="+"), sep="~")), data=data[sample2,], method="gbm",
+                                                                              trControl=caret::trainControl(method="cv")) )
+  }
+
+  data[,D] <- as.numeric(data[,D])-1
+
+  # propensity score predictions
+  DgivenGXQ.Pred <- rep(NA, nrow(data))
+
+  DgivenGXQ.Pred[sample2] <- stats::predict(DgivenGXQ.Model.sample1, newdata = data[sample2,], type="prob")[,2]
+  DgivenGXQ.Pred[sample1] <- stats::predict(DgivenGXQ.Model.sample2, newdata = data[sample1,], type="prob")[,2]
+
+  # trim the sample based on the propensity score
+  dropped <- sum(DgivenGXQ.Pred<trim | DgivenGXQ.Pred>1-trim)  # the number of dropped obs
+
+  data$sample1 <- 1:nrow(data) %in% sample1    # sample 1 indicator for the new data
+  data <- data[DgivenGXQ.Pred>=trim & DgivenGXQ.Pred<=1-trim, ]
+  sample1 <- which(data$sample1)
+  sample2 <- setdiff(1:nrow(data), sample1)
+
+  DgivenGXQ.Pred <- DgivenGXQ.Pred[DgivenGXQ.Pred>=trim & DgivenGXQ.Pred<=1-trim]
+
+  zero_one <- sum(DgivenGXQ.Pred==0)+sum(DgivenGXQ.Pred==1)
+  if ( zero_one>0 ) {
+    stop(
+      paste("D given X, Q, and G are exact 0 or 1 in", zero_one, "cases.", sep=" "),
+      call. = FALSE
+    )
+  }
 
 ### outcome regression model
   if (algorithm=="nnet") {
@@ -87,33 +137,9 @@ cdgd1_ml <- function(Y,D,G,X,Q,data,algorithm,alpha=0.05) {
                                                                               trControl=caret::trainControl(method="cv")) )
   }
 
-### propensity score model
-  data[,D] <- as.factor(data[,D])
-  levels(data[,D]) <- c("D0","D1")  # necessary for caret implementation of ranger
-
-  if (algorithm=="nnet") {
-    message <- utils::capture.output( DgivenGXQ.Model.sample1 <- caret::train(stats::as.formula(paste(D, paste(G,paste(Q,collapse="+"),paste(X,collapse="+"),sep="+"), sep="~")), data=data[sample1,], method="nnet",
-                                                                             preProc=c("center","scale"), trControl=caret::trainControl(method="cv"), linout=FALSE ))
-    message <- utils::capture.output( DgivenGXQ.Model.sample2 <- caret::train(stats::as.formula(paste(D, paste(G,paste(Q,collapse="+"),paste(X,collapse="+"),sep="+"), sep="~")), data=data[sample2,], method="nnet",
-                                                                             preProc=c("center","scale"), trControl=caret::trainControl(method="cv"), linout=FALSE ))
-  }
-  if (algorithm=="ranger") {
-    message <- utils::capture.output( DgivenGXQ.Model.sample1 <- caret::train(stats::as.formula(paste(D, paste(G,paste(Q,collapse="+"),paste(X,collapse="+"),sep="+"), sep="~")), data=data[sample1,], method="ranger",
-                                                                             trControl=caret::trainControl(method="cv", classProbs=TRUE)) )
-    message <- utils::capture.output( DgivenGXQ.Model.sample2 <- caret::train(stats::as.formula(paste(D, paste(G,paste(Q,collapse="+"),paste(X,collapse="+"),sep="+"), sep="~")), data=data[sample2,], method="ranger",
-                                                                             trControl=caret::trainControl(method="cv", classProbs=TRUE)) )
-  }
-  if (algorithm=="gbm") {
-    message <- utils::capture.output( DgivenGXQ.Model.sample1 <- caret::train(stats::as.formula(paste(D, paste(G,paste(Q,collapse="+"),paste(X,collapse="+"),sep="+"), sep="~")), data=data[sample1,], method="gbm",
-                                                                             trControl=caret::trainControl(method="cv")) )
-    message <- utils::capture.output( DgivenGXQ.Model.sample2 <- caret::train(stats::as.formula(paste(D, paste(G,paste(Q,collapse="+"),paste(X,collapse="+"),sep="+"), sep="~")), data=data[sample2,], method="gbm",
-                                                                             trControl=caret::trainControl(method="cv")) )
-  }
-
-  data[,D] <- as.numeric(data[,D])-1
 
 ### cross-fitted predictions
-  YgivenGXQ.Pred_D0 <- YgivenGXQ.Pred_D1 <- DgivenGXQ.Pred <- rep(NA, nrow(data))
+  YgivenGXQ.Pred_D0 <- YgivenGXQ.Pred_D1 <- rep(NA, nrow(data))
 
   pred_data <- data
   pred_data[,D] <- 0
@@ -124,18 +150,6 @@ cdgd1_ml <- function(Y,D,G,X,Q,data,algorithm,alpha=0.05) {
   pred_data[,D] <- 1
   YgivenGXQ.Pred_D1[sample2] <- stats::predict(YgivenDGXQ.Model.sample1, newdata = pred_data[sample2,])
   YgivenGXQ.Pred_D1[sample1] <- stats::predict(YgivenDGXQ.Model.sample2, newdata = pred_data[sample1,])
-
-  pred_data <- data
-  DgivenGXQ.Pred[sample2] <- stats::predict(DgivenGXQ.Model.sample1, newdata = pred_data[sample2,], type="prob")[,2]
-  DgivenGXQ.Pred[sample1] <- stats::predict(DgivenGXQ.Model.sample2, newdata = pred_data[sample1,], type="prob")[,2]
-
-  zero_one <- sum(DgivenGXQ.Pred==0)+sum(DgivenGXQ.Pred==1)
-  if ( zero_one>0 ) {
-    stop(
-      paste("D given X, Q, and G are exact 0 or 1 in", zero_one, "cases.", sep=" "),
-      call. = FALSE
-    )
-  }
 
 ### Estimate E(Y_d | Q,g)
   YgivenGXQ.Pred_D1_ncf <- YgivenGXQ.Pred_D0_ncf <- DgivenGXQ.Pred_ncf <- rep(NA, nrow(data)) # ncf stands for non-cross-fitted
@@ -469,6 +483,12 @@ cdgd1_ml <- function(Y,D,G,X,Q,data,algorithm,alpha=0.05) {
 
   output <- as.data.frame(cbind(point,se,p_value,CI_lower,CI_upper))
   rownames(output) <- names
+
+  if (trim==0) {
+    output <- output
+  } else {
+    output <- list(results=output, dropped=dropped)
+  }
 
   return(output)
 }

@@ -22,6 +22,8 @@ cdgd1_ml(Y, D, G, X, Q, data, algorithm, alpha = 0.05)
 \item{algorithm}{The ML algorithm for modelling. "nnet" for neural network, "ranger" for random forests, "gbm" for generalized boosted models.}
 
 \item{alpha}{1-alpha confidence interval.}
+
+\item{trim}{Threshold for trimming the propensity score. When trim=a, individuals with propensity scores lower than a or higher than 1-a will be dropped.}
 }
 \value{
 A dataframe of estimates.

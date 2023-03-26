@@ -9,6 +9,7 @@
 #' @param X Confounders. The vector of the names of numeric variables.
 #' @param data A data frame.
 #' @param alpha 1-alpha confidence interval.
+#' @param trim Threshold for trimming the propensity score. When trim=a, individuals with propensity scores lower than a or higher than 1-a will be dropped.
 #'
 #' @return A list of estimates.
 #'
@@ -29,28 +30,21 @@
 
 
 
-cdgd0_pa <- function(Y,D,G,X,data,alpha=0.05) {
+cdgd0_pa <- function(Y,D,G,X,data,alpha=0.05,trim=0) {
 
   data <- as.data.frame(data)
 
-  ### outcome regression model
-  YgivenDGX.Model <- stats::lm(stats::as.formula(paste(Y, paste(paste(D,c(G,X),sep="*"),collapse="+"), sep="~")), data=data)
-
-  ### propensity score model
+  # treatment model
   DgivenGX.Model <- stats::glm(stats::as.formula(paste(D, paste(G,paste(X,collapse="+"),sep="+"), sep="~")), data=data, family=stats::binomial(link="logit"))
 
-  ### predictions
-  YgivenGX.Pred_D0 <- YgivenGX.Pred_D1 <- YgivenGX.Pred_D0 <- YgivenGX.Pred_D1 <- DgivenGX.Pred <- DgivenGX.Pred <- rep(NA, nrow(data))
-
-  pred_data <- data
-  pred_data[,D] <- 0
-  YgivenGX.Pred_D0 <- stats::predict(YgivenDGX.Model, newdata = pred_data)
-
-  pred_data <- data
-  pred_data[,D] <- 1
-  YgivenGX.Pred_D1 <- stats::predict(YgivenDGX.Model, newdata = pred_data)
-
+  # treatment predictions
+  DgivenGX.Pred <- rep(NA, nrow(data))
   DgivenGX.Pred <- stats::predict(DgivenGX.Model, newdata = data, type="response")
+
+  # trim the sample based on the propensity score
+  dropped <- sum(DgivenGX.Pred<trim | DgivenGX.Pred>1-trim)  # the number of dropped obs
+  DgivenGX.Pred <- DgivenGX.Pred[DgivenGX.Pred>=trim & DgivenGX.Pred<=1-trim]
+  data <- data[DgivenGX.Pred>=trim & DgivenGX.Pred<=1-trim, ]
 
   zero_one <- sum(DgivenGX.Pred==0)+sum(DgivenGX.Pred==1)
   if ( zero_one>0 ) {
@@ -59,6 +53,20 @@ cdgd0_pa <- function(Y,D,G,X,data,alpha=0.05) {
       call. = FALSE
     )
   }
+
+  ### outcome regression model
+  YgivenDGX.Model <- stats::lm(stats::as.formula(paste(Y, paste(paste(D,c(G,X),sep="*"),collapse="+"), sep="~")), data=data)
+
+  # outcome predictions
+  YgivenGX.Pred_D0 <- YgivenGX.Pred_D1 <- rep(NA, nrow(data))
+
+  pred_data <- data
+  pred_data[,D] <- 0
+  YgivenGX.Pred_D0 <- stats::predict(YgivenDGX.Model, newdata = pred_data)
+
+  pred_data <- data
+  pred_data[,D] <- 1
+  YgivenGX.Pred_D1 <- stats::predict(YgivenDGX.Model, newdata = pred_data)
 
   ### The "IPO" (individual potential outcome) function
   # For each d and g value, we have IE(d,g)=\frac{\one(D=d)}{\pi(d,X,g)}[Y-\mu(d,X,g)]+\mu(d,X,g)
@@ -219,7 +227,11 @@ cdgd0_pa <- function(Y,D,G,X,data,alpha=0.05) {
   rownames(results_specific) <- names_specific
   colnames(results) <- colnames(results_specific) <- c("point","se","p_value","CI_lower","CI_upper")
 
-  output <- list(results=results, results_specific=results_specific)
+  if (trim==0) {
+    output <- list(results=results, results_specific=results_specific)
+  } else {
+    output <- list(results=results, results_specific=results_specific, dropped=dropped)
+  }
 
   return(output)
 }

@@ -10,6 +10,7 @@
 #' @param X Confounders. The vector of the names of numeric variables.
 #' @param data A data frame.
 #' @param alpha 1-alpha confidence interval.
+#' @param trim Threshold for trimming the propensity score. When trim=a, individuals with propensity scores lower than a or higher than 1-a will be dropped.
 #'
 #' @return A dataframe of estimates.
 #'
@@ -34,26 +35,17 @@ cdgd1_pa <- function(Y,D,G,X,Q,data,alpha=0.05) {
 
   data <- as.data.frame(data)
 
-  ### outcome regression model
-  YgivenDGXQ.Model <- stats::lm(stats::as.formula(paste(Y, paste(paste(D,c(G,Q,X),sep="*"),collapse="+"), sep="~")), data=data)
-
-  ### propensity score model
+  # treatment model
   DgivenGXQ.Model <- stats::glm(stats::as.formula(paste(D, paste(G,paste(Q,collapse="+"),paste(X,collapse="+"),sep="+"), sep="~")), data=data, family=stats::binomial(link="logit"))
 
-  ### predictions
-  YgivenGXQ.Pred_D0 <- YgivenGXQ.Pred_D1 <- DgivenGXQ.Pred <- rep(NA, nrow(data))
+  # treatment predictions
+  DgivenGXQ.Pred <- rep(NA, nrow(data))
+  DgivenGXQ.Pred <- stats::predict(DgivenGXQ.Model, newdata = data, type="response")
 
-  pred_data <- data
-  pred_data[,D] <- 0
-  YgivenGXQ.Pred_D0 <- stats::predict(YgivenDGXQ.Model, newdata = pred_data)
-
-  pred_data <- data
-  pred_data[,D] <- 1
-  YgivenGXQ.Pred_D1 <- stats::predict(YgivenDGXQ.Model, newdata = pred_data)
-
-  pred_data <- data
-  pred_data[,G] <- 0
-  DgivenGXQ.Pred <- stats::predict(DgivenGXQ.Model, newdata = pred_data, type="response")
+  # trim the sample based on the propensity score
+  dropped <- sum(DgivenGXQ.Pred<trim | DgivenGXQ.Pred>1-trim)  # the number of dropped obs
+  DgivenGXQ.Pred <- DgivenGXQ.Pred[DgivenGXQ.Pred>=trim & DgivenGXQ.Pred<=1-trim]
+  data <- data[DgivenGXQ.Pred>=trim & DgivenGXQ.Pred<=1-trim, ]
 
   zero_one <- sum(DgivenGXQ.Pred==0)+sum(DgivenGXQ.Pred==1)
   if ( zero_one>0 ) {
@@ -62,6 +54,20 @@ cdgd1_pa <- function(Y,D,G,X,Q,data,alpha=0.05) {
       call. = FALSE
     )
   }
+
+  # outcome regression model
+  YgivenDGXQ.Model <- stats::lm(stats::as.formula(paste(Y, paste(paste(D,c(G,Q,X),sep="*"),collapse="+"), sep="~")), data=data)
+
+  # outcome predictions
+  YgivenGXQ.Pred_D0 <- YgivenGXQ.Pred_D1 <- rep(NA, nrow(data))
+
+  pred_data <- data
+  pred_data[,D] <- 0
+  YgivenGXQ.Pred_D0 <- stats::predict(YgivenDGXQ.Model, newdata = pred_data)
+
+  pred_data <- data
+  pred_data[,D] <- 1
+  YgivenGXQ.Pred_D1 <- stats::predict(YgivenDGXQ.Model, newdata = pred_data)
 
   ### Estimate E(Y_d | Q,g)
   YgivenGXQ.Pred_D1 <- YgivenGXQ.Pred_D0 <- DgivenGXQ.Pred <- rep(NA, nrow(data))
@@ -294,6 +300,12 @@ cdgd1_pa <- function(Y,D,G,X,Q,data,alpha=0.05) {
 
   output <- as.data.frame(cbind(point,se,p_value,CI_lower,CI_upper))
   rownames(output) <- names
+
+  if (trim==0) {
+    output <- output
+  } else {
+    output <- list(results=output, dropped=dropped)
+  }
 
   return(output)
 }

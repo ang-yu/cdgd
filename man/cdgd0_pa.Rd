@@ -4,7 +4,7 @@
 \alias{cdgd0_pa}
 \title{Perform unconditional decomposition via parametric models}
 \usage{
-cdgd0_pa(Y, D, G, X, data, alpha = 0.05)
+cdgd0_pa(Y, D, G, X, data, alpha = 0.05, trim = 0)
 }
 \arguments{
 \item{Y}{Outcome. The name of a continuous variable.}
@@ -18,6 +18,8 @@ cdgd0_pa(Y, D, G, X, data, alpha = 0.05)
 \item{data}{A data frame.}
 
 \item{alpha}{1-alpha confidence interval.}
+
+\item{trim}{Threshold for trimming the propensity score. When trim=a, individuals with propensity scores lower than a or higher than 1-a will be dropped.}
 }
 \value{
 A list of estimates.

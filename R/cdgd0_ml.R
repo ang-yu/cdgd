@@ -10,6 +10,7 @@
 #' @param data A data frame.
 #' @param algorithm The ML algorithm for modelling. "nnet" for neural network, "ranger" for random forests, "gbm" for generalized boosted models.
 #' @param alpha 1-alpha confidence interval.
+#' @param trim Threshold for trimming the propensity score. When trim=a, individuals with propensity scores lower than a or higher than 1-a will be dropped.
 #'
 #' @return A list of estimates.
 #'
@@ -47,6 +48,55 @@ cdgd0_ml <- function(Y,D,G,X,data,algorithm,alpha=0.05) {
   ### estimate the nuisance functions with cross-fitting
   sample1 <- sample(nrow(data), floor(nrow(data)/2), replace=FALSE)
   sample2 <- setdiff(1:nrow(data), sample1)
+
+  ### propensity score model
+  data[,D] <- as.factor(data[,D])
+  levels(data[,D]) <- c("D0","D1")  # necessary for caret implementation of ranger
+
+  if (algorithm=="nnet") {
+    message <- utils::capture.output( DgivenGX.Model.sample1 <- caret::train(stats::as.formula(paste(D, paste(G,paste(X,collapse="+"),sep="+"), sep="~")), data=data[sample1,], method="nnet",
+                                                                             preProc=c("center","scale"), trControl=caret::trainControl(method="cv"), linout=FALSE ))
+    message <- utils::capture.output( DgivenGX.Model.sample2 <- caret::train(stats::as.formula(paste(D, paste(G,paste(X,collapse="+"),sep="+"), sep="~")), data=data[sample2,], method="nnet",
+                                                                             preProc=c("center","scale"), trControl=caret::trainControl(method="cv"), linout=FALSE ))
+  }
+  if (algorithm=="ranger") {
+    message <- utils::capture.output( DgivenGX.Model.sample1 <- caret::train(stats::as.formula(paste(D, paste(G,paste(X,collapse="+"),sep="+"), sep="~")), data=data[sample1,], method="ranger",
+                                                                             trControl=caret::trainControl(method="cv", classProbs=TRUE)) )
+    message <- utils::capture.output( DgivenGX.Model.sample2 <- caret::train(stats::as.formula(paste(D, paste(G,paste(X,collapse="+"),sep="+"), sep="~")), data=data[sample2,], method="ranger",
+                                                                             trControl=caret::trainControl(method="cv", classProbs=TRUE)) )
+  }
+  if (algorithm=="gbm") {
+    message <- utils::capture.output( DgivenGX.Model.sample1 <- caret::train(stats::as.formula(paste(D, paste(G,paste(X,collapse="+"),sep="+"), sep="~")), data=data[sample1,], method="gbm",
+                                                                             trControl=caret::trainControl(method="cv")) )
+    message <- utils::capture.output( DgivenGX.Model.sample2 <- caret::train(stats::as.formula(paste(D, paste(G,paste(X,collapse="+"),sep="+"), sep="~")), data=data[sample2,], method="gbm",
+                                                                             trControl=caret::trainControl(method="cv")) )
+  }
+
+  data[,D] <- as.numeric(data[,D])-1
+
+  # treatment predictions
+  DgivenGX.Pred <- rep(NA, nrow(data))
+
+  DgivenGX.Pred[sample2] <- stats::predict(DgivenGX.Model.sample1, newdata = data[sample2,], type="prob")[,2]
+  DgivenGX.Pred[sample1] <- stats::predict(DgivenGX.Model.sample2, newdata = data[sample1,], type="prob")[,2]
+
+  # trim the sample based on the propensity score
+  dropped <- sum(DgivenGX.Pred<trim | DgivenGX.Pred>1-trim)  # the number of dropped obs
+
+  data$sample1 <- 1:nrow(data) %in% sample1    # sample 1 indicator for the new data
+  data <- data[DgivenGX.Pred>=trim & DgivenGX.Pred<=1-trim, ]
+  sample1 <- which(data$sample1)
+  sample2 <- setdiff(1:nrow(data), sample1)
+
+  DgivenGX.Pred <- DgivenGX.Pred[DgivenGX.Pred>=trim & DgivenGX.Pred<=1-trim]
+
+  zero_one <- sum(DgivenGX.Pred==0)+sum(DgivenGX.Pred==1)
+  if ( zero_one>0 ) {
+    stop(
+      paste("D given X and G are exact 0 or 1 in", zero_one, "cases.", sep=" "),
+      call. = FALSE
+    )
+  }
 
   ### outcome regression model
   if (algorithm=="nnet") {
@@ -86,33 +136,8 @@ cdgd0_ml <- function(Y,D,G,X,data,algorithm,alpha=0.05) {
                                                                               trControl=caret::trainControl(method="cv")) )
   }
 
-  ### propensity score model
-  data[,D] <- as.factor(data[,D])
-  levels(data[,D]) <- c("D0","D1")  # necessary for caret implementation of ranger
-
-  if (algorithm=="nnet") {
-    message <- utils::capture.output( DgivenGX.Model.sample1 <- caret::train(stats::as.formula(paste(D, paste(G,paste(X,collapse="+"),sep="+"), sep="~")), data=data[sample1,], method="nnet",
-                                                                             preProc=c("center","scale"), trControl=caret::trainControl(method="cv"), linout=FALSE ))
-    message <- utils::capture.output( DgivenGX.Model.sample2 <- caret::train(stats::as.formula(paste(D, paste(G,paste(X,collapse="+"),sep="+"), sep="~")), data=data[sample2,], method="nnet",
-                                                                             preProc=c("center","scale"), trControl=caret::trainControl(method="cv"), linout=FALSE ))
-  }
-  if (algorithm=="ranger") {
-    message <- utils::capture.output( DgivenGX.Model.sample1 <- caret::train(stats::as.formula(paste(D, paste(G,paste(X,collapse="+"),sep="+"), sep="~")), data=data[sample1,], method="ranger",
-                                                                             trControl=caret::trainControl(method="cv", classProbs=TRUE)) )
-    message <- utils::capture.output( DgivenGX.Model.sample2 <- caret::train(stats::as.formula(paste(D, paste(G,paste(X,collapse="+"),sep="+"), sep="~")), data=data[sample2,], method="ranger",
-                                                                             trControl=caret::trainControl(method="cv", classProbs=TRUE)) )
-  }
-  if (algorithm=="gbm") {
-    message <- utils::capture.output( DgivenGX.Model.sample1 <- caret::train(stats::as.formula(paste(D, paste(G,paste(X,collapse="+"),sep="+"), sep="~")), data=data[sample1,], method="gbm",
-                                                                             trControl=caret::trainControl(method="cv")) )
-    message <- utils::capture.output( DgivenGX.Model.sample2 <- caret::train(stats::as.formula(paste(D, paste(G,paste(X,collapse="+"),sep="+"), sep="~")), data=data[sample2,], method="gbm",
-                                                                             trControl=caret::trainControl(method="cv")) )
-  }
-
-  data[,D] <- as.numeric(data[,D])-1
-
-  ### cross-fitted predictions
-  YgivenGX.Pred_D0 <- YgivenGX.Pred_D1 <- DgivenGX.Pred <- rep(NA, nrow(data))
+  ### outcome predictions
+  YgivenGX.Pred_D0 <- YgivenGX.Pred_D1 <- rep(NA, nrow(data))
 
   pred_data <- data
   pred_data[,D] <- 0
@@ -124,20 +149,9 @@ cdgd0_ml <- function(Y,D,G,X,data,algorithm,alpha=0.05) {
   YgivenGX.Pred_D1[sample2] <- stats::predict(YgivenDGX.Model.sample1, newdata = pred_data[sample2,])
   YgivenGX.Pred_D1[sample1] <- stats::predict(YgivenDGX.Model.sample2, newdata = pred_data[sample1,])
 
-  DgivenGX.Pred[sample2] <- stats::predict(DgivenGX.Model.sample1, newdata = data[sample2,], type="prob")[,2]
-  DgivenGX.Pred[sample1] <- stats::predict(DgivenGX.Model.sample2, newdata = data[sample1,], type="prob")[,2]
-
-  zero_one <- sum(DgivenGX.Pred==0)+sum(DgivenGX.Pred==1)
-  if ( zero_one>0 ) {
-    stop(
-      paste("D given X and G are exact 0 or 1 in", zero_one, "cases.", sep=" "),
-      call. = FALSE
-    )
-  }
-
   ### The "IPO" (individual potential outcome) function
   # For each d and g value, we have IE(d,g)=\frac{\one(D=d)}{\pi(d,X,g)}[Y-\mu(d,X,g)]+\mu(d,X,g)
-  # We stablize the weight by dividing the sample average of estimated weights
+  # We stabilize the weight by dividing the sample average of estimated weights
 
   IPO_D0 <- (1-data[,D])/(1-DgivenGX.Pred)/mean((1-data[,D])/(1-DgivenGX.Pred))*(data[,Y]-YgivenGX.Pred_D0) + YgivenGX.Pred_D0
   IPO_D1 <- data[,D]/DgivenGX.Pred/mean(data[,D]/DgivenGX.Pred)*(data[,Y]-YgivenGX.Pred_D1) + YgivenGX.Pred_D1
@@ -321,7 +335,11 @@ cdgd0_ml <- function(Y,D,G,X,data,algorithm,alpha=0.05) {
   rownames(results_specific) <- names_specific
   colnames(results) <- colnames(results_specific) <- c("point","se","p_value","CI_lower","CI_upper")
 
-  output <- list(results=results, results_specific=results_specific)
+  if (trim==0) {
+    output <- list(results=results, results_specific=results_specific)
+  } else {
+    output <- list(results=results, results_specific=results_specific, dropped=dropped)
+  }
 
   return(output)
 }

@@ -20,6 +20,8 @@ cdgd1_pa(Y, D, G, X, Q, data, alpha = 0.05)
 \item{data}{A data frame.}
 
 \item{alpha}{1-alpha confidence interval.}
+
+\item{trim}{Threshold for trimming the propensity score. When trim=a, individuals with propensity scores lower than a or higher than 1-a will be dropped.}
 }
 \value{
 A dataframe of estimates.
