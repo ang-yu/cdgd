@@ -107,6 +107,57 @@ cdgd1_ml <- function(Y,D,G,X,Q,data,algorithm,alpha=0.05,trim1=0,trim2=0) {
     )
   }
 
+  ### outcome regression model
+  if (algorithm=="nnet") {
+    if (!requireNamespace("nnet", quietly=TRUE)) {
+      stop(
+        "Package \"nnet\" must be installed to use this function.",
+        call. = FALSE
+      )
+    }
+    message <- utils::capture.output( YgivenDGXQ.Model.sample1 <- caret::train(stats::as.formula(paste(Y, paste(D,G,paste(Q,collapse="+"),paste(X,collapse="+"),sep="+"), sep="~")), data=data[sample1,], method="nnet",
+                                                                               preProc=c("center","scale"), trControl=caret::trainControl(method="cv"), linout=TRUE ))
+    message <- utils::capture.output( YgivenDGXQ.Model.sample2 <- caret::train(stats::as.formula(paste(Y, paste(D,G,paste(Q,collapse="+"),paste(X,collapse="+"),sep="+"), sep="~")), data=data[sample2,], method="nnet",
+                                                                               preProc=c("center","scale"), trControl=caret::trainControl(method="cv"), linout=TRUE ))
+  }
+  if (algorithm=="ranger") {
+    if (!requireNamespace("ranger", quietly=TRUE)) {
+      stop(
+        "Package \"ranger\" must be installed to use this function.",
+        call. = FALSE
+      )
+    }
+    message <- utils::capture.output( YgivenDGXQ.Model.sample1 <- caret::train(stats::as.formula(paste(Y, paste(D,G,paste(Q,collapse="+"),paste(X,collapse="+"),sep="+"), sep="~")), data=data[sample1,], method="ranger",
+                                                                               trControl=caret::trainControl(method="cv")) )
+    message <- utils::capture.output( YgivenDGXQ.Model.sample2 <- caret::train(stats::as.formula(paste(Y, paste(D,G,paste(Q,collapse="+"),paste(X,collapse="+"),sep="+"), sep="~")), data=data[sample2,], method="ranger",
+                                                                               trControl=caret::trainControl(method="cv")) )
+  }
+  if (algorithm=="gbm") {
+    if (!requireNamespace("gbm", quietly=TRUE)) {
+      stop(
+        "Package \"gbm\" must be installed to use this function.",
+        call. = FALSE
+      )
+    }
+    message <- utils::capture.output( YgivenDGXQ.Model.sample1 <- caret::train(stats::as.formula(paste(Y, paste(D,G,paste(Q,collapse="+"),paste(X,collapse="+"),sep="+"), sep="~")), data=data[sample1,], method="gbm",
+                                                                               trControl=caret::trainControl(method="cv")) )
+    message <- utils::capture.output( YgivenDGXQ.Model.sample2 <- caret::train(stats::as.formula(paste(Y, paste(D,G,paste(Q,collapse="+"),paste(X,collapse="+"),sep="+"), sep="~")), data=data[sample2,], method="gbm",
+                                                                               trControl=caret::trainControl(method="cv")) )
+  }
+
+### outcome predictions
+  YgivenGXQ.Pred_D0 <- YgivenGXQ.Pred_D1 <- rep(NA, nrow(data))
+
+  pred_data <- data
+  pred_data[,D] <- 0
+  YgivenGXQ.Pred_D0[sample2] <- stats::predict(YgivenDGXQ.Model.sample1, newdata = pred_data[sample2,])
+  YgivenGXQ.Pred_D0[sample1] <- stats::predict(YgivenDGXQ.Model.sample2, newdata = pred_data[sample1,])
+
+  pred_data <- data
+  pred_data[,D] <- 1
+  YgivenGXQ.Pred_D1[sample2] <- stats::predict(YgivenDGXQ.Model.sample1, newdata = pred_data[sample2,])
+  YgivenGXQ.Pred_D1[sample1] <- stats::predict(YgivenDGXQ.Model.sample2, newdata = pred_data[sample1,])
+
 ### Estimate p_g(Q)=Pr(G=g | Q)
   data[,G] <- as.factor(data[,G])
   levels(data[,G]) <- c("G0","G1")  # necessary for caret implementation of ranger
@@ -144,6 +195,8 @@ cdgd1_ml <- function(Y,D,G,X,Q,data,algorithm,alpha=0.05,trim1=0,trim2=0) {
   sample1 <- which(data$sample1)
   sample2 <- setdiff(1:nrow(data), sample1)
 
+  YgivenGXQ.Pred_D0 <- YgivenGXQ.Pred_D0[GgivenQ.Pred>=trim2 & GgivenQ.Pred<=1-trim2]
+  YgivenGXQ.Pred_D1 <- YgivenGXQ.Pred_D1[GgivenQ.Pred>=trim2 & GgivenQ.Pred<=1-trim2]
   DgivenGXQ.Pred <- DgivenGXQ.Pred[GgivenQ.Pred>=trim2 & GgivenQ.Pred<=1-trim2]
   DgivenGXQ.Pred_ncf <- DgivenGXQ.Pred_ncf[GgivenQ.Pred>=trim2 & GgivenQ.Pred<=1-trim2]
   GgivenQ.Pred <- GgivenQ.Pred[GgivenQ.Pred>=trim2 & GgivenQ.Pred<=1-trim2]
@@ -155,58 +208,6 @@ cdgd1_ml <- function(Y,D,G,X,Q,data,algorithm,alpha=0.05,trim1=0,trim2=0) {
       call. = FALSE
     )
   }
-
-### outcome regression model
-  if (algorithm=="nnet") {
-    if (!requireNamespace("nnet", quietly=TRUE)) {
-      stop(
-        "Package \"nnet\" must be installed to use this function.",
-        call. = FALSE
-      )
-    }
-    message <- utils::capture.output( YgivenDGXQ.Model.sample1 <- caret::train(stats::as.formula(paste(Y, paste(D,G,paste(Q,collapse="+"),paste(X,collapse="+"),sep="+"), sep="~")), data=data[sample1,], method="nnet",
-                                                                              preProc=c("center","scale"), trControl=caret::trainControl(method="cv"), linout=TRUE ))
-    message <- utils::capture.output( YgivenDGXQ.Model.sample2 <- caret::train(stats::as.formula(paste(Y, paste(D,G,paste(Q,collapse="+"),paste(X,collapse="+"),sep="+"), sep="~")), data=data[sample2,], method="nnet",
-                                                                              preProc=c("center","scale"), trControl=caret::trainControl(method="cv"), linout=TRUE ))
-  }
-  if (algorithm=="ranger") {
-    if (!requireNamespace("ranger", quietly=TRUE)) {
-      stop(
-        "Package \"ranger\" must be installed to use this function.",
-        call. = FALSE
-      )
-    }
-    message <- utils::capture.output( YgivenDGXQ.Model.sample1 <- caret::train(stats::as.formula(paste(Y, paste(D,G,paste(Q,collapse="+"),paste(X,collapse="+"),sep="+"), sep="~")), data=data[sample1,], method="ranger",
-                                                                              trControl=caret::trainControl(method="cv")) )
-    message <- utils::capture.output( YgivenDGXQ.Model.sample2 <- caret::train(stats::as.formula(paste(Y, paste(D,G,paste(Q,collapse="+"),paste(X,collapse="+"),sep="+"), sep="~")), data=data[sample2,], method="ranger",
-                                                                              trControl=caret::trainControl(method="cv")) )
-  }
-  if (algorithm=="gbm") {
-    if (!requireNamespace("gbm", quietly=TRUE)) {
-      stop(
-        "Package \"gbm\" must be installed to use this function.",
-        call. = FALSE
-      )
-    }
-    message <- utils::capture.output( YgivenDGXQ.Model.sample1 <- caret::train(stats::as.formula(paste(Y, paste(D,G,paste(Q,collapse="+"),paste(X,collapse="+"),sep="+"), sep="~")), data=data[sample1,], method="gbm",
-                                                                              trControl=caret::trainControl(method="cv")) )
-    message <- utils::capture.output( YgivenDGXQ.Model.sample2 <- caret::train(stats::as.formula(paste(Y, paste(D,G,paste(Q,collapse="+"),paste(X,collapse="+"),sep="+"), sep="~")), data=data[sample2,], method="gbm",
-                                                                              trControl=caret::trainControl(method="cv")) )
-  }
-
-
-### cross-fitted predictions
-  YgivenGXQ.Pred_D0 <- YgivenGXQ.Pred_D1 <- rep(NA, nrow(data))
-
-  pred_data <- data
-  pred_data[,D] <- 0
-  YgivenGXQ.Pred_D0[sample2] <- stats::predict(YgivenDGXQ.Model.sample1, newdata = pred_data[sample2,])
-  YgivenGXQ.Pred_D0[sample1] <- stats::predict(YgivenDGXQ.Model.sample2, newdata = pred_data[sample1,])
-
-  pred_data <- data
-  pred_data[,D] <- 1
-  YgivenGXQ.Pred_D1[sample2] <- stats::predict(YgivenDGXQ.Model.sample1, newdata = pred_data[sample2,])
-  YgivenGXQ.Pred_D1[sample1] <- stats::predict(YgivenDGXQ.Model.sample2, newdata = pred_data[sample1,])
 
 ### Estimate E(Y_d | Q,g)
   YgivenGXQ.Pred_D1_ncf <- YgivenGXQ.Pred_D0_ncf <- rep(NA, nrow(data)) # ncf stands for non-cross-fitted
