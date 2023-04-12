@@ -2,7 +2,7 @@
 % Please edit documentation in R/cdgd0_ml.R
 \name{cdgd0_ml}
 \alias{cdgd0_ml}
-\title{Perform unconditional decomposition via Machine Learning}
+\title{Perform unconditional decomposition via machine learning}
 \usage{
 cdgd0_ml(Y, D, G, X, data, algorithm, alpha = 0.05, trim = 0)
 }
@@ -27,7 +27,7 @@ cdgd0_ml(Y, D, G, X, data, algorithm, alpha = 0.05, trim = 0)
 A list of estimates.
 }
 \description{
-Perform unconditional decomposition via Machine Learning
+Perform unconditional decomposition via machine learning
 }
 \examples{
 data(exp_data)

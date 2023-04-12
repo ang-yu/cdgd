@@ -2,7 +2,7 @@
 % Please edit documentation in R/cdgd1_ml.R
 \name{cdgd1_ml}
 \alias{cdgd1_ml}
-\title{Perform conditional decomposition via Machine Learning}
+\title{Perform conditional decomposition via machine learning}
 \usage{
 cdgd1_ml(Y, D, G, X, Q, data, algorithm, alpha = 0.05, trim1 = 0, trim2 = 0)
 }
@@ -31,7 +31,7 @@ cdgd1_ml(Y, D, G, X, Q, data, algorithm, alpha = 0.05, trim1 = 0, trim2 = 0)
 A dataframe of estimates.
 }
 \description{
-Perform conditional decomposition via Machine Learning
+Perform conditional decomposition via machine learning
 }
 \examples{
 data(exp_data)

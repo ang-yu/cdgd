@@ -1,7 +1,7 @@
 
 
 
-#' Perform conditional decomposition via Machine Learning
+#' Perform conditional decomposition via machine learning
 #'
 #' @param Y Outcome. The name of a continuous variable.
 #' @param D Treatment status. The name of a binary numeric variable taking values of 0 and 1.
