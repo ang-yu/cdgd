@@ -2,6 +2,8 @@
 # cdgd
 
 <!-- badges: start -->
+
+[![R-CMD-check](https://github.com/ang-yu/cdgd/actions/workflows/R-CMD-check.yaml/badge.svg)](https://github.com/ang-yu/cdgd/actions/workflows/R-CMD-check.yaml)
 <!-- badges: end -->
 
 The goal of cdgd is to implement the causal decomposition of group
