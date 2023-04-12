@@ -10,7 +10,7 @@ License: MIT + file LICENSE
 URL: https://github.com/ang-yu/cdgd
 BugReports: https://github.com/ang-yu/cdgd/issues
 Depends: 
-    R (>= 4.2.0)
+    R (>= 4.1.0)
 Imports: 
     caret (>= 6.0.0),
     stats (>= 4.2.2),
