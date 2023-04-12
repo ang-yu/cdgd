@@ -10,14 +10,14 @@ License: MIT + file LICENSE
 URL: https://github.com/ang-yu/cdgd
 BugReports: https://github.com/ang-yu/cdgd/issues
 Depends: 
-    R (>= 4.2)
+    R (>= 4.2.0)
 Imports: 
-    caret (>= 6.0),
+    caret (>= 6.0.0),
     stats (>= 4.2.2),
     utils (>= 4.2.2)
 Suggests:
     gbm (>= 2.1.8),
-    nnet (>= 7.3),
+    nnet (>= 7.3.0),
     ranger (>= 0.14.1)
 Encoding: UTF-8
 LazyData: true
