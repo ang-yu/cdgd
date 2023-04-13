@@ -43,23 +43,32 @@
 #'
 #' ### outcome regression model
 #'
-#' message <- utils::capture.output( YgivenDGXQ.Model.sample1 <- caret::train(stats::as.formula(paste(Y, paste(D,G,Q,paste(X,collapse="+"),sep="+"), sep="~")), data=data[sample1,], method="ranger",
-#'                                                                            trControl=caret::trainControl(method="cv"),
-#'                                                                            tuneGrid=expand.grid(mtry=c(2,4),splitrule=c("variance"),min.node.size=c(50,100))) )
-#' message <- utils::capture.output( YgivenDGXQ.Model.sample2 <- caret::train(stats::as.formula(paste(Y, paste(D,G,Q,paste(X,collapse="+"),sep="+"), sep="~")), data=data[sample2,], method="ranger",
-#'                                                                            trControl=caret::trainControl(method="cv"),
-#'                                                                            tuneGrid=expand.grid(mtry=c(2,4),splitrule=c("variance"),min.node.size=c(50,100))) )
+#' message <- utils::capture.output( YgivenDGXQ.Model.sample1 <-
+#'   caret::train(stats::as.formula(paste(Y, paste(D,G,Q,paste(X,collapse="+"),sep="+"), sep="~")),
+#'                data=data[sample1,], method="ranger",
+#'                trControl=caret::trainControl(method="cv"),
+#'                tuneGrid=expand.grid(mtry=c(2,4),splitrule=c("variance"),min.node.size=c(50,100))) )
+#' message <- utils::capture.output( YgivenDGXQ.Model.sample2 <-
+#'   caret::train(stats::as.formula(paste(Y, paste(D,G,Q,paste(X,collapse="+"),sep="+"), sep="~")),
+#'                data=data[sample2,], method="ranger",
+#'                trControl=caret::trainControl(method="cv"),
+#'                tuneGrid=expand.grid(mtry=c(2,4),splitrule=c("variance"),min.node.size=c(50,100))) )
 #'
 #' ### propensity score model
 #' data[,D] <- as.factor(data[,D])
 #' levels(data[,D]) <- c("D0","D1")  # necessary for caret implementation of ranger
 #'
-#' message <- utils::capture.output( DgivenGXQ.Model.sample1 <- caret::train(stats::as.formula(paste(D, paste(G,Q,paste(X,collapse="+"),sep="+"), sep="~")), data=data[sample1,], method="ranger",
-#'                                                                           trControl=caret::trainControl(method="cv", classProbs=TRUE),
-#'                                                                           tuneGrid=expand.grid(mtry=c(1,2),splitrule=c("gini"),min.node.size=c(50,100))) )
-#' message <- utils::capture.output( DgivenGXQ.Model.sample2 <- caret::train(stats::as.formula(paste(D, paste(G,Q,paste(X,collapse="+"),sep="+"), sep="~")), data=data[sample2,], method="ranger",
-#'                                                                           trControl=caret::trainControl(method="cv", classProbs=TRUE),
-#'                                                                           tuneGrid=expand.grid(mtry=c(1,2),splitrule=c("gini"),min.node.size=c(50,100))) )
+#' message <- utils::capture.output( DgivenGXQ.Model.sample1 <-
+#'     caret::train(stats::as.formula(paste(D, paste(G,Q,paste(X,collapse="+"),sep="+"), sep="~")),
+#'                  data=data[sample1,], method="ranger",
+#'                  trControl=caret::trainControl(method="cv", classProbs=TRUE),
+#'                  tuneGrid=expand.grid(mtry=c(1,2),splitrule=c("gini"),min.node.size=c(50,100))) )
+#' message <- utils::capture.output( DgivenGXQ.Model.sample2 <-
+#'     caret::train(stats::as.formula(paste(D, paste(G,Q,paste(X,collapse="+"),sep="+"), sep="~")),
+#'                  data=data[sample2,], method="ranger",
+#'                  trControl=caret::trainControl(method="cv", classProbs=TRUE),
+#'                  tuneGrid=expand.grid(mtry=c(1,2),splitrule=c("gini"),min.node.size=c(50,100))) )
+#'
 #' data[,D] <- as.numeric(data[,D])-1
 #'
 #' ### cross-fitted predictions
@@ -67,67 +76,92 @@
 #'
 #' pred_data <- data
 #' pred_data[,D] <- 0
-#' YgivenGXQ.Pred_D0[sample2] <- stats::predict(YgivenDGXQ.Model.sample1, newdata = pred_data[sample2,])
-#' YgivenGXQ.Pred_D0[sample1] <- stats::predict(YgivenDGXQ.Model.sample2, newdata = pred_data[sample1,])
+#' YgivenGXQ.Pred_D0[sample2] <- stats::predict(YgivenDGXQ.Model.sample1,
+#'     newdata = pred_data[sample2,])
+#' YgivenGXQ.Pred_D0[sample1] <- stats::predict(YgivenDGXQ.Model.sample2,
+#'     newdata = pred_data[sample1,])
 #'
 #' pred_data <- data
 #' pred_data[,D] <- 1
-#' YgivenGXQ.Pred_D1[sample2] <- stats::predict(YgivenDGXQ.Model.sample1, newdata = pred_data[sample2,])
-#' YgivenGXQ.Pred_D1[sample1] <- stats::predict(YgivenDGXQ.Model.sample2, newdata = pred_data[sample1,])
+#' YgivenGXQ.Pred_D1[sample2] <- stats::predict(YgivenDGXQ.Model.sample1,
+#'     newdata = pred_data[sample2,])
+#' YgivenGXQ.Pred_D1[sample1] <- stats::predict(YgivenDGXQ.Model.sample2,
+#'     newdata = pred_data[sample1,])
 #'
 #' pred_data <- data
-#' DgivenGXQ.Pred[sample2] <- stats::predict(DgivenGXQ.Model.sample1, newdata = pred_data[sample2,], type="prob")[,2]
-#' DgivenGXQ.Pred[sample1] <- stats::predict(DgivenGXQ.Model.sample2, newdata = pred_data[sample1,], type="prob")[,2]
+#' DgivenGXQ.Pred[sample2] <- stats::predict(DgivenGXQ.Model.sample1,
+#'     newdata = pred_data[sample2,], type="prob")[,2]
+#' DgivenGXQ.Pred[sample1] <- stats::predict(DgivenGXQ.Model.sample2,
+#'     newdata = pred_data[sample1,], type="prob")[,2]
 #'
 #' ### Estimate E(Y_d | Q,g)
-#' YgivenGXQ.Pred_D1_ncf <- YgivenGXQ.Pred_D0_ncf <- DgivenGXQ.Pred_ncf <- rep(NA, nrow(data)) # ncf stands for non-cross-fitted
+#' YgivenGXQ.Pred_D1_ncf <- YgivenGXQ.Pred_D0_ncf <- DgivenGXQ.Pred_ncf <- rep(NA, nrow(data))
+#' # ncf stands for non-cross-fitted
 #'
 #' pred_data <- data
 #' pred_data[,D] <- 1
-#' YgivenGXQ.Pred_D1_ncf[sample1] <- stats::predict(YgivenDGXQ.Model.sample1, newdata = pred_data[sample1,])
-#' YgivenGXQ.Pred_D1_ncf[sample2] <- stats::predict(YgivenDGXQ.Model.sample2, newdata = pred_data[sample2,])
+#' YgivenGXQ.Pred_D1_ncf[sample1] <- stats::predict(YgivenDGXQ.Model.sample1,
+#'     newdata = pred_data[sample1,])
+#' YgivenGXQ.Pred_D1_ncf[sample2] <- stats::predict(YgivenDGXQ.Model.sample2,
+#'     newdata = pred_data[sample2,])
 #'
 #' pred_data <- data
 #' pred_data[,D] <- 0
-#' YgivenGXQ.Pred_D0_ncf[sample1] <- stats::predict(YgivenDGXQ.Model.sample1, newdata = pred_data[sample1,])
-#' YgivenGXQ.Pred_D0_ncf[sample2] <- stats::predict(YgivenDGXQ.Model.sample2, newdata = pred_data[sample2,])
+#' YgivenGXQ.Pred_D0_ncf[sample1] <- stats::predict(YgivenDGXQ.Model.sample1,
+#'     newdata = pred_data[sample1,])
+#' YgivenGXQ.Pred_D0_ncf[sample2] <- stats::predict(YgivenDGXQ.Model.sample2,
+#'     newdata = pred_data[sample2,])
 #'
-#' DgivenGXQ.Pred_ncf[sample1] <- stats::predict(DgivenGXQ.Model.sample1, newdata = pred_data[sample1,], type="prob")[,2]
-#' DgivenGXQ.Pred_ncf[sample2] <- stats::predict(DgivenGXQ.Model.sample2, newdata = pred_data[sample2,], type="prob")[,2]
+#' DgivenGXQ.Pred_ncf[sample1] <- stats::predict(DgivenGXQ.Model.sample1,
+#'     newdata = pred_data[sample1,], type="prob")[,2]
+#' DgivenGXQ.Pred_ncf[sample2] <- stats::predict(DgivenGXQ.Model.sample2,
+#'     newdata = pred_data[sample2,], type="prob")[,2]
 #'
 #' # IPOs for modelling E(Y_d | Q,g)
-#' IPO_D0_ncf <- (1-data[,D])/(1-DgivenGXQ.Pred_ncf)/mean((1-data[,D])/(1-DgivenGXQ.Pred_ncf))*(data[,Y]-YgivenGXQ.Pred_D0_ncf) + YgivenGXQ.Pred_D0_ncf
-#' IPO_D1_ncf <- data[,D]/DgivenGXQ.Pred_ncf/mean(data[,D]/DgivenGXQ.Pred_ncf)*(data[,Y]-YgivenGXQ.Pred_D1_ncf) + YgivenGXQ.Pred_D1_ncf
+#' IPO_D0_ncf <- (1-data[,D])/(1-DgivenGXQ.Pred_ncf)/mean((1-data[,D])/(1-DgivenGXQ.Pred_ncf))*
+#'     (data[,Y]-YgivenGXQ.Pred_D0_ncf) + YgivenGXQ.Pred_D0_ncf
+#' IPO_D1_ncf <- data[,D]/DgivenGXQ.Pred_ncf/mean(data[,D]/DgivenGXQ.Pred_ncf)*
+#'     (data[,Y]-YgivenGXQ.Pred_D1_ncf) + YgivenGXQ.Pred_D1_ncf
 #'
 #' data_temp <- data[,c(G,Q)]
 #' data_temp$IPO_D0_ncf <- IPO_D0_ncf
 #' data_temp$IPO_D1_ncf <- IPO_D1_ncf
 #'
-#' message <- utils::capture.output( Y0givenGQ.Model.sample1 <- caret::train(stats::as.formula(paste("IPO_D0_ncf", paste(G,Q,sep="+"), sep="~")), data=data_temp[sample1,], method="ranger",
-#'                                                                           trControl=caret::trainControl(method="cv"),
-#'                                                                           tuneGrid=expand.grid(mtry=1,splitrule=c("variance"),min.node.size=c(25,50))) )
-#' message <- utils::capture.output( Y0givenGQ.Model.sample2 <- caret::train(stats::as.formula(paste("IPO_D0_ncf", paste(G,Q,sep="+"), sep="~")), data=data_temp[sample2,], method="ranger",
-#'                                                                           trControl=caret::trainControl(method="cv"),
-#'                                                                           tuneGrid=expand.grid(mtry=1,splitrule=c("variance"),min.node.size=c(25,50))) )
-#' message <- utils::capture.output( Y1givenGQ.Model.sample1 <- caret::train(stats::as.formula(paste("IPO_D1_ncf", paste(G,Q,sep="+"), sep="~")), data=data_temp[sample1,], method="ranger",
-#'                                                                           trControl=caret::trainControl(method="cv"),
-#'                                                                           tuneGrid=expand.grid(mtry=1,splitrule=c("variance"),min.node.size=c(25,50))) )
-#' message <- utils::capture.output( Y1givenGQ.Model.sample2 <- caret::train(stats::as.formula(paste("IPO_D1_ncf", paste(G,Q,sep="+"), sep="~")), data=data_temp[sample2,], method="ranger",
-#'                                                                           trControl=caret::trainControl(method="cv"),
-#'                                                                           tuneGrid=expand.grid(mtry=1,splitrule=c("variance"),min.node.size=c(25,50))) )
+#' message <- utils::capture.output( Y0givenGQ.Model.sample1 <-
+#'     caret::train(stats::as.formula(paste("IPO_D0_ncf", paste(G,Q,sep="+"), sep="~")),
+#'                  data=data_temp[sample1,], method="ranger",
+#'                  trControl=caret::trainControl(method="cv"),
+#'                  tuneGrid=expand.grid(mtry=1,splitrule=c("variance"),min.node.size=c(25,50))) )
+#' message <- utils::capture.output( Y0givenGQ.Model.sample2 <-
+#'     caret::train(stats::as.formula(paste("IPO_D0_ncf", paste(G,Q,sep="+"), sep="~")),
+#'                  data=data_temp[sample2,], method="ranger",
+#'                  trControl=caret::trainControl(method="cv"),
+#'                  tuneGrid=expand.grid(mtry=1,splitrule=c("variance"),min.node.size=c(25,50))) )
+#' message <- utils::capture.output( Y1givenGQ.Model.sample1 <-
+#'     caret::train(stats::as.formula(paste("IPO_D1_ncf", paste(G,Q,sep="+"), sep="~")),
+#'                  data=data_temp[sample1,], method="ranger",
+#'                  trControl=caret::trainControl(method="cv"),
+#'                  tuneGrid=expand.grid(mtry=1,splitrule=c("variance"),min.node.size=c(25,50))) )
+#' message <- utils::capture.output( Y1givenGQ.Model.sample2 <-
+#'     caret::train(stats::as.formula(paste("IPO_D1_ncf", paste(G,Q,sep="+"), sep="~")),
+#'                  data=data_temp[sample2,], method="ranger",
+#'                  trControl=caret::trainControl(method="cv"),
+#'                  tuneGrid=expand.grid(mtry=1,splitrule=c("variance"),min.node.size=c(25,50))) )
 #'
 #' Y0givenQ.Pred_G0 <- Y0givenQ.Pred_G1 <- Y1givenQ.Pred_G0 <- Y1givenQ.Pred_G1 <- rep(NA, nrow(data))
 #'
 #' pred_data <- data
 #' pred_data[,G] <- 1
-#' Y0givenQ.Pred_G1[sample2] <- stats::predict(Y0givenGQ.Model.sample1, newdata = pred_data[sample2,])  # cross-fitting is used
+#' # cross-fitting is used
+#' Y0givenQ.Pred_G1[sample2] <- stats::predict(Y0givenGQ.Model.sample1, newdata = pred_data[sample2,])
 #' Y0givenQ.Pred_G1[sample1] <- stats::predict(Y0givenGQ.Model.sample2, newdata = pred_data[sample1,])
 #' Y1givenQ.Pred_G1[sample2] <- stats::predict(Y1givenGQ.Model.sample1, newdata = pred_data[sample2,])
 #' Y1givenQ.Pred_G1[sample1] <- stats::predict(Y1givenGQ.Model.sample2, newdata = pred_data[sample1,])
 #'
 #' pred_data <- data
 #' pred_data[,G] <- 0
-#' Y0givenQ.Pred_G0[sample2] <- stats::predict(Y0givenGQ.Model.sample1, newdata = pred_data[sample2,])  # cross-fitting is used
+#' # cross-fitting is used
+#' Y0givenQ.Pred_G0[sample2] <- stats::predict(Y0givenGQ.Model.sample1, newdata = pred_data[sample2,])
 #' Y0givenQ.Pred_G0[sample1] <- stats::predict(Y0givenGQ.Model.sample2, newdata = pred_data[sample1,])
 #' Y1givenQ.Pred_G0[sample2] <- stats::predict(Y1givenGQ.Model.sample1, newdata = pred_data[sample2,])
 #' Y1givenQ.Pred_G0[sample1] <- stats::predict(Y1givenGQ.Model.sample2, newdata = pred_data[sample1,])
@@ -136,41 +170,57 @@
 #' data[,D] <- as.factor(data[,D])
 #' levels(data[,D]) <- c("D0","D1")  # necessary for caret implementation of ranger
 #'
-#' message <- utils::capture.output( DgivenGQ.Model.sample1 <- caret::train(stats::as.formula(paste(D, paste(G,Q,sep="+"), sep="~")), data=data[sample1,], method="ranger",
-#'                                                                          trControl=caret::trainControl(method="cv", classProbs=TRUE),
-#'                                                                          tuneGrid=expand.grid(mtry=1,splitrule=c("gini"),min.node.size=c(25,50))) )
-#' message <- utils::capture.output( DgivenGQ.Model.sample2 <- caret::train(stats::as.formula(paste(D, paste(G,Q,sep="+"), sep="~")), data=data[sample2,], method="ranger",
-#'                                                                          trControl=caret::trainControl(method="cv", classProbs=TRUE),
-#'                                                                          tuneGrid=expand.grid(mtry=1,splitrule=c("gini"),min.node.size=c(25,50))) )
+#' message <- utils::capture.output( DgivenGQ.Model.sample1 <-
+#'     caret::train(stats::as.formula(paste(D, paste(G,Q,sep="+"), sep="~")),
+#'                  data=data[sample1,], method="ranger",
+#'                  trControl=caret::trainControl(method="cv", classProbs=TRUE),
+#'                  tuneGrid=expand.grid(mtry=1,splitrule=c("gini"),min.node.size=c(25,50))) )
+#' message <- utils::capture.output( DgivenGQ.Model.sample2 <-
+#'     caret::train(stats::as.formula(paste(D, paste(G,Q,sep="+"), sep="~")),
+#'                  data=data[sample2,], method="ranger",
+#'                  trControl=caret::trainControl(method="cv", classProbs=TRUE),
+#'                  tuneGrid=expand.grid(mtry=1,splitrule=c("gini"),min.node.size=c(25,50))) )
+#'
 #' data[,D] <- as.numeric(data[,D])-1
 #'
 #' DgivenQ.Pred_G0 <- DgivenQ.Pred_G1 <- rep(NA, nrow(data))
 #'
 #' pred_data <- data
 #' pred_data[,G] <- 0
-#' DgivenQ.Pred_G0[sample2] <- stats::predict(DgivenGQ.Model.sample1, newdata = pred_data[sample2,], type="prob")[,2]
-#' DgivenQ.Pred_G0[sample1] <- stats::predict(DgivenGQ.Model.sample2, newdata = pred_data[sample1,], type="prob")[,2]
+#' DgivenQ.Pred_G0[sample2] <- stats::predict(DgivenGQ.Model.sample1,
+#'     newdata = pred_data[sample2,], type="prob")[,2]
+#' DgivenQ.Pred_G0[sample1] <- stats::predict(DgivenGQ.Model.sample2,
+#'     newdata = pred_data[sample1,], type="prob")[,2]
 #'
 #' pred_data <- data
 #' pred_data[,G] <- 1
-#' DgivenQ.Pred_G1[sample2] <- stats::predict(DgivenGQ.Model.sample1, newdata = pred_data[sample2,], type="prob")[,2]
-#' DgivenQ.Pred_G1[sample1] <- stats::predict(DgivenGQ.Model.sample2, newdata = pred_data[sample1,], type="prob")[,2]
+#' DgivenQ.Pred_G1[sample2] <- stats::predict(DgivenGQ.Model.sample1,
+#'    newdata = pred_data[sample2,], type="prob")[,2]
+#' DgivenQ.Pred_G1[sample1] <- stats::predict(DgivenGQ.Model.sample2,
+#'    newdata = pred_data[sample1,], type="prob")[,2]
 #'
 #' ### Estimate p_g(Q)=Pr(G=g | Q)
 #' data[,G] <- as.factor(data[,G])
 #' levels(data[,G]) <- c("G0","G1")  # necessary for caret implementation of ranger
 #'
-#' message <- utils::capture.output( GgivenQ.Model.sample1 <- caret::train(stats::as.formula(paste(G, paste(Q,sep="+"), sep="~")), data=data[sample1,], method="ranger",
-#'                                                                         trControl=caret::trainControl(method="cv", classProbs=TRUE),
-#'                                                                         tuneGrid=expand.grid(mtry=1,splitrule=c("gini"),min.node.size=c(25,50))) )
-#' message <- utils::capture.output( GgivenQ.Model.sample2 <- caret::train(stats::as.formula(paste(G, paste(Q,sep="+"), sep="~")), data=data[sample2,], method="ranger",
-#'                                                                         trControl=caret::trainControl(method="cv", classProbs=TRUE),
-#'                                                                         tuneGrid=expand.grid(mtry=1,splitrule=c("gini"),min.node.size=c(25,50))) )
+#' message <- utils::capture.output( GgivenQ.Model.sample1 <-
+#'     caret::train(stats::as.formula(paste(G, paste(Q,sep="+"), sep="~")),
+#'                  data=data[sample1,], method="ranger",
+#'                  trControl=caret::trainControl(method="cv", classProbs=TRUE),
+#'                  tuneGrid=expand.grid(mtry=1,splitrule=c("gini"),min.node.size=c(25,50))) )
+#' message <- utils::capture.output( GgivenQ.Model.sample2 <-
+#'     caret::train(stats::as.formula(paste(G, paste(Q,sep="+"), sep="~")),
+#'                  data=data[sample2,], method="ranger",
+#'                  trControl=caret::trainControl(method="cv", classProbs=TRUE),
+#'                  tuneGrid=expand.grid(mtry=1,splitrule=c("gini"),min.node.size=c(25,50))) )
+#'
 #' data[,G] <- as.numeric(data[,G])-1
 #'
 #' GgivenQ.Pred <- rep(NA, nrow(data))
-#' GgivenQ.Pred[sample2] <- stats::predict(DgivenGQ.Model.sample1, newdata = data[sample2,], type="prob")[,2]
-#' GgivenQ.Pred[sample1] <- stats::predict(DgivenGQ.Model.sample2, newdata = data[sample1,], type="prob")[,2]
+#' GgivenQ.Pred[sample2] <- stats::predict(DgivenGQ.Model.sample1,
+#'     newdata = data[sample2,], type="prob")[,2]
+#' GgivenQ.Pred[sample1] <- stats::predict(DgivenGQ.Model.sample2,
+#'     newdata = data[sample1,], type="prob")[,2]
 #'
 #'
 #' results <- cdgd1_manual(Y=Y,D=D,G=G,

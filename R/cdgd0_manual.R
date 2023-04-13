@@ -35,23 +35,29 @@
 #'
 #' ### outcome regression model
 #'
-#' message <- utils::capture.output( YgivenDGX.Model.sample1 <- caret::train(stats::as.formula(paste(Y, paste(D,G,paste(X,collapse="+"),sep="+"), sep="~")), data=data[sample1,], method="ranger",
-#'                                                                           trControl=caret::trainControl(method="cv"),
-#'                                                                           tuneGrid=expand.grid(mtry=c(2,4),splitrule=c("variance"),min.node.size=c(50,100))) )
-#' message <- utils::capture.output( YgivenDGX.Model.sample2 <- caret::train(stats::as.formula(paste(Y, paste(D,G,paste(X,collapse="+"),sep="+"), sep="~")), data=data[sample2,], method="ranger",
-#'                                                                           trControl=caret::trainControl(method="cv"),
-#'                                                                           tuneGrid=expand.grid(mtry=c(2,4),splitrule=c("variance"),min.node.size=c(50,100))) )
+#' message <- utils::capture.output( YgivenDGX.Model.sample1 <-
+#'     caret::train(stats::as.formula(paste(Y, paste(D,G,paste(X,collapse="+"),sep="+"), sep="~")),
+#'              data=data[sample1,], method="ranger", trControl=caret::trainControl(method="cv"),
+#'              tuneGrid=expand.grid(mtry=c(2,4),splitrule=c("variance"),min.node.size=c(50,100))) )
+#' message <- utils::capture.output( YgivenDGX.Model.sample2 <-
+#'     caret::train(stats::as.formula(paste(Y, paste(D,G,paste(X,collapse="+"),sep="+"), sep="~")),
+#'              data=data[sample2,], method="ranger", trControl=caret::trainControl(method="cv"),
+#'              tuneGrid=expand.grid(mtry=c(2,4),splitrule=c("variance"),min.node.size=c(50,100))) )
 #'
 #' ### propensity score model
 #' data[,D] <- as.factor(data[,D])
 #' levels(data[,D]) <- c("D0","D1")  # necessary for caret implementation of ranger
 #'
-#' message <- utils::capture.output( DgivenGX.Model.sample1 <- caret::train(stats::as.formula(paste(D, paste(G,paste(X,collapse="+"),sep="+"), sep="~")), data=data[sample1,], method="ranger",
-#'                                                                          trControl=caret::trainControl(method="cv", classProbs=TRUE),
-#'                                                                          tuneGrid=expand.grid(mtry=c(1,2),splitrule=c("gini"),min.node.size=c(50,100))) )
-#' message <- utils::capture.output( DgivenGX.Model.sample2 <- caret::train(stats::as.formula(paste(D, paste(G,paste(X,collapse="+"),sep="+"), sep="~")), data=data[sample2,], method="ranger",
-#'                                                                          trControl=caret::trainControl(method="cv", classProbs=TRUE),
-#'                                                                          tuneGrid=expand.grid(mtry=c(1,2),splitrule=c("gini"),min.node.size=c(50,100))) )
+#' message <- utils::capture.output( DgivenGX.Model.sample1 <-
+#'     caret::train(stats::as.formula(paste(D, paste(G,paste(X,collapse="+"),sep="+"), sep="~")),
+#'              data=data[sample1,], method="ranger",
+#'              trControl=caret::trainControl(method="cv", classProbs=TRUE),
+#'              tuneGrid=expand.grid(mtry=c(1,2),splitrule=c("gini"),min.node.size=c(50,100))) )
+#' message <- utils::capture.output( DgivenGX.Model.sample2 <-
+#'     caret::train(stats::as.formula(paste(D, paste(G,paste(X,collapse="+"),sep="+"), sep="~")),
+#'              data=data[sample2,], method="ranger",
+#'              trControl=caret::trainControl(method="cv", classProbs=TRUE),
+#'              tuneGrid=expand.grid(mtry=c(1,2),splitrule=c("gini"),min.node.size=c(50,100))) )
 #'
 #' data[,D] <- as.numeric(data[,D])-1
 #'
@@ -69,8 +75,10 @@
 #' YgivenGX.Pred_D1[sample1] <- stats::predict(YgivenDGX.Model.sample2, newdata = pred_data[sample1,])
 #'
 #' pred_data <- data
-#' DgivenGX.Pred[sample2] <- stats::predict(DgivenGX.Model.sample1, newdata = pred_data[sample2,], type="prob")[,2]
-#' DgivenGX.Pred[sample1] <- stats::predict(DgivenGX.Model.sample2, newdata = pred_data[sample1,], type="prob")[,2]
+#' DgivenGX.Pred[sample2] <- stats::predict(DgivenGX.Model.sample1,
+#'     newdata = pred_data[sample2,], type="prob")[,2]
+#' DgivenGX.Pred[sample1] <- stats::predict(DgivenGX.Model.sample2,
+#'     newdata = pred_data[sample1,], type="prob")[,2]
 #'
 #' results <- cdgd0_manual(Y=Y,D=D,G=G,
 #'                        YgivenGX.Pred_D0=YgivenGX.Pred_D0,
