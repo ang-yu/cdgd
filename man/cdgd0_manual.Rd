@@ -110,6 +110,5 @@ results <- cdgd0_manual(Y=Y,D=D,G=G,
                        DgivenGX.Pred=DgivenGX.Pred,
                        data=data)
 
-results
-}
+results}
 }

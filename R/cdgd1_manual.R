@@ -238,8 +238,7 @@
 #'                         GgivenQ.Pred=GgivenQ.Pred,
 #'                         data,alpha=0.05)
 #'
-#' results
-#' }
+#' results}
 
 
 cdgd1_manual <- function(Y,D,G,

@@ -274,6 +274,5 @@ results <- cdgd1_manual(Y=Y,D=D,G=G,
                         GgivenQ.Pred=GgivenQ.Pred,
                         data,alpha=0.05)
 
-results
-}
+results}
 }

@@ -88,8 +88,7 @@
 #'                        DgivenGX.Pred=DgivenGX.Pred,
 #'                        data=data)
 #'
-#' results
-#' }
+#' results}
 
 
 

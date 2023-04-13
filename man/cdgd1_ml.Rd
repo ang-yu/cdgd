@@ -49,6 +49,5 @@ Q="Q",
 data=exp_data,
 algorithm="gbm")
 
-results
-}
+results}
 }
