@@ -2,7 +2,7 @@ Package: cdgd
 Title: Causal Decomposition of Group Disparities
 Version: 0.3.0
 Authors@R: 
-    person("Ang", "Yu", , "ayu33@wisc.edu", role = c("aut", "cre", "cph"),
+    person("Ang", "Yu", , "ang_yu@outlook.com", role = c("aut", "cre", "cph"),
            comment = c(website = "https://ang-yu.github.io/", ORCID = "0000-0002-1828-0165"))
 Description: The causal decompositions of group disparities developed by
     Yu and Elwert (2023). This package implements the estimators for the
