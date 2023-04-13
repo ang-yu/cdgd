@@ -19,6 +19,8 @@
 #' @export
 #'
 #' @examples
+#' ### This example is not run as it will take a minute.
+#' \dontrun{
 #' data(exp_data)
 #'
 #' set.seed(1)
@@ -33,6 +35,7 @@
 #' algorithm="gbm")
 #'
 #' results
+#' }
 
 
 

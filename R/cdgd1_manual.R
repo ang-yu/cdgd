@@ -26,6 +26,8 @@
 #' @export
 #'
 #' @examples
+#' ### This example is not run as it will take a minute.
+#' \dontrun{
 #' data(exp_data)
 #'
 #' Y="outcome"
@@ -237,6 +239,7 @@
 #'                         data,alpha=0.05)
 #'
 #' results
+#' }
 
 
 cdgd1_manual <- function(Y,D,G,

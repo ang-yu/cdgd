@@ -19,6 +19,8 @@
 #' @export
 #'
 #' @examples
+#' ### This example is not run as it will take a minute.
+#' \dontrun{
 #' data(exp_data)
 #'
 #' Y="outcome"
@@ -87,6 +89,7 @@
 #'                        data=data)
 #'
 #' results
+#' }
 
 
 
