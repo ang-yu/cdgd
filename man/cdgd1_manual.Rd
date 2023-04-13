@@ -62,6 +62,8 @@ For the unconditional decomposition, ten nuisance functions need to be estimated
 The nuisance functions should be estimated using cross-fitting if Donsker class is not assumed.
 }
 \examples{
+### This example is not run as it will take a minute.
+\dontrun{
 data(exp_data)
 
 Y="outcome"
@@ -273,4 +275,5 @@ results <- cdgd1_manual(Y=Y,D=D,G=G,
                         data,alpha=0.05)
 
 results
+}
 }

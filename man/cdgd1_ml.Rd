@@ -34,6 +34,8 @@ A dataframe of estimates.
 Perform conditional decomposition via machine learning
 }
 \examples{
+### This example is not run as it will take a minute.
+\dontrun{
 data(exp_data)
 
 set.seed(1)
@@ -48,4 +50,5 @@ data=exp_data,
 algorithm="gbm")
 
 results
+}
 }
