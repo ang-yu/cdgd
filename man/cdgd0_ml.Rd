@@ -30,6 +30,8 @@ A list of estimates.
 Perform unconditional decomposition via machine learning
 }
 \examples{
+#' ### This example is not run as it will take a minute.
+\dontrun{
 data(exp_data)
 
 set.seed(1)
@@ -42,5 +44,5 @@ X=c("Q","confounder"),
 data=exp_data,
 algorithm="gbm")
 
-results[[1]]
+results[[1]]}
 }
