@@ -17,8 +17,8 @@
 #' @export
 #'
 #' @examples
-#' ### This example is not run as it will take a minute.
-#' \dontrun{
+#' ### This example will take a minute to run.
+#' \donttest{
 #' data(exp_data)
 #'
 #' set.seed(1)
