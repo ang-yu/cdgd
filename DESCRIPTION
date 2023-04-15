@@ -5,16 +5,18 @@ Authors@R:
     person("Ang", "Yu", , "ang_yu@outlook.com", role = c("aut", "cre", "cph"),
            comment = c(website = "https://ang-yu.github.io/", ORCID = "0000-0002-1828-0165"))
 Description: The causal decompositions of group disparities developed by
-    Yu and Elwert (2023). This package implements the estimators for the
-    decomposition components that are based on efficient influence
-    functions. For the nuisance functions of the estimators, parametric
-    and nonparametric options are both provided, as well as manual options
-    in case the default models are not satisfying.
+    Yu and Elwert (2023)
+    <https://ang-yu.github.io/files/Causal_Decomposition_of_Group_Disparities_2023.pdf>.
+    This package implements the estimators for the decomposition
+    components that are based on efficient influence functions. For the
+    nuisance functions of the estimators, both parametric and
+    nonparametric options are provided, as well as manual options in case
+    the default models are not satisfying.
 License: MIT + file LICENSE
 URL: https://github.com/ang-yu/cdgd
 BugReports: https://github.com/ang-yu/cdgd/issues
 Depends: 
-    R (>= 4.1.0)
+    R (>= 4.0.0)
 Imports: 
     caret (>= 6.0.0)
 Suggests:
