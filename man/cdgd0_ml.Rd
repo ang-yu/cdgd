@@ -30,7 +30,7 @@ A list of estimates.
 Perform unconditional decomposition via machine learning
 }
 \examples{
-### This example will take a minute to run.
+# This example will take a minute to run.
 \donttest{
 data(exp_data)
 

@@ -19,7 +19,7 @@
 #' @export
 #'
 #' @examples
-#' ### This example will take a minute to run.
+#' # This example will take a minute to run.
 #' \donttest{
 #' data(exp_data)
 #'

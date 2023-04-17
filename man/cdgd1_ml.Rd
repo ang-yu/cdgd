@@ -34,7 +34,7 @@ A dataframe of estimates.
 Perform conditional decomposition via machine learning
 }
 \examples{
-### This example will take a minute to run.
+# This example will take a minute to run.
 \donttest{
 data(exp_data)
 
