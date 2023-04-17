@@ -41,8 +41,8 @@ For the unconditional decomposition, three nuisance functions (YgivenGX.Pred_D0,
 The nuisance functions should be estimated using cross-fitting if Donsker class is not assumed.
 }
 \examples{
-### This example is not run as it will take a minute.
-\dontrun{
+### This example will take a minute to run.
+\donttest{
 data(exp_data)
 
 Y="outcome"
