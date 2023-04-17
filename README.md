@@ -7,7 +7,8 @@
 <!-- badges: end -->
 
 The goal of cdgd is to implement the causal decompositions of group
-disparities developed by Yu and Elwert (2023).
+disparities in [Yu and Elwert
+(2023)](https://ang-yu.github.io/files/Causal_Decomposition_of_Group_Disparities_2023.pdf).
 
 ## Installation
 
