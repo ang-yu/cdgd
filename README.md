@@ -11,10 +11,10 @@ disparities in [Yu and Elwert
 
 ## Installation
 
-The latest release of the package can be installed through CRAN:
+The latest release of the package can be installed through CRAN.
 
 ``` r
-install.packages("cdgd",repos = "http://cran.us.r-project.org")
+install.packages("cdgd")
 ```
 
 The current development version can be installed from source using
