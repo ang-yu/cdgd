@@ -1,16 +1,24 @@
 
 # cdgd
 
-<!-- badges: start -->
-
 [![R-CMD-check](https://github.com/ang-yu/cdgd/actions/workflows/R-CMD-check.yaml/badge.svg)](https://github.com/ang-yu/cdgd/actions/workflows/R-CMD-check.yaml)
-<!-- badges: end -->
+![CRAN Downloads
+overall](http://cranlogs.r-pkg.org/badges/grand-total/cdgd)
 
 The goal of cdgd is to implement the causal decompositions of group
 disparities in [Yu and Elwert
 (2023)](https://ang-yu.github.io/files/Causal_Decomposition_of_Group_Disparities_2023.pdf).
 
 ## Installation
+
+The latest release of the package can be installed through CRAN:
+
+``` r
+install.packages("cdgd",repos = "http://cran.us.r-project.org")
+```
+
+The current development version can be installed from source using
+devtools.
 
 ``` r
 devtools::install_github("ang-yu/cdgd")
