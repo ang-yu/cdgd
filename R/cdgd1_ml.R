@@ -171,10 +171,19 @@ cdgd1_ml <- function(Y,D,G,X,Q,data,algorithm,alpha=0.05,trim1=0,trim2=0) {
                                                                             preProc=c("center","scale"), trControl=caret::trainControl(method="cv"), linout=FALSE ))
   }
   if (algorithm=="ranger") {
-    message <- utils::capture.output( GgivenQ.Model.sample1 <- caret::train(stats::as.formula(paste(G, paste(Q,collapse="+"), sep="~")), data=data[sample1,], method="ranger",
-                                                                            trControl=caret::trainControl(method="cv", classProbs=TRUE)) )
-    message <- utils::capture.output( GgivenQ.Model.sample2 <- caret::train(stats::as.formula(paste(G, paste(Q,collapse="+"), sep="~")), data=data[sample2,], method="ranger",
-                                                                            trControl=caret::trainControl(method="cv", classProbs=TRUE)) )
+    if (length(Q)==1) {  # need to specify mtry=1 to avoid an error
+      message <- utils::capture.output( GgivenQ.Model.sample1 <- caret::train(stats::as.formula(paste(G, paste(Q,collapse="+"), sep="~")), data=data[sample1,], method="ranger",
+                                                                              trControl=caret::trainControl(method="cv", classProbs=TRUE)),
+                                                                              tuneGrid=expand.grid(mtry=1, min.node.size=1, splitrule=c("gini","extratrees")) )   # min.node.size=1 and splitrule=c("gini","extratrees") are default
+      message <- utils::capture.output( GgivenQ.Model.sample2 <- caret::train(stats::as.formula(paste(G, paste(Q,collapse="+"), sep="~")), data=data[sample2,], method="ranger",
+                                                                              trControl=caret::trainControl(method="cv", classProbs=TRUE)),
+                                                                              tuneGrid=expand.grid(mtry=1, min.node.size=1, splitrule=c("gini","extratrees")) )
+    } else {
+      message <- utils::capture.output( GgivenQ.Model.sample1 <- caret::train(stats::as.formula(paste(G, paste(Q,collapse="+"), sep="~")), data=data[sample1,], method="ranger",
+                                                                              trControl=caret::trainControl(method="cv", classProbs=TRUE)) )
+      message <- utils::capture.output( GgivenQ.Model.sample2 <- caret::train(stats::as.formula(paste(G, paste(Q,collapse="+"), sep="~")), data=data[sample2,], method="ranger",
+                                                                              trControl=caret::trainControl(method="cv", classProbs=TRUE)) )
+    }
   }
   if (algorithm=="gbm") {
     message <- utils::capture.output( GgivenQ.Model.sample1 <- caret::train(stats::as.formula(paste(G, paste(Q,collapse="+"), sep="~")), data=data[sample1,], method="gbm",
