@@ -56,18 +56,36 @@ cdgd0_ml <- function(Y,D,G,X,data,algorithm,alpha=0.05,trim=0) {
   levels(data[,D]) <- c("D0","D1")  # necessary for caret implementation of ranger
 
   if (algorithm=="nnet") {
+    if (!requireNamespace("nnet", quietly=TRUE)) {
+      stop(
+        "Package \"nnet\" must be installed to use this function.",
+        call. = FALSE
+      )
+    }
     message <- utils::capture.output( DgivenGX.Model.sample1 <- caret::train(stats::as.formula(paste(D, paste(G,paste(X,collapse="+"),sep="+"), sep="~")), data=data[sample1,], method="nnet",
                                                                              preProc=c("center","scale"), trControl=caret::trainControl(method="cv"), linout=FALSE ))
     message <- utils::capture.output( DgivenGX.Model.sample2 <- caret::train(stats::as.formula(paste(D, paste(G,paste(X,collapse="+"),sep="+"), sep="~")), data=data[sample2,], method="nnet",
                                                                              preProc=c("center","scale"), trControl=caret::trainControl(method="cv"), linout=FALSE ))
   }
   if (algorithm=="ranger") {
+    if (!requireNamespace("ranger", quietly=TRUE)) {
+      stop(
+        "Package \"ranger\" must be installed to use this function.",
+        call. = FALSE
+      )
+    }
     message <- utils::capture.output( DgivenGX.Model.sample1 <- caret::train(stats::as.formula(paste(D, paste(G,paste(X,collapse="+"),sep="+"), sep="~")), data=data[sample1,], method="ranger",
                                                                              trControl=caret::trainControl(method="cv", classProbs=TRUE)) )
     message <- utils::capture.output( DgivenGX.Model.sample2 <- caret::train(stats::as.formula(paste(D, paste(G,paste(X,collapse="+"),sep="+"), sep="~")), data=data[sample2,], method="ranger",
                                                                              trControl=caret::trainControl(method="cv", classProbs=TRUE)) )
   }
   if (algorithm=="gbm") {
+    if (!requireNamespace("gbm", quietly=TRUE)) {
+      stop(
+        "Package \"gbm\" must be installed to use this function.",
+        call. = FALSE
+      )
+    }
     message <- utils::capture.output( DgivenGX.Model.sample1 <- caret::train(stats::as.formula(paste(D, paste(G,paste(X,collapse="+"),sep="+"), sep="~")), data=data[sample1,], method="gbm",
                                                                              trControl=caret::trainControl(method="cv")) )
     message <- utils::capture.output( DgivenGX.Model.sample2 <- caret::train(stats::as.formula(paste(D, paste(G,paste(X,collapse="+"),sep="+"), sep="~")), data=data[sample2,], method="gbm",
@@ -102,36 +120,18 @@ cdgd0_ml <- function(Y,D,G,X,data,algorithm,alpha=0.05,trim=0) {
 
   ### outcome regression model
   if (algorithm=="nnet") {
-    if (!requireNamespace("nnet", quietly=TRUE)) {
-      stop(
-        "Package \"nnet\" must be installed to use this function.",
-        call. = FALSE
-      )
-    }
     message <- utils::capture.output( YgivenDGX.Model.sample1 <- caret::train(stats::as.formula(paste(Y, paste(D,G,paste(X,collapse="+"),sep="+"), sep="~")), data=data[sample1,], method="nnet",
                                                                               preProc=c("center","scale"), trControl=caret::trainControl(method="cv"), linout=TRUE ))
     message <- utils::capture.output( YgivenDGX.Model.sample2 <- caret::train(stats::as.formula(paste(Y, paste(D,G,paste(X,collapse="+"),sep="+"), sep="~")), data=data[sample2,], method="nnet",
                                                                               preProc=c("center","scale"), trControl=caret::trainControl(method="cv"), linout=TRUE ))
   }
   if (algorithm=="ranger") {
-    if (!requireNamespace("ranger", quietly=TRUE)) {
-      stop(
-        "Package \"ranger\" must be installed to use this function.",
-        call. = FALSE
-      )
-    }
     message <- utils::capture.output( YgivenDGX.Model.sample1 <- caret::train(stats::as.formula(paste(Y, paste(D,G,paste(X,collapse="+"),sep="+"), sep="~")), data=data[sample1,], method="ranger",
                                                                               trControl=caret::trainControl(method="cv")) )
     message <- utils::capture.output( YgivenDGX.Model.sample2 <- caret::train(stats::as.formula(paste(Y, paste(D,G,paste(X,collapse="+"),sep="+"), sep="~")), data=data[sample2,], method="ranger",
                                                                               trControl=caret::trainControl(method="cv")) )
   }
   if (algorithm=="gbm") {
-    if (!requireNamespace("gbm", quietly=TRUE)) {
-      stop(
-        "Package \"gbm\" must be installed to use this function.",
-        call. = FALSE
-      )
-    }
     message <- utils::capture.output( YgivenDGX.Model.sample1 <- caret::train(stats::as.formula(paste(Y, paste(D,G,paste(X,collapse="+"),sep="+"), sep="~")), data=data[sample1,], method="gbm",
                                                                               trControl=caret::trainControl(method="cv")) )
     message <- utils::capture.output( YgivenDGX.Model.sample2 <- caret::train(stats::as.formula(paste(Y, paste(D,G,paste(X,collapse="+"),sep="+"), sep="~")), data=data[sample2,], method="gbm",
