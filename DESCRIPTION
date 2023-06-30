@@ -6,7 +6,7 @@ Authors@R:
            comment = c(website = "<https://ang-yu.github.io/>", ORCID = "0000-0002-1828-0165"))
 Description: The framework of causal decomposition of group disparities developed by
     Yu and Elwert (2023)
-    <https://arxiv.org/abs/2306.16591>.
+    <arXiv:2306.16591>.
     This package implements the decomposition estimators
     that are based on efficient influence functions. For the
     nuisance functions of the estimators, both parametric and
