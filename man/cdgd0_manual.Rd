@@ -16,7 +16,7 @@ cdgd0_manual(
 )
 }
 \arguments{
-\item{Y}{Outcome. The name of a continuous variable.}
+\item{Y}{Outcome. The name of a numeric variable.}
 
 \item{D}{Treatment status. The name of a binary numeric variable taking values of 0 and 1.}
 
