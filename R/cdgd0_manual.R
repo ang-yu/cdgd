@@ -5,7 +5,7 @@
 #' For the unconditional decomposition, three nuisance functions (YgivenGX.Pred_D0, YgivenGX.Pred_D1, and DgivenGX.Pred) need to be estimated.
 #' The nuisance functions should be estimated using cross-fitting if Donsker class is not assumed.
 #'
-#' @param Y Outcome. The name of a continuous variable.
+#' @param Y Outcome. The name of a numeric variable.
 #' @param D Treatment status. The name of a binary numeric variable taking values of 0 and 1.
 #' @param G Advantaged group membership. The name of a binary numeric variable taking values of 0 and 1.
 #' @param YgivenGX.Pred_D0 A numeric vector of predicted Y values given X, G, and D=0. Vector length=nrow(data).

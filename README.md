@@ -5,9 +5,8 @@
 ![CRAN Downloads
 overall](http://cranlogs.r-pkg.org/badges/grand-total/cdgd)
 
-The goal of cdgd is to implement the causal decompositions of group
-disparities in [Yu and Elwert
-(2023)](https://ang-yu.github.io/files/Causal_Decomposition_of_Group_Disparities_2023.pdf).
+The package cdgd implements the causal decompositions of group
+disparities in [Yu and Elwert (2023)](https://arxiv.org/abs/2306.16591).
 
 ## Installation
 

@@ -1,1 +1,1 @@
-* This is a patch release that fixes a couple of small issues.
+* This is a patch release that revises package description and help files.

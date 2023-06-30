@@ -3,10 +3,10 @@
 
 #' Perform unconditional decomposition via machine learning
 #'
-#' @param Y Outcome. The name of a continuous variable.
+#' @param Y Outcome. The name of a numeric variable.
 #' @param D Treatment status. The name of a binary numeric variable taking values of 0 and 1.
 #' @param G Advantaged group membership. The name of a binary numeric variable taking values of 0 and 1.
-#' @param X Confounders. The vector of the names of numeric variables.
+#' @param X Confounders. A vector of names of numeric variables.
 #' @param data A data frame.
 #' @param algorithm The ML algorithm for modelling. "nnet" for neural network, "ranger" for random forests, "gbm" for generalized boosted models.
 #' @param alpha 1-alpha confidence interval.
