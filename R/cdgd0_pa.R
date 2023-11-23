@@ -3,10 +3,10 @@
 
 #' Perform unconditional decomposition via parametric models
 #'
-#' @param Y Outcome. The name of a numeric variable.
+#' @param Y Outcome. The name of a numeric variable (can be binary and take values of 0 and 1).
 #' @param D Treatment status. The name of a binary numeric variable taking values of 0 and 1.
 #' @param G Advantaged group membership. The name of a binary numeric variable taking values of 0 and 1.
-#' @param X Confounders. A vector of names of numeric variables.
+#' @param X Confounders. A vector of variable names.
 #' @param data A data frame.
 #' @param alpha 1-alpha confidence interval.
 #' @param trim Threshold for trimming the propensity score. When trim=a, individuals with propensity scores lower than a or higher than 1-a will be dropped.

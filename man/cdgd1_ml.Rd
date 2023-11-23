@@ -7,13 +7,13 @@
 cdgd1_ml(Y, D, G, X, Q, data, algorithm, alpha = 0.05, trim1 = 0, trim2 = 0)
 }
 \arguments{
-\item{Y}{Outcome. The name of a numeric variable.}
+\item{Y}{Outcome. The name of a numeric variable (can be binary and take values of 0 and 1).}
 
 \item{D}{Treatment status. The name of a binary numeric variable taking values of 0 and 1.}
 
 \item{G}{Advantaged group membership. The name of a binary numeric variable taking values of 0 and 1.}
 
-\item{X}{Confounders. A vector of names of numeric variables.}
+\item{X}{Confounders. A vector of variables names.}
 
 \item{Q}{Conditional set. A vector of names of numeric variables.}
 

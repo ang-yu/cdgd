@@ -3,10 +3,10 @@
 
 #' Perform unconditional decomposition via machine learning
 #'
-#' @param Y Outcome. The name of a numeric variable.
+#' @param Y Outcome. The name of a numeric variable (can be binary and take values of 0 and 1).
 #' @param D Treatment status. The name of a binary numeric variable taking values of 0 and 1.
 #' @param G Advantaged group membership. The name of a binary numeric variable taking values of 0 and 1.
-#' @param X Confounders. A vector of names of numeric variables.
+#' @param X Confounders. A vector of variables names.
 #' @param data A data frame.
 #' @param algorithm The ML algorithm for modelling. "nnet" for neural network, "ranger" for random forests, "gbm" for generalized boosted models.
 #' @param alpha 1-alpha confidence interval.
@@ -119,25 +119,31 @@ cdgd0_ml <- function(Y,D,G,X,data,algorithm,alpha=0.05,trim=0) {
   }
 
   ### outcome regression model
-  if (algorithm=="nnet" & is.numeric(data[,Y])) {
+  Y_binary <- all(unique(data[,Y]) %in% c(0,1))
+  if (Y_binary) {
+    data[,Y] <- as.factor(data[,Y]) # If Y only takes 0 and 1, then turn it into a factor var (required for the ML methods)
+    levels(data[,Y]) <- c("Y0","Y1")  # necessary for caret implementation of ranger
+  }
+
+  if (algorithm=="nnet" & !Y_binary) {
     message <- utils::capture.output( YgivenDGX.Model.sample1 <- caret::train(stats::as.formula(paste(Y, paste(D,G,paste(X,collapse="+"),sep="+"), sep="~")), data=data[sample1,], method="nnet",
                                                                               preProc=c("center","scale"), trControl=caret::trainControl(method="cv"), linout=TRUE ))
     message <- utils::capture.output( YgivenDGX.Model.sample2 <- caret::train(stats::as.formula(paste(Y, paste(D,G,paste(X,collapse="+"),sep="+"), sep="~")), data=data[sample2,], method="nnet",
                                                                               preProc=c("center","scale"), trControl=caret::trainControl(method="cv"), linout=TRUE ))
   }
-  if (algorithm=="nnet" & is.factor(data[,Y])) {
+  if (algorithm=="nnet" & Y_binary) {
     message <- utils::capture.output( YgivenDGX.Model.sample1 <- caret::train(stats::as.formula(paste(Y, paste(D,G,paste(X,collapse="+"),sep="+"), sep="~")), data=data[sample1,], method="nnet",
                                                                               preProc=c("center","scale"), trControl=caret::trainControl(method="cv"), linout=FALSE ))
     message <- utils::capture.output( YgivenDGX.Model.sample2 <- caret::train(stats::as.formula(paste(Y, paste(D,G,paste(X,collapse="+"),sep="+"), sep="~")), data=data[sample2,], method="nnet",
                                                                               preProc=c("center","scale"), trControl=caret::trainControl(method="cv"), linout=FALSE ))
   }
-  if (algorithm=="ranger" & is.numeric(data[,Y])) {
+  if (algorithm=="ranger" & !Y_binary) {
     message <- utils::capture.output( YgivenDGX.Model.sample1 <- caret::train(stats::as.formula(paste(Y, paste(D,G,paste(X,collapse="+"),sep="+"), sep="~")), data=data[sample1,], method="ranger",
                                                                               trControl=caret::trainControl(method="cv")) )
     message <- utils::capture.output( YgivenDGX.Model.sample2 <- caret::train(stats::as.formula(paste(Y, paste(D,G,paste(X,collapse="+"),sep="+"), sep="~")), data=data[sample2,], method="ranger",
                                                                               trControl=caret::trainControl(method="cv")) )
   }
-  if (algorithm=="ranger" & is.factor(data[,Y])) {
+  if (algorithm=="ranger" & Y_binary) {
     message <- utils::capture.output( YgivenDGX.Model.sample1 <- caret::train(stats::as.formula(paste(Y, paste(D,G,paste(X,collapse="+"),sep="+"), sep="~")), data=data[sample1,], method="ranger",
                                                                               trControl=caret::trainControl(method="cv", classProbs=TRUE)) )
     message <- utils::capture.output( YgivenDGX.Model.sample2 <- caret::train(stats::as.formula(paste(Y, paste(D,G,paste(X,collapse="+"),sep="+"), sep="~")), data=data[sample2,], method="ranger",
@@ -150,30 +156,33 @@ cdgd0_ml <- function(Y,D,G,X,data,algorithm,alpha=0.05,trim=0) {
                                                                               trControl=caret::trainControl(method="cv")) )
   }
 
+  if (Y_binary) {
+  data[,Y] <- as.numeric(data[,Y])-1
+  }
+
   ### outcome predictions
   YgivenGX.Pred_D0 <- YgivenGX.Pred_D1 <- rep(NA, nrow(data))
 
   pred_data <- data
   pred_data[,D] <- 0
-  if (is.numeric(data[,Y])) {
-    YgivenGX.Pred_D1[sample2] <- stats::predict(YgivenDGX.Model.sample1, newdata = pred_data[sample2,])
-    YgivenGX.Pred_D1[sample1] <- stats::predict(YgivenDGX.Model.sample2, newdata = pred_data[sample1,])
+  if (!Y_binary) {
+    YgivenGX.Pred_D0[sample2] <- stats::predict(YgivenDGX.Model.sample1, newdata = pred_data[sample2,])
+    YgivenGX.Pred_D0[sample1] <- stats::predict(YgivenDGX.Model.sample2, newdata = pred_data[sample1,])
   }
-  if (is.factor(data[,Y])) {
+  if (Y_binary) {
     YgivenGX.Pred_D0[sample2] <- stats::predict(YgivenDGX.Model.sample1, newdata = pred_data[sample2,], type="prob")[,2]
     YgivenGX.Pred_D0[sample1] <- stats::predict(YgivenDGX.Model.sample2, newdata = pred_data[sample1,], type="prob")[,2]
   }
-
 
   pred_data <- data
   pred_data[,D] <- 1
-  if (is.numeric(data[,Y])) {
+  if (!Y_binary) {
     YgivenGX.Pred_D1[sample2] <- stats::predict(YgivenDGX.Model.sample1, newdata = pred_data[sample2,])
     YgivenGX.Pred_D1[sample1] <- stats::predict(YgivenDGX.Model.sample2, newdata = pred_data[sample1,])
   }
-  if (is.factor(data[,Y])) {
-    YgivenGX.Pred_D0[sample2] <- stats::predict(YgivenDGX.Model.sample1, newdata = pred_data[sample2,], type="prob")[,2]
-    YgivenGX.Pred_D0[sample1] <- stats::predict(YgivenDGX.Model.sample2, newdata = pred_data[sample1,], type="prob")[,2]
+  if (Y_binary) {
+    YgivenGX.Pred_D1[sample2] <- stats::predict(YgivenDGX.Model.sample1, newdata = pred_data[sample2,], type="prob")[,2]
+    YgivenGX.Pred_D1[sample1] <- stats::predict(YgivenDGX.Model.sample2, newdata = pred_data[sample1,], type="prob")[,2]
   }
 
   ### The "IPO" (individual potential outcome) function
