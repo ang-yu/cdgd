@@ -1,1 +1,1 @@
-* This is a patch release that revises package description and help files.
+* This is a patch release that makes the package accommodate an additional scenario.
