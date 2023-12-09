@@ -1,5 +1,3 @@
-# cdgd (development version)
-
 # cdgd 0.3.3
 
 * Now allows for a binary outcome.
