@@ -213,7 +213,7 @@ cdgd1_pa <- function(Y,D,G,X,Q,data,alpha=0.05,trim1=0,trim2=0) {
   baseline <- psi_01-psi_00
   cond_prevalence <- psi_dggg(1,0,1,0)-psi_dggg(0,0,1,0)-psi_dggg(1,0,0,0)+psi_dggg(0,0,0,0)
   cond_effect <- psi_dggg(1,1,1,1)-psi_dggg(0,1,1,1)-psi_dggg(1,0,1,0)+psi_dggg(0,0,1,0)
-  cond_selection <- total-baseline-cond_prevalence-cond_effect-Q_dist
+  cond_selection <- total-baseline-cond_prevalence-cond_effect
 
   cond_Jackson_reduction <- psi_00+psi_dggg(1,0,1,0)-psi_dggg(0,0,1,0)-mean((1-data[,G])/(1-mean(data[,G]))*data[,Y])
 
