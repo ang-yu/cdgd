@@ -49,11 +49,11 @@ cdgd1_ml <- function(Y,D,G,X,Q,data,algorithm,alpha=0.05,trim1=0,trim2=0) {
 
   data <- as.data.frame(data)
 
-### estimate the nuisance functions with cross-fitting
+  ### estimate the nuisance functions with cross-fitting
   sample1 <- sample(nrow(data), floor(nrow(data)/2), replace=FALSE)
   sample2 <- setdiff(1:nrow(data), sample1)
 
-### propensity score model
+  ### propensity score model
   data[,D] <- as.factor(data[,D])
   levels(data[,D]) <- c("D0","D1")  # necessary for caret implementation of ranger
 
@@ -171,7 +171,7 @@ cdgd1_ml <- function(Y,D,G,X,Q,data,algorithm,alpha=0.05,trim1=0,trim2=0) {
     data[,Y] <- as.numeric(data[,Y])-1
   }
 
-### outcome predictions
+  ### outcome predictions
   YgivenGXQ.Pred_D0 <- YgivenGXQ.Pred_D1 <- rep(NA, nrow(data))
 
   pred_data <- data
@@ -196,7 +196,7 @@ cdgd1_ml <- function(Y,D,G,X,Q,data,algorithm,alpha=0.05,trim1=0,trim2=0) {
     YgivenGXQ.Pred_D1[sample1] <- stats::predict(YgivenDGXQ.Model.sample2, newdata = pred_data[sample1,], type="prob")[,2]
   }
 
-### Estimate p_g(Q)=Pr(G=g | Q)
+  ### Estimate p_g(Q)=Pr(G=g | Q)
   data[,G] <- as.factor(data[,G])
   levels(data[,G]) <- c("G0","G1")  # necessary for caret implementation of ranger
 
@@ -256,7 +256,7 @@ cdgd1_ml <- function(Y,D,G,X,Q,data,algorithm,alpha=0.05,trim1=0,trim2=0) {
     )
   }
 
-### Estimate E(Y_d | Q,g)
+  ### Estimate E(Y_d | Q,g)
   YgivenGXQ.Pred_D1_ncf <- YgivenGXQ.Pred_D0_ncf <- rep(NA, nrow(data)) # ncf stands for non-cross-fitted
 
   pred_data <- data
@@ -336,14 +336,14 @@ cdgd1_ml <- function(Y,D,G,X,Q,data,algorithm,alpha=0.05,trim1=0,trim2=0) {
   Y1givenQ.Pred_G0[sample2] <- stats::predict(Y1givenGQ.Model.sample1, newdata = pred_data[sample2,])
   Y1givenQ.Pred_G0[sample1] <- stats::predict(Y1givenGQ.Model.sample2, newdata = pred_data[sample1,])
 
-### The "IPO" (individual potential outcome) function
+  ### The "IPO" (individual potential outcome) function
   # For each d and g value, we have IE(d,g)=\frac{\one(D=d)}{\pi(d,X,g)}[Y-\mu(d,X,g)]+\mu(d,X,g)
   # We stabilize the weight by dividing the sample average of estimated weights
 
   IPO_D0 <- (1-data[,D])/(1-DgivenGXQ.Pred)/mean((1-data[,D])/(1-DgivenGXQ.Pred))*(data[,Y]-YgivenGXQ.Pred_D0) + YgivenGXQ.Pred_D0
   IPO_D1 <- data[,D]/DgivenGXQ.Pred/mean(data[,D]/DgivenGXQ.Pred)*(data[,Y]-YgivenGXQ.Pred_D1) + YgivenGXQ.Pred_D1
 
-### Estimate E(D | Q,g')
+  ### Estimate E(D | Q,g')
   data[,D] <- as.factor(data[,D])
   levels(data[,D]) <- c("D0","D1")  # necessary for caret implementation of ranger
 
@@ -355,15 +355,15 @@ cdgd1_ml <- function(Y,D,G,X,Q,data,algorithm,alpha=0.05,trim1=0,trim2=0) {
   }
   if (algorithm=="ranger") {
     message <- utils::capture.output( DgivenGQ.Model.sample1 <- caret::train(stats::as.formula(paste(D, paste(G,paste(Q,collapse="+"),sep="+"), sep="~")), data=data[sample1,], method="ranger",
-                                                                              trControl=caret::trainControl(method="cv", classProbs=TRUE)) )
+                                                                             trControl=caret::trainControl(method="cv", classProbs=TRUE)) )
     message <- utils::capture.output( DgivenGQ.Model.sample2 <- caret::train(stats::as.formula(paste(D, paste(G,paste(Q,collapse="+"),sep="+"), sep="~")), data=data[sample2,], method="ranger",
-                                                                              trControl=caret::trainControl(method="cv", classProbs=TRUE)) )
+                                                                             trControl=caret::trainControl(method="cv", classProbs=TRUE)) )
   }
   if (algorithm=="gbm") {
     message <- utils::capture.output( DgivenGQ.Model.sample1 <- caret::train(stats::as.formula(paste(D, paste(G,paste(Q,collapse="+"),sep="+"), sep="~")), data=data[sample1,], method="gbm",
-                                                                              trControl=caret::trainControl(method="cv")) )
+                                                                             trControl=caret::trainControl(method="cv")) )
     message <- utils::capture.output( DgivenGQ.Model.sample2 <- caret::train(stats::as.formula(paste(D, paste(G,paste(Q,collapse="+"),sep="+"), sep="~")), data=data[sample2,], method="gbm",
-                                                                              trControl=caret::trainControl(method="cv")) )
+                                                                             trControl=caret::trainControl(method="cv")) )
   }
 
   data[,D] <- as.numeric(data[,D])-1
@@ -380,7 +380,7 @@ cdgd1_ml <- function(Y,D,G,X,Q,data,algorithm,alpha=0.05,trim1=0,trim2=0) {
   DgivenQ.Pred_G1[sample2] <- stats::predict(DgivenGQ.Model.sample1, newdata = pred_data[sample2,], type="prob")[,2]
   DgivenQ.Pred_G1[sample1] <- stats::predict(DgivenGQ.Model.sample2, newdata = pred_data[sample1,], type="prob")[,2]
 
-### The one-step estimate of \xi_{dg}
+  ### The one-step estimate of \xi_{dg}
   psi_00 <- mean( (1-data[,G])/(1-mean(data[,G]))*IPO_D0 )
   psi_01 <- mean( data[,G]/mean(data[,G])*IPO_D0 )
   # Note that this is basically DML2. We could also use DML1:
@@ -391,7 +391,7 @@ cdgd1_ml <- function(Y,D,G,X,Q,data,algorithm,alpha=0.05,trim1=0,trim2=0) {
   #psi_01_S2 <- mean( data[sample1,G]/mean(data[sample1,G])*IPO_D0[sample2] )     # sample 2 estimate
   #psi_01 <- (1/2)*(psi_01_S1+psi_01_S2)
 
-### The one-step estimate of \xi_{dgg'g''}
+  ### The one-step estimate of \xi_{dgg'g''}
   # There are 8 possible dgg'g'' combinations, so we define a function first
   psi_dggg <- function(d,g1,g2,g3) {
     if (d==0 & g1==0) {
@@ -453,8 +453,9 @@ cdgd1_ml <- function(Y,D,G,X,Q,data,algorithm,alpha=0.05,trim1=0,trim2=0) {
 
   baseline <- psi_01-psi_00
   cond_prevalence <- psi_dggg(1,0,1,0)-psi_dggg(0,0,1,0)-psi_dggg(1,0,0,0)+psi_dggg(0,0,0,0)
-  cond_effect <- psi_dggg(1,1,1,1)-psi_dggg(0,1,1,1)-psi_dggg(1,0,1,0)+psi_dggg(0,0,1,0)
-  cond_selection <- total-baseline-cond_prevalence-cond_effect
+  cond_effect <- psi_dggg(1,1,1,1)-psi_dggg(0,1,1,1)-psi_dggg(1,0,1,1)+psi_dggg(0,0,1,1)
+  Q_dist <- psi_dggg(1,0,1,1)-psi_dggg(0,0,1,1)-psi_dggg(1,0,1,0)+psi_dggg(0,0,1,0)
+  cond_selection <- total-baseline-cond_prevalence-cond_effect-Q_dist
 
   cond_Jackson_reduction <- psi_00+psi_dggg(1,0,1,0)-psi_dggg(0,0,1,0)-mean((1-data[,G])/(1-mean(data[,G]))*data[,Y])
 
@@ -513,11 +514,13 @@ cdgd1_ml <- function(Y,D,G,X,Q,data,algorithm,alpha=0.05,trim1=0,trim2=0) {
   }
 
   cond_prevalence_se <- se( EIF_dggg(1,0,1,0)-EIF_dggg(0,0,1,0)-EIF_dggg(1,0,0,0)+EIF_dggg(0,0,0,0) )
-  cond_effect_se <- se( EIF_dggg(1,1,1,1)-EIF_dggg(0,1,1,1)-EIF_dggg(1,0,1,0)+EIF_dggg(0,0,1,0) )
+  cond_effect_se <- se( EIF_dggg(1,1,1,1)-EIF_dggg(0,1,1,1)-EIF_dggg(1,0,1,1)+EIF_dggg(0,0,1,1) )
+  Q_dist_se <- se( EIF_dggg(1,0,1,1)-EIF_dggg(0,0,1,1)-EIF_dggg(1,0,1,0)+EIF_dggg(0,0,1,0) )
   cond_selection_se <- se( data[,G]/mean(data[,G])*(data[,Y]-Y_G1) - (1-data[,G])/(1-mean(data[,G]))*(data[,Y]-Y_G0) -
-                         ( data[,G]/mean(data[,G])*(IPO_D0-psi_01) - (1-data[,G])/(1-mean(data[,G]))*(IPO_D0-psi_00) ) -
-                         ( EIF_dggg(1,0,1,0)-EIF_dggg(0,0,1,0)-EIF_dggg(1,0,0,0)+EIF_dggg(0,0,0,0) ) -
-                         ( EIF_dggg(1,1,1,1)-EIF_dggg(0,1,1,1)-EIF_dggg(1,0,1,0)+EIF_dggg(0,0,1,0) ))
+                             ( data[,G]/mean(data[,G])*(IPO_D0-psi_01) - (1-data[,G])/(1-mean(data[,G]))*(IPO_D0-psi_00) ) -
+                             ( EIF_dggg(1,0,1,0)-EIF_dggg(0,0,1,0)-EIF_dggg(1,0,0,0)+EIF_dggg(0,0,0,0) ) -
+                             ( EIF_dggg(1,1,1,1)-EIF_dggg(0,1,1,1)-EIF_dggg(1,0,1,1)+EIF_dggg(0,0,1,1) ) -
+                             ( EIF_dggg(1,0,1,1)-EIF_dggg(0,0,1,1)-EIF_dggg(1,0,1,0)+EIF_dggg(0,0,1,0) ))
 
   cond_Jackson_reduction_se <- se( (1-data[,G])/(1-mean(data[,G]))*(IPO_D0-psi_00)+EIF_dggg(1,0,1,0)-EIF_dggg(0,0,1,0)-(1-data[,G])/(1-mean(data[,G]))*(data[,Y]-Y_G0) )
 
@@ -527,12 +530,14 @@ cdgd1_ml <- function(Y,D,G,X,Q,data,algorithm,alpha=0.05,trim1=0,trim2=0) {
              cond_prevalence,
              cond_effect,
              cond_selection,
+             Q_dist,
              cond_Jackson_reduction)
   se <- c(total_se,
           baseline_se,
           cond_prevalence_se,
           cond_effect_se,
           cond_selection_se,
+          Q_dist_se,
           cond_Jackson_reduction_se)
   p_value <- (1-stats::pnorm(abs(point/se)))*2
   CI_lower <- point - stats::qnorm(1-alpha/2)*se
@@ -542,6 +547,7 @@ cdgd1_ml <- function(Y,D,G,X,Q,data,algorithm,alpha=0.05,trim1=0,trim2=0) {
              "conditional prevalence",
              "conditional effect",
              "conditional selection",
+             "Q distribution",
              "conditional Jackson reduction")
 
   output <- as.data.frame(cbind(point,se,p_value,CI_lower,CI_upper))
