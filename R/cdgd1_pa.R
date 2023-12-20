@@ -111,9 +111,11 @@ cdgd1_pa <- function(Y,D,G,X,Q,data,alpha=0.05,trim1=0,trim2=0) {
     )
   }
 
-  # IPOs for modelling E(Y_d | Q,g)
+  ### The "IPO" (individual potential outcome) function
+  # For each d and g value, we have IE(d,g)=\frac{\one(D=d)}{\pi(d,X,g)}[Y-\mu(d,X,g)]+\mu(d,X,g)
+  # We stabilize the weight by dividing the sample average of estimated weights
   IPO_D0 <- (1-data[,D])/(1-DgivenGXQ.Pred)/mean((1-data[,D])/(1-DgivenGXQ.Pred))*(data[,Y]-YgivenGXQ.Pred_D0) + YgivenGXQ.Pred_D0
-  IPO_D1 <- data[,D]/DgivenGXQ.Pred/(mean(data[,D]/DgivenGXQ.Pred))*(data[,Y]-YgivenGXQ.Pred_D1) + YgivenGXQ.Pred_D1
+  IPO_D1 <- data[,D]/DgivenGXQ.Pred/mean(data[,D]/DgivenGXQ.Pred)*(data[,Y]-YgivenGXQ.Pred_D1) + YgivenGXQ.Pred_D1
 
   data_temp <- data[,c(G,Q)]
   data_temp$IPO_D0 <- IPO_D0
@@ -133,13 +135,6 @@ cdgd1_pa <- function(Y,D,G,X,Q,data,alpha=0.05,trim1=0,trim2=0) {
   pred_data[,G] <- 0
   Y0givenQ.Pred_G0 <- stats::predict(Y0givenGQ.Model, newdata = pred_data)
   Y1givenQ.Pred_G0 <- stats::predict(Y1givenGQ.Model, newdata = pred_data)
-
-  ### The "IPO" (individual potential outcome) function
-  # For each d and g value, we have IE(d,g)=\frac{\one(D=d)}{\pi(d,X,g)}[Y-\mu(d,X,g)]+\mu(d,X,g)
-  # We stabilize the weight by dividing the sample average of estimated weights
-
-  IPO_D0 <- (1-data[,D])/(1-DgivenGXQ.Pred)/mean((1-data[,D])/(1-DgivenGXQ.Pred))*(data[,Y]-YgivenGXQ.Pred_D0) + YgivenGXQ.Pred_D0
-  IPO_D1 <- data[,D]/DgivenGXQ.Pred/mean(data[,D]/DgivenGXQ.Pred)*(data[,Y]-YgivenGXQ.Pred_D1) + YgivenGXQ.Pred_D1
 
   ### Estimate E(D | Q,g')
   DgivenGQ.Model <- stats::glm(stats::as.formula(paste(D, paste(paste(G,Q,sep="*"),collapse="+"), sep="~")), data=data, family=stats::binomial(link="logit"))

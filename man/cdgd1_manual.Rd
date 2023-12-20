@@ -255,9 +255,9 @@ message <- utils::capture.output( GgivenQ.Model.sample2 <-
 data[,G] <- as.numeric(data[,G])-1
 
 GgivenQ.Pred <- rep(NA, nrow(data))
-GgivenQ.Pred[sample2] <- stats::predict(DgivenGQ.Model.sample1,
+GgivenQ.Pred[sample2] <- stats::predict(GgivenQ.Model.sample1,
     newdata = data[sample2,], type="prob")[,2]
-GgivenQ.Pred[sample1] <- stats::predict(DgivenGQ.Model.sample2,
+GgivenQ.Pred[sample1] <- stats::predict(GgivenQ.Model.sample2,
     newdata = data[sample1,], type="prob")[,2]
 
 
