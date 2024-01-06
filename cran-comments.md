@@ -1,1 +1,1 @@
-* This is a patch release that makes the package accommodate an additional scenario.
+* This is a patch release that corrects an example.

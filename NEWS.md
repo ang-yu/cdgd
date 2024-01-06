@@ -1,5 +1,9 @@
 # cdgd (development version)
 
+# cdgd 0.3.4
+
+* Corrected an error in the example of cdgd1_manual
+
 # cdgd 0.3.3
 
 * Now allows for a binary outcome.
