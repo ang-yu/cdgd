@@ -1,9 +1,11 @@
-# cdgd (development version)
 
+# cdgd 0.3.5
+
+* Added a missing value check.
 
 # cdgd 0.3.4
 
-* Corrected an error in the example of cdgd1_manual
+* Corrected an error in the example of cdgd1_manual.
 
 # cdgd 0.3.3
 
