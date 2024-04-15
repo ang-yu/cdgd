@@ -34,6 +34,13 @@ cdgd0_pa <- function(Y,D,G,X,data,alpha=0.05,trim=0) {
 
   data <- as.data.frame(data)
 
+  if ( sum(is.na(data[,c(Y,D,G,X)]))>0 ) {
+    stop(
+      "There are missing values in key variables.",
+      call. = FALSE
+    )
+  }
+
   # treatment model
   DgivenGX.Model <- stats::glm(stats::as.formula(paste(D, paste(G,paste(X,collapse="+"),sep="+"), sep="~")), data=data, family=stats::binomial(link="logit"))
 

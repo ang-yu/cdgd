@@ -47,6 +47,13 @@ cdgd0_ml <- function(Y,D,G,X,data,algorithm,alpha=0.05,trim=0) {
 
   data <- as.data.frame(data)
 
+  if ( sum(is.na(data[,c(Y,D,G,X)]))>0 ) {
+    stop(
+      "There are missing values in key variables.",
+      call. = FALSE
+    )
+  }
+
   ### estimate the nuisance functions with cross-fitting
   sample1 <- sample(nrow(data), floor(nrow(data)/2), replace=FALSE)
   sample2 <- setdiff(1:nrow(data), sample1)

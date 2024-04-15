@@ -1,1 +1,1 @@
-* This is a patch release that corrects an example.
+* This is a patch release that adds a data check.
