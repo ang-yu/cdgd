@@ -2,7 +2,7 @@
 # cdgd
 
 [![R-CMD-check](https://github.com/ang-yu/cdgd/actions/workflows/R-CMD-check.yaml/badge.svg)](https://github.com/ang-yu/cdgd/actions/workflows/R-CMD-check.yaml)
-[[CRAN Downloads overall](http://cranlogs.r-pkg.org/badges/grand-total/cdgd)]
+![CRAN Downloads overall](http://cranlogs.r-pkg.org/badges/grand-total/cdgd)
 
 The package cdgd implements the causal decompositions of group
 disparities in [Yu and Elwert (2023)](https://arxiv.org/abs/2306.16591).
