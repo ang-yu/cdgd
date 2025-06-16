@@ -12,6 +12,7 @@
 #' @param alpha 1-alpha confidence interval.
 #' @param trim1 Threshold for trimming the propensity score. When trim1=a, individuals with propensity scores lower than a or higher than 1-a will be dropped.
 #' @param trim2 Threshold for trimming the G given Q predictions. When trim2=a, individuals with G given Q predictions lower than a or higher than 1-a will be dropped.
+#' @param weight Sampling weights. The name of a numeric variable. If unspecified, equal weights are used. Technically, the weight should be a deterministic function of X only (note that this is different from the unconditional decomposition).
 #'
 #' @return A dataframe of estimates.
 #'
@@ -32,7 +33,7 @@
 
 
 
-cdgd1_pa <- function(Y,D,G,X,Q,data,alpha=0.05,trim1=0,trim2=0) {
+cdgd1_pa <- function(Y,D,G,X,Q,data,alpha=0.05,trim1=0,trim2=0,weight=NULL) {
 
   data <- as.data.frame(data)
 
@@ -124,9 +125,19 @@ cdgd1_pa <- function(Y,D,G,X,Q,data,alpha=0.05,trim1=0,trim2=0) {
   IPO_D0 <- (1-data[,D])/(1-DgivenGXQ.Pred)/mean((1-data[,D])/(1-DgivenGXQ.Pred))*(data[,Y]-YgivenGXQ.Pred_D0) + YgivenGXQ.Pred_D0
   IPO_D1 <- data[,D]/DgivenGXQ.Pred/mean(data[,D]/DgivenGXQ.Pred)*(data[,Y]-YgivenGXQ.Pred_D1) + YgivenGXQ.Pred_D1
 
+  if (is.null(weight)) {
+    weight <- rep(1, nrow(data))
+    tr.weight <- rep(1, nrow(data))
+  } else {
+    weight <- data[,weight]
+    tr.weight <- weight/stats::predict(stats::lm(stats::as.formula(paste("weight", paste(paste("data[,G]","data[,Q]",sep="*"),collapse="+"), sep="~"))))
+  }
+  # tr.weight (transformed weight) is the original weight divided by E(weight|G,Q)
+
   data_temp <- data[,c(G,Q)]
-  data_temp$IPO_D0 <- IPO_D0
-  data_temp$IPO_D1 <- IPO_D1
+  data_temp$IPO_D0 <- IPO_D0*tr.weight
+  data_temp$IPO_D1 <- IPO_D1*tr.weight
+  data_temp[,D] <- data[,D]*tr.weight
 
   Y0givenGQ.Model <- stats::lm(stats::as.formula(paste("IPO_D0", paste(paste(G,Q,sep="*"),collapse="+"), sep="~")), data=data_temp)
   Y1givenGQ.Model <- stats::lm(stats::as.formula(paste("IPO_D1", paste(paste(G,Q,sep="*"),collapse="+"), sep="~")), data=data_temp)
@@ -144,21 +155,39 @@ cdgd1_pa <- function(Y,D,G,X,Q,data,alpha=0.05,trim1=0,trim2=0) {
   Y1givenQ.Pred_G0 <- stats::predict(Y1givenGQ.Model, newdata = pred_data)
 
   ### Estimate E(D | Q,g')
-  DgivenGQ.Model <- stats::glm(stats::as.formula(paste(D, paste(paste(G,Q,sep="*"),collapse="+"), sep="~")), data=data, family=stats::binomial(link="logit"))
+  if (all(weight == 1)) {
+    DgivenGQ.Model <- stats::glm(stats::as.formula(paste(D, paste(paste(G,Q,sep="*"),collapse="+"), sep="~")), data=data_temp, family=stats::binomial(link="logit"))
 
-  DgivenQ.Pred_G0 <- DgivenQ.Pred_G1 <- rep(NA, nrow(data))
+    DgivenQ.Pred_G0 <- DgivenQ.Pred_G1 <- rep(NA, nrow(data))
 
-  pred_data <- data
-  pred_data[,G] <- 0
-  DgivenQ.Pred_G0 <- stats::predict(DgivenGQ.Model, newdata = pred_data, type="response")
+    pred_data <- data
+    pred_data[,G] <- 0
+    DgivenQ.Pred_G0 <- stats::predict(DgivenGQ.Model, newdata = pred_data, type="response")
 
-  pred_data <- data
-  pred_data[,G] <- 1
-  DgivenQ.Pred_G1 <- stats::predict(DgivenGQ.Model, newdata = pred_data, type="response")
+    pred_data <- data
+    pred_data[,G] <- 1
+    DgivenQ.Pred_G1 <- stats::predict(DgivenGQ.Model, newdata = pred_data, type="response")
+  } else {
+    DgivenGQ.Model <- stats::lm(stats::as.formula(paste(D, paste(paste(G,Q,sep="*"),collapse="+"), sep="~")), data=data_temp)
+
+    DgivenQ.Pred_G0 <- DgivenQ.Pred_G1 <- rep(NA, nrow(data))
+
+    pred_data <- data
+    pred_data[,G] <- 0
+    DgivenQ.Pred_G0 <- stats::predict(DgivenGQ.Model, newdata = pred_data)
+
+    pred_data <- data
+    pred_data[,G] <- 1
+    DgivenQ.Pred_G1 <- stats::predict(DgivenGQ.Model, newdata = pred_data)
+  }
+
+
 
   ### The one-step estimate of \xi_{dg}
-  psi_00 <- mean( (1-data[,G])/(1-mean(data[,G]))*IPO_D0 )
-  psi_01 <- mean( data[,G]/mean(data[,G])*IPO_D0 )
+  weight0 <- (1-data[,G])/(1-mean(data[,G]))*weight/mean((1-data[,G])/(1-mean(data[,G]))*weight)
+  weight1 <- data[,G]/mean(data[,G])*weight/mean(data[,G]/mean(data[,G])*weight)
+  psi_00 <- mean( weight0*IPO_D0 )
+  psi_01 <- mean( weight1*IPO_D0 )
 
   ### The one-step estimate of \xi_{dgg'g''}
   # There are 8 possible dgg'g'' combinations, so we define a function first
@@ -200,16 +229,18 @@ cdgd1_pa <- function(Y,D,G,X,Q,data,alpha=0.05,trim1=0,trim2=0) {
     stab1 <- mean(as.numeric(data[,G]==g1)/mean(data[,G]==g3)*g3givenQ.Pred_arg/g1givenQ.Pred_arg)
     stab2 <- mean(as.numeric(data[,G]==g2)/mean(data[,G]==g3)*g3givenQ.Pred_arg/g2givenQ.Pred_arg)
 
-    psi_dggg <- mean( as.numeric(data[,G]==g3)/mean(data[,G]==g3)*YdgivenQ.Pred_arg*DgivenQ.Pred_arg +
-                        as.numeric(data[,G]==g1)/mean(data[,G]==g3)*g3givenQ.Pred_arg/g1givenQ.Pred_arg/stab1*(IPO_arg-YdgivenQ.Pred_arg)*DgivenQ.Pred_arg +
-                        as.numeric(data[,G]==g2)/mean(data[,G]==g3)*g3givenQ.Pred_arg/g2givenQ.Pred_arg/stab2*(data[,D]-DgivenQ.Pred_arg)*YdgivenQ.Pred_arg )
+    weight_g3 <- weight/mean(as.numeric(data[,G]==g3)/mean(data[,G]==g3)*weight)
+
+    psi_dggg <- mean( weight_g3*as.numeric(data[,G]==g3)/mean(data[,G]==g3)*YdgivenQ.Pred_arg*DgivenQ.Pred_arg +
+                        weight_g3*tr.weight*as.numeric(data[,G]==g1)/mean(data[,G]==g3)*g3givenQ.Pred_arg/g1givenQ.Pred_arg/stab1*(IPO_arg-YdgivenQ.Pred_arg)*DgivenQ.Pred_arg +
+                        weight_g3*tr.weight*as.numeric(data[,G]==g2)/mean(data[,G]==g3)*g3givenQ.Pred_arg/g2givenQ.Pred_arg/stab2*(data[,D]-DgivenQ.Pred_arg)*YdgivenQ.Pred_arg )
 
     return(psi_dggg)
   }
 
   ### point estimates
-  Y_G0 <- mean((1-data[,G])/(1-mean(data[,G]))*data[,Y])       # mean outcome estimate for group 0
-  Y_G1 <- mean(data[,G]/mean(data[,G])*data[,Y])               # mean outcome estimate for group 1
+  Y_G0 <- mean(weight0*data[,Y])       # mean outcome estimate for group 0
+  Y_G1 <- mean(weight1*data[,Y])       # mean outcome estimate for group 1
   total <- Y_G1-Y_G0
 
   baseline <- psi_01-psi_00
@@ -218,12 +249,12 @@ cdgd1_pa <- function(Y,D,G,X,Q,data,alpha=0.05,trim1=0,trim2=0) {
   Q_dist <- psi_dggg(1,0,1,1)-psi_dggg(0,0,1,1)-psi_dggg(1,0,1,0)+psi_dggg(0,0,1,0)
   cond_selection <- total-baseline-cond_prevalence-cond_effect-Q_dist
 
-  cond_Jackson_reduction <- psi_00+psi_dggg(1,0,1,0)-psi_dggg(0,0,1,0)-mean((1-data[,G])/(1-mean(data[,G]))*data[,Y])
+  cond_Jackson_reduction <- psi_00+psi_dggg(1,0,1,0)-psi_dggg(0,0,1,0)-Y_G0
 
   ### standard error estimates
   se <- function(x) {sqrt( mean(x^2)/nrow(data) )}
-  total_se <- se( data[,G]/mean(data[,G])*(data[,Y]-Y_G1) - (1-data[,G])/(1-mean(data[,G]))*(data[,Y]-Y_G0) )
-  baseline_se <- se( data[,G]/mean(data[,G])*(IPO_D0-psi_01) - (1-data[,G])/(1-mean(data[,G]))*(IPO_D0-psi_00) )
+  total_se <- se( weight1*(data[,Y]-Y_G1) - weight0*(data[,Y]-Y_G0) )
+  baseline_se <- se( weight1*(IPO_D0-psi_01) - weight0*(IPO_D0-psi_00) )
 
   EIF_dggg <- function(d,g1,g2,g3) {
     if (d==0 & g1==0) {
@@ -263,23 +294,25 @@ cdgd1_pa <- function(Y,D,G,X,Q,data,alpha=0.05,trim1=0,trim2=0) {
     stab1 <- mean(as.numeric(data[,G]==g1)/mean(data[,G]==g3)*g3givenQ.Pred_arg/g1givenQ.Pred_arg)
     stab2 <- mean(as.numeric(data[,G]==g2)/mean(data[,G]==g3)*g3givenQ.Pred_arg/g2givenQ.Pred_arg)
 
+    weight_g3 <- weight/mean(as.numeric(data[,G]==g3)/mean(data[,G]==g3)*weight)
+
     return(
-      as.numeric(data[,G]==g3)/mean(data[,G]==g3)*(YdgivenQ.Pred_arg*DgivenQ.Pred_arg-psi_dggg(d,g1,g2,g3)) +
-        as.numeric(data[,G]==g1)/mean(data[,G]==g3)*g3givenQ.Pred_arg/g1givenQ.Pred_arg/stab1*(IPO_arg-YdgivenQ.Pred_arg)*DgivenQ.Pred_arg +
-        as.numeric(data[,G]==g2)/mean(data[,G]==g3)*g3givenQ.Pred_arg/g2givenQ.Pred_arg/stab2*(data[,D]-DgivenQ.Pred_arg)*YdgivenQ.Pred_arg
+      weight_g3*as.numeric(data[,G]==g3)/mean(data[,G]==g3)*(YdgivenQ.Pred_arg*DgivenQ.Pred_arg-psi_dggg(d,g1,g2,g3)) +
+        weight_g3*tr.weight*as.numeric(data[,G]==g1)/mean(data[,G]==g3)*g3givenQ.Pred_arg/g1givenQ.Pred_arg/stab1*(IPO_arg-YdgivenQ.Pred_arg)*DgivenQ.Pred_arg +
+        weight_g3*tr.weight*as.numeric(data[,G]==g2)/mean(data[,G]==g3)*g3givenQ.Pred_arg/g2givenQ.Pred_arg/stab2*(data[,D]-DgivenQ.Pred_arg)*YdgivenQ.Pred_arg
     )
   }
 
   cond_prevalence_se <- se( EIF_dggg(1,0,1,0)-EIF_dggg(0,0,1,0)-EIF_dggg(1,0,0,0)+EIF_dggg(0,0,0,0) )
   cond_effect_se <- se( EIF_dggg(1,1,1,1)-EIF_dggg(0,1,1,1)-EIF_dggg(1,0,1,1)+EIF_dggg(0,0,1,1) )
   Q_dist_se <- se( EIF_dggg(1,0,1,1)-EIF_dggg(0,0,1,1)-EIF_dggg(1,0,1,0)+EIF_dggg(0,0,1,0) )
-  cond_selection_se <- se( data[,G]/mean(data[,G])*(data[,Y]-Y_G1) - (1-data[,G])/(1-mean(data[,G]))*(data[,Y]-Y_G0) -
-                             ( data[,G]/mean(data[,G])*(IPO_D0-psi_01) - (1-data[,G])/(1-mean(data[,G]))*(IPO_D0-psi_00) ) -
+  cond_selection_se <- se( weight1*(data[,Y]-Y_G1) - weight0*(data[,Y]-Y_G0) -
+                             ( weight1*(IPO_D0-psi_01) - weight0*(IPO_D0-psi_00) ) -
                              ( EIF_dggg(1,0,1,0)-EIF_dggg(0,0,1,0)-EIF_dggg(1,0,0,0)+EIF_dggg(0,0,0,0) ) -
                              ( EIF_dggg(1,1,1,1)-EIF_dggg(0,1,1,1)-EIF_dggg(1,0,1,1)+EIF_dggg(0,0,1,1) ) -
                              ( EIF_dggg(1,0,1,1)-EIF_dggg(0,0,1,1)-EIF_dggg(1,0,1,0)+EIF_dggg(0,0,1,0) ))
 
-  cond_Jackson_reduction_se <- se( (1-data[,G])/(1-mean(data[,G]))*(IPO_D0-psi_00)+EIF_dggg(1,0,1,0)-EIF_dggg(0,0,1,0)-(1-data[,G])/(1-mean(data[,G]))*(data[,Y]-Y_G0) )
+  cond_Jackson_reduction_se <- se( weight0*(IPO_D0-psi_00)+EIF_dggg(1,0,1,0)-EIF_dggg(0,0,1,0)-weight0*(data[,Y]-Y_G0) )
 
   ### output results
   point <- c(total,

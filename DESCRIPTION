@@ -1,12 +1,12 @@
 Package: cdgd
 Title: Causal Decomposition of Group Disparities
-Version: 0.3.5
+Version: 1.0.0
 Authors@R: 
     person("Ang", "Yu", , "ang_yu@outlook.com", role = c("aut", "cre", "cph"),
            comment = c(website = "<https://ang-yu.github.io/>", ORCID = "0000-0002-1828-0165"))
 Description: The framework of causal decomposition of group disparities developed by
-    Yu and Elwert (2023)
-    <doi:10.48550/arXiv.2306.16591>.
+    Yu and Elwert (2025)
+    <doi:10.1214/24-AOAS1990>.
     This package implements the decomposition estimators
     that are based on efficient influence functions. For the
     nuisance functions of the estimators, both parametric and
@@ -26,4 +26,4 @@ Suggests:
 Encoding: UTF-8
 LazyData: true
 Roxygen: list(markdown = TRUE)
-RoxygenNote: 7.2.3
+RoxygenNote: 7.3.2

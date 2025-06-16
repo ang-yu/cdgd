@@ -4,7 +4,18 @@
 \alias{cdgd1_pa}
 \title{Perform conditional decomposition via parametric models}
 \usage{
-cdgd1_pa(Y, D, G, X, Q, data, alpha = 0.05, trim1 = 0, trim2 = 0)
+cdgd1_pa(
+  Y,
+  D,
+  G,
+  X,
+  Q,
+  data,
+  alpha = 0.05,
+  trim1 = 0,
+  trim2 = 0,
+  weight = NULL
+)
 }
 \arguments{
 \item{Y}{Outcome. The name of a numeric variable (can be binary and take values of 0 and 1).}
@@ -24,6 +35,8 @@ cdgd1_pa(Y, D, G, X, Q, data, alpha = 0.05, trim1 = 0, trim2 = 0)
 \item{trim1}{Threshold for trimming the propensity score. When trim1=a, individuals with propensity scores lower than a or higher than 1-a will be dropped.}
 
 \item{trim2}{Threshold for trimming the G given Q predictions. When trim2=a, individuals with G given Q predictions lower than a or higher than 1-a will be dropped.}
+
+\item{weight}{Sampling weights. The name of a numeric variable. If unspecified, equal weights are used. Technically, the weight should be a deterministic function of X only (note that this is different from the unconditional decomposition).}
 }
 \value{
 A dataframe of estimates.

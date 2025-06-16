@@ -6,7 +6,8 @@
 overall](https://cranlogs.r-pkg.org/badges/grand-total/cdgd)
 
 The package cdgd implements the causal decompositions of group
-disparities in [Yu and Elwert (2023)](https://arxiv.org/abs/2306.16591).
+disparities in [Yu and Elwert
+(2025)](https://projecteuclid.org/journals/annals-of-applied-statistics/volume-19/issue-1/Nonparametric-causal-decomposition-of-group-disparities/10.1214/24-AOAS1990.full).
 
 ## Installation
 

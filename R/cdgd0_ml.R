@@ -11,6 +11,7 @@
 #' @param algorithm The ML algorithm for modelling. "nnet" for neural network, "ranger" for random forests, "gbm" for generalized boosted models.
 #' @param alpha 1-alpha confidence interval.
 #' @param trim Threshold for trimming the propensity score. When trim=a, individuals with propensity scores lower than a or higher than 1-a will be dropped.
+#' @param weight Sampling weights. The name of a numeric variable. If unspecified, equal weights are used. Technically, the weight should be a deterministic function of X and G.
 #'
 #' @return A list of estimates.
 #'
@@ -36,7 +37,7 @@
 
 
 
-cdgd0_ml <- function(Y,D,G,X,data,algorithm,alpha=0.05,trim=0) {
+cdgd0_ml <- function(Y,D,G,X,data,algorithm,alpha=0.05,trim=0,weight=NULL) {
 
   if (!requireNamespace("caret", quietly=TRUE)) {
     stop(
@@ -199,11 +200,19 @@ cdgd0_ml <- function(Y,D,G,X,data,algorithm,alpha=0.05,trim=0) {
   IPO_D0 <- (1-data[,D])/(1-DgivenGX.Pred)/mean((1-data[,D])/(1-DgivenGX.Pred))*(data[,Y]-YgivenGX.Pred_D0) + YgivenGX.Pred_D0
   IPO_D1 <- data[,D]/DgivenGX.Pred/mean(data[,D]/DgivenGX.Pred)*(data[,Y]-YgivenGX.Pred_D1) + YgivenGX.Pred_D1
 
+  if (is.null(weight)) {
+    weight <- rep(1, nrow(data))
+  } else {
+    weight <- data[,weight]
+  }
+  weight0 <- (1-data[,G])/(1-mean(data[,G]))*weight/mean((1-data[,G])/(1-mean(data[,G]))*weight)
+  weight1 <- data[,G]/mean(data[,G])*weight/mean(data[,G]/mean(data[,G])*weight)
+
   ### The one-step estimate of \xi_{dg} and \xi_{dgg'}
-  psi_00 <- mean( (1-data[,G])/(1-mean(data[,G]))*IPO_D0 )
-  psi_01 <- mean( data[,G]/mean(data[,G])*IPO_D0 )
-  psi_10 <- mean( (1-data[,G])/(1-mean(data[,G]))*IPO_D1 )
-  psi_11 <- mean( data[,G]/mean(data[,G])*IPO_D1 )
+  psi_00 <- mean( weight0*IPO_D0 )
+  psi_01 <- mean( weight1*IPO_D0 )
+  psi_10 <- mean( weight0*IPO_D1 )
+  psi_11 <- mean( weight1*IPO_D1 )
   # Note that this is basically DML2. We could also use DML1:
   #psi_00_S1 <- mean( (1-data[sample1,G])/(1-mean(data[sample1,G]))*IPO_D0[sample1] )     # sample 1 estimate
   #psi_00_S2 <- mean( (1-data[sample2,G])/(1-mean(data[sample2,G]))*IPO_D0[sample2] )     # sample 2 estimate
@@ -227,7 +236,10 @@ cdgd0_ml <- function(Y,D,G,X,data,algorithm,alpha=0.05,trim=0) {
       IPO_arg <- IPO_D1
       YgivenX.Pred_arg <- YgivenGX.Pred_D1}
 
-    psi_dgg <- mean( as.numeric(data[,G]==g1)/mean(data[,G]==g1)*IPO_arg*mean(as.numeric(data[,G]==g2)/mean(data[,G]==g2)*data[,D]) )
+    weight_g1 <- as.numeric(data[,G]==g1)/mean(data[,G]==g1)*weight/mean(as.numeric(data[,G]==g1)/mean(data[,G]==g1)*weight)
+    weight_g2 <- as.numeric(data[,G]==g2)/mean(data[,G]==g2)*weight/mean(as.numeric(data[,G]==g2)/mean(data[,G]==g2)*weight)
+
+    psi_dgg <- mean( weight_g1*IPO_arg*mean(weight_g2*data[,D]) )
     # Note that this is basically DML2. We could also use DML1:
     #psi_dgg_S1 <- mean( as.numeric(data[sample1,G]==g1)/mean(data[sample1,G]==g1)*IPO_arg[sample1]*mean(as.numeric(data[sample1,G]==g2)/mean(data[sample1,G]==g2)*data[sample1,D]) +
     #                      as.numeric(data[sample1,G]==g2)/mean(data[sample1,G]==g2)*mean(as.numeric(data[sample1,G]==g1)/mean(data[sample1,G]==g1)*YgivenX.Pred_arg)*(data[sample1,D]-mean(as.numeric(data[sample1,G]==g2)/mean(data[sample1,G]==g2)*data[sample1,D])) )
@@ -239,8 +251,8 @@ cdgd0_ml <- function(Y,D,G,X,data,algorithm,alpha=0.05,trim=0) {
   }
 
   ### point estimates
-  Y_G0 <- mean((1-data[,G])/(1-mean(data[,G]))*data[,Y])       # mean outcome estimate for group 0
-  Y_G1 <- mean(data[,G]/mean(data[,G])*data[,Y])               # mean outcome estimate for group 1
+  Y_G0 <- mean(weight0*data[,Y])       # mean outcome estimate for group 0
+  Y_G1 <- mean(weight1*data[,Y])       # mean outcome estimate for group 1
   total <- Y_G1-Y_G0
 
   baseline <- psi_01-psi_00
@@ -248,12 +260,12 @@ cdgd0_ml <- function(Y,D,G,X,data,algorithm,alpha=0.05,trim=0) {
   effect <- psi_dgg(1,1,1)-psi_dgg(0,1,1)-psi_dgg(1,0,1)+psi_dgg(0,0,1)
   selection <- total-baseline-prevalence-effect
 
-  Jackson_reduction <- psi_00+psi_dgg(1,0,1)-psi_dgg(0,0,1)-mean((1-data[,G])/(1-mean(data[,G]))*data[,Y])
+  Jackson_reduction <- psi_00+psi_dgg(1,0,1)-psi_dgg(0,0,1)-Y_G0
 
   ### standard error estimates
   se <- function(x) {sqrt( mean(x^2)/nrow(data) )}
-  total_se <- se( data[,G]/mean(data[,G])*(data[,Y]-Y_G1) - (1-data[,G])/(1-mean(data[,G]))*(data[,Y]-Y_G0) )
-  baseline_se <- se( data[,G]/mean(data[,G])*(IPO_D0-psi_01) - (1-data[,G])/(1-mean(data[,G]))*(IPO_D0-psi_00) )
+  total_se <- se( weight1*(data[,Y]-Y_G1) - weight0*(data[,Y]-Y_G0) )
+  baseline_se <- se( weight1*(IPO_D0-psi_01) - weight0*(IPO_D0-psi_00) )
   # Alternatively, we could use
   # se( c( data[sample1,G]/mean(data[sample1,G])*(IPO_D0[sample1]-psi_01) - (1-data[sample1,G])/(1-mean(data[sample1,G]))*(IPO_D0[sample1]-psi_00),
   #         data[sample2,G]/mean(data[sample2,G])*(IPO_D0[sample2]-psi_01) - (1-data[sample2,G])/(1-mean(data[sample2,G]))*(IPO_D0[sample2]-psi_00) ) )
@@ -277,10 +289,13 @@ cdgd0_ml <- function(Y,D,G,X,data,algorithm,alpha=0.05,trim=0) {
       YgivenX.Pred_arg <- YgivenGX.Pred_D1
       psi_arg <- psi_11}
 
+    weight_g1 <- as.numeric(data[,G]==g1)/mean(data[,G]==g1)*weight/mean(as.numeric(data[,G]==g1)/mean(data[,G]==g1)*weight)
+    weight_g2 <- as.numeric(data[,G]==g2)/mean(data[,G]==g2)*weight/mean(as.numeric(data[,G]==g2)/mean(data[,G]==g2)*weight)
+
     return(
-      as.numeric(data[,G]==g1)/mean(data[,G]==g1)*IPO_arg*mean(as.numeric(data[,G]==g2)/mean(data[,G]==g2)*data[,D]) +
-        as.numeric(data[,G]==g2)/mean(data[,G]==g2)*psi_arg*(data[,D]-mean(as.numeric(data[,G]==g2)/mean(data[,G]==g2)*data[,D])) -
-        as.numeric(data[,G]==g1)/mean(data[,G]==g1)*psi_dgg(d,g1,g2)
+      weight_g1*IPO_arg*mean(weight_g2*data[,D]) +
+        weight_g2*psi_arg*(data[,D]-mean(weight_g2*data[,D])) -
+        weight_g1*psi_dgg(d,g1,g2)
     )
   }
   # Alternatively, we could use
@@ -296,12 +311,12 @@ cdgd0_ml <- function(Y,D,G,X,data,algorithm,alpha=0.05,trim=0) {
 
   prevalence_se <- se( EIF_dgg(1,0,1)-EIF_dgg(1,0,0)-EIF_dgg(0,0,1)+EIF_dgg(0,0,0) )
   effect_se <- se( EIF_dgg(1,1,1)-EIF_dgg(0,1,1)-EIF_dgg(1,0,1)+EIF_dgg(0,0,1) )
-  selection_se <- se( data[,G]/mean(data[,G])*(data[,Y]-Y_G1) - (1-data[,G])/(1-mean(data[,G]))*(data[,Y]-Y_G0) -
-                        ( data[,G]/mean(data[,G])*(IPO_D0-psi_01) - (1-data[,G])/(1-mean(data[,G]))*(IPO_D0-psi_00) ) -
+  selection_se <- se( weight1*(data[,Y]-Y_G1) - weight0*(data[,Y]-Y_G0) -
+                        ( weight1*(IPO_D0-psi_01) - weight0*(IPO_D0-psi_00) ) -
                         ( EIF_dgg(1,0,1)-EIF_dgg(1,0,0)-EIF_dgg(0,0,1)+EIF_dgg(0,0,0) ) -
                         ( EIF_dgg(1,1,1)-EIF_dgg(0,1,1)-EIF_dgg(1,0,1)+EIF_dgg(0,0,1) ) )
 
-  Jackson_reduction_se <- se( (1-data[,G])/(1-mean(data[,G]))*(IPO_D0-psi_00)+EIF_dgg(1,0,1)-EIF_dgg(0,0,1)-(1-data[,G])/(1-mean(data[,G]))*(data[,Y]-Y_G0) )
+  Jackson_reduction_se <- se( weight0*(IPO_D0-psi_00)+EIF_dgg(1,0,1)-EIF_dgg(0,0,1)-weight0*(data[,Y]-Y_G0) )
 
   ### output results
   point <- c(total,
@@ -314,12 +329,12 @@ cdgd0_ml <- function(Y,D,G,X,data,algorithm,alpha=0.05,trim=0) {
                       Y_G0,
                       psi_01,
                       psi_00,
-                      mean(data[,G]/mean(data[,G])*data[,D]),
-                      mean((1-data[,G])/(1-mean(data[,G]))*data[,D]),
-                      mean(data[,G]/mean(data[,G])*data[,D])-mean((1-data[,G])/(1-mean(data[,G]))*data[,D]),
-                      mean(data[,G]/mean(data[,G])*(IPO_D1-IPO_D0)),
-                      mean((1-data[,G])/(1-mean(data[,G]))*(IPO_D1-IPO_D0)),
-                      mean(data[,G]/mean(data[,G])*(IPO_D1-IPO_D0)) - mean((1-data[,G])/(1-mean(data[,G]))*(IPO_D1-IPO_D0)),
+                      mean(weight1*data[,D]),
+                      mean(weight0*data[,D]),
+                      mean(weight1*data[,D])-mean(weight0*data[,D]),
+                      mean(weight1*(IPO_D1-IPO_D0)),
+                      mean(weight0*(IPO_D1-IPO_D0)),
+                      mean(weight1*(IPO_D1-IPO_D0)) - mean(weight0*(IPO_D1-IPO_D0)),
                       Y_G1-psi_01-psi_dgg(1,1,1)+psi_dgg(0,1,1),
                       Y_G0-psi_00-psi_dgg(1,0,0)+psi_dgg(0,0,0),
                       Jackson_reduction)
@@ -330,18 +345,18 @@ cdgd0_ml <- function(Y,D,G,X,data,algorithm,alpha=0.05,trim=0) {
               effect_se,
               selection_se)
 
-  se_est_specific <- c(se( data[,G]/mean(data[,G])*(data[,Y]-Y_G1) ),
-                       se( (1-data[,G])/(1-mean(data[,G]))*(data[,Y]-Y_G0) ),
-                       se( data[,G]/mean(data[,G])*(IPO_D0-psi_01)),
-                       se( (1-data[,G])/(1-mean(data[,G]))*(IPO_D0-psi_00)),
-                       se( data[,G]/mean(data[,G])*(data[,D]-mean(data[,G]/mean(data[,G])*data[,D])) ),
-                       se( (1-data[,G])/(1-mean(data[,G]))*(data[,D]-mean((1-data[,G])/(1-mean(data[,G]))*data[,D])) ),
-                       se( data[,G]/mean(data[,G])*(data[,D]-mean(data[,G]/mean(data[,G])*data[,D])) - (1-data[,G])/(1-mean(data[,G]))*(data[,D]-mean((1-data[,G])/(1-mean(data[,G]))*data[,D])) ),
-                       se( data[,G]/mean(data[,G])*(IPO_D1-IPO_D0-mean(data[,G]/mean(data[,G])*(IPO_D1-IPO_D0))) ),
-                       se( (1-data[,G])/(1-mean(data[,G]))*(IPO_D1-IPO_D0-mean((1-data[,G])/(1-mean(data[,G]))*(IPO_D1-IPO_D0))) ),
-                       se( data[,G]/mean(data[,G])*(IPO_D1-IPO_D0-mean(data[,G]/mean(data[,G])*(IPO_D1-IPO_D0))) - (1-data[,G])/(1-mean(data[,G]))*(IPO_D1-IPO_D0-mean((1-data[,G])/(1-mean(data[,G]))*(IPO_D1-IPO_D0))) ),
-                       se( data[,G]/mean(data[,G])*(data[,Y]-Y_G1)-data[,G]/mean(data[,G])*(IPO_D0-psi_01)-EIF_dgg(1,1,1)+EIF_dgg(0,1,1) ),
-                       se( (1-data[,G])/(1-mean(data[,G]))*(data[,Y]-Y_G0)-(1-data[,G])/(1-mean(data[,G]))*(IPO_D0-psi_00)-EIF_dgg(1,0,0)+EIF_dgg(0,0,0) ),
+  se_est_specific <- c(se( weight1*(data[,Y]-Y_G1) ),
+                       se( weight0*(data[,Y]-Y_G0) ),
+                       se( weight1*(IPO_D0-psi_01)),
+                       se( weight0*(IPO_D0-psi_00)),
+                       se( weight1*(data[,D]-mean(weight1*data[,D])) ),
+                       se( weight0*(data[,D]-mean(weight0*data[,D])) ),
+                       se( weight1*(data[,D]-mean(weight1*data[,D])) - weight0*(data[,D]-mean(weight0*data[,D])) ),
+                       se( weight1*(IPO_D1-IPO_D0-mean(weight1*(IPO_D1-IPO_D0))) ),
+                       se( weight0*(IPO_D1-IPO_D0-mean(weight0*(IPO_D1-IPO_D0))) ),
+                       se( weight1*(IPO_D1-IPO_D0-mean(weight1*(IPO_D1-IPO_D0))) - weight0*(IPO_D1-IPO_D0-mean(weight0*(IPO_D1-IPO_D0))) ),
+                       se( weight1*(data[,Y]-Y_G1)-weight1*(IPO_D0-psi_01)-EIF_dgg(1,1,1)+EIF_dgg(0,1,1) ),
+                       se( weight0*(data[,Y]-Y_G0)-weight0*(IPO_D0-psi_00)-EIF_dgg(1,0,0)+EIF_dgg(0,0,0) ),
                        Jackson_reduction_se)
 
   p_value <- (1-stats::pnorm(abs(point/se_est)))*2

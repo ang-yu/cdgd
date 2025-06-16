@@ -4,7 +4,7 @@
 \alias{cdgd0_ml}
 \title{Perform unconditional decomposition via machine learning}
 \usage{
-cdgd0_ml(Y, D, G, X, data, algorithm, alpha = 0.05, trim = 0)
+cdgd0_ml(Y, D, G, X, data, algorithm, alpha = 0.05, trim = 0, weight = NULL)
 }
 \arguments{
 \item{Y}{Outcome. The name of a numeric variable (can be binary and take values of 0 and 1).}
@@ -22,6 +22,8 @@ cdgd0_ml(Y, D, G, X, data, algorithm, alpha = 0.05, trim = 0)
 \item{alpha}{1-alpha confidence interval.}
 
 \item{trim}{Threshold for trimming the propensity score. When trim=a, individuals with propensity scores lower than a or higher than 1-a will be dropped.}
+
+\item{weight}{Sampling weights. The name of a numeric variable. If unspecified, equal weights are used. Technically, the weight should be a deterministic function of X and G.}
 }
 \value{
 A list of estimates.

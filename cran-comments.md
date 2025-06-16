@@ -1,1 +1,1 @@
-* This is a patch release that adds a data check.
+* This is a major release. The package now accommodates sampling weights. 

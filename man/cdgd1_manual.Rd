@@ -19,7 +19,8 @@ cdgd1_manual(
   DgivenQ.Pred_G1,
   GgivenQ.Pred,
   data,
-  alpha = 0.05
+  alpha = 0.05,
+  weight = NULL
 )
 }
 \arguments{
@@ -35,23 +36,25 @@ cdgd1_manual(
 
 \item{DgivenGXQ.Pred}{A numeric vector of predicted D values given X and G. Vector length=nrow(data).}
 
-\item{Y0givenQ.Pred_G0}{A numeric vector of predicted Y(0) values given Q and G=0. Vector length=nrow(data).}
+\item{Y0givenQ.Pred_G0}{A numeric vector of predicted Y(0) values given Q and G=0. Vector length=nrow(data). If there are sampling weights, this should be weighted in a specific way (see p.9 of the appendices of Yu and Elwert, 2025).}
 
-\item{Y0givenQ.Pred_G1}{A numeric vector of predicted Y(0) values given Q and G=0. Vector length=nrow(data).}
+\item{Y0givenQ.Pred_G1}{A numeric vector of predicted Y(0) values given Q and G=0. Vector length=nrow(data). Same as above.}
 
-\item{Y1givenQ.Pred_G0}{A numeric vector of predicted Y(1) values given Q and G=0. Vector length=nrow(data).}
+\item{Y1givenQ.Pred_G0}{A numeric vector of predicted Y(1) values given Q and G=0. Vector length=nrow(data). Same as above.}
 
-\item{Y1givenQ.Pred_G1}{A numeric vector of predicted Y(1) values given Q and G=1. Vector length=nrow(data).}
+\item{Y1givenQ.Pred_G1}{A numeric vector of predicted Y(1) values given Q and G=1. Vector length=nrow(data). Same as above.}
 
-\item{DgivenQ.Pred_G0}{A numeric vector of predicted D values given Q and G=0. Vector length=nrow(data).}
+\item{DgivenQ.Pred_G0}{A numeric vector of predicted D values given Q and G=0. Vector length=nrow(data). Same as above.}
 
-\item{DgivenQ.Pred_G1}{A numeric vector of predicted D values given Q and G=0. Vector length=nrow(data).}
+\item{DgivenQ.Pred_G1}{A numeric vector of predicted D values given Q and G=0. Vector length=nrow(data). Same as above.}
 
 \item{GgivenQ.Pred}{A numeric vector of predicted G values given Q. Vector length=nrow(data).}
 
 \item{data}{A data frame.}
 
 \item{alpha}{1-alpha confidence interval.}
+
+\item{weight}{Sampling weights. The name of a numeric variable. If unspecified, equal weights are used. Technically, the weight should be a deterministic function of X only (note that this is different from the unconditional decomposition).}
 }
 \value{
 A dataframe of estimates.

@@ -12,7 +12,8 @@ cdgd0_manual(
   YgivenGX.Pred_D0,
   DgivenGX.Pred,
   data,
-  alpha = 0.05
+  alpha = 0.05,
+  weight = NULL
 )
 }
 \arguments{
@@ -31,6 +32,8 @@ cdgd0_manual(
 \item{data}{A data frame.}
 
 \item{alpha}{1-alpha confidence interval.}
+
+\item{weight}{Sampling weights. The name of a numeric variable. If unspecified, equal weights are used. Technically, the weight should be a deterministic function of X and G.}
 }
 \value{
 A list of estimates.

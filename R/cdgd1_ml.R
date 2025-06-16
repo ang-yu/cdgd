@@ -13,6 +13,7 @@
 #' @param alpha 1-alpha confidence interval.
 #' @param trim1 Threshold for trimming the propensity score. When trim1=a, individuals with propensity scores lower than a or higher than 1-a will be dropped.
 #' @param trim2 Threshold for trimming the G given Q predictions. When trim2=a, individuals with G given Q predictions lower than a or higher than 1-a will be dropped.
+#' @param weight Sampling weights. The name of a numeric variable. If unspecified, equal weights are used. Technically, the weight should be a deterministic function of X only (note that this is different from the unconditional decomposition).
 #'
 #' @return A dataframe of estimates.
 #'
@@ -38,7 +39,7 @@
 
 
 
-cdgd1_ml <- function(Y,D,G,X,Q,data,algorithm,alpha=0.05,trim1=0,trim2=0) {
+cdgd1_ml <- function(Y,D,G,X,Q,data,algorithm,alpha=0.05,trim1=0,trim2=0,weight=NULL) {
 
   if (!requireNamespace("caret", quietly=TRUE)) {
     stop(
@@ -292,9 +293,19 @@ cdgd1_ml <- function(Y,D,G,X,Q,data,algorithm,alpha=0.05,trim1=0,trim2=0) {
   IPO_D0_ncf <- (1-data[,D])/(1-DgivenGXQ.Pred_ncf)/mean((1-data[,D])/(1-DgivenGXQ.Pred_ncf))*(data[,Y]-YgivenGXQ.Pred_D0_ncf) + YgivenGXQ.Pred_D0_ncf
   IPO_D1_ncf <- data[,D]/DgivenGXQ.Pred_ncf/mean(data[,D]/DgivenGXQ.Pred_ncf)*(data[,Y]-YgivenGXQ.Pred_D1_ncf) + YgivenGXQ.Pred_D1_ncf
 
+  if (is.null(weight)) {
+    weight <- rep(1, nrow(data))
+    tr.weight <- rep(1, nrow(data))
+  } else {
+    weight <- data[,weight]
+    tr.weight <- weight/stats::predict(stats::lm(stats::as.formula(paste("weight", paste(paste("data[,G]","data[,Q]",sep="*"),collapse="+"), sep="~"))))
+  }
+  # tr.weight (transformed weight) is the original weight divided by E(weight|G,Q)
+
   data_temp <- data[,c(G,Q)]
-  data_temp$IPO_D0_ncf <- IPO_D0_ncf
-  data_temp$IPO_D1_ncf <- IPO_D1_ncf
+  data_temp$IPO_D0_ncf <- IPO_D0_ncf*tr.weight
+  data_temp$IPO_D1_ncf <- IPO_D1_ncf*tr.weight
+  data_temp[,D] <- data[,D]*tr.weight
 
   if (algorithm=="nnet") {
     message <- utils::capture.output( Y0givenGQ.Model.sample1 <- caret::train(stats::as.formula(paste("IPO_D0_ncf", paste(G,paste(Q,collapse="+"),sep="+"), sep="~")), data=data_temp[sample1,], method="nnet",
@@ -351,45 +362,83 @@ cdgd1_ml <- function(Y,D,G,X,Q,data,algorithm,alpha=0.05,trim1=0,trim2=0) {
   IPO_D1 <- data[,D]/DgivenGXQ.Pred/mean(data[,D]/DgivenGXQ.Pred)*(data[,Y]-YgivenGXQ.Pred_D1) + YgivenGXQ.Pred_D1
 
   ### Estimate E(D | Q,g')
-  data[,D] <- as.factor(data[,D])
-  levels(data[,D]) <- c("D0","D1")  # necessary for caret implementation of ranger
+  if (all(weight == 1)) {
 
-  if (algorithm=="nnet") {
-    message <- utils::capture.output( DgivenGQ.Model.sample1 <- caret::train(stats::as.formula(paste(D, paste(G,paste(Q,collapse="+"),sep="+"), sep="~")), data=data[sample1,], method="nnet",
-                                                                             preProc=c("center","scale"), trControl=caret::trainControl(method="cv"), linout=FALSE ))
-    message <- utils::capture.output( DgivenGQ.Model.sample2 <- caret::train(stats::as.formula(paste(D, paste(G,paste(Q,collapse="+"),sep="+"), sep="~")), data=data[sample2,], method="nnet",
-                                                                             preProc=c("center","scale"), trControl=caret::trainControl(method="cv"), linout=FALSE ))
+    data_temp[,D] <- as.factor(data_temp[,D])
+    levels(data_temp[,D]) <- c("D0","D1")  # necessary for caret implementation of ranger
+
+    if (algorithm=="nnet") {
+      message <- utils::capture.output( DgivenGQ.Model.sample1 <- caret::train(stats::as.formula(paste(D, paste(G,paste(Q,collapse="+"),sep="+"), sep="~")), data=data_temp[sample1,], method="nnet",
+                                                                               preProc=c("center","scale"), trControl=caret::trainControl(method="cv"), linout=FALSE ))
+      message <- utils::capture.output( DgivenGQ.Model.sample2 <- caret::train(stats::as.formula(paste(D, paste(G,paste(Q,collapse="+"),sep="+"), sep="~")), data=data_temp[sample2,], method="nnet",
+                                                                               preProc=c("center","scale"), trControl=caret::trainControl(method="cv"), linout=FALSE ))
+    }
+    if (algorithm=="ranger") {
+      message <- utils::capture.output( DgivenGQ.Model.sample1 <- caret::train(stats::as.formula(paste(D, paste(G,paste(Q,collapse="+"),sep="+"), sep="~")), data=data_temp[sample1,], method="ranger",
+                                                                               trControl=caret::trainControl(method="cv", classProbs=TRUE)) )
+      message <- utils::capture.output( DgivenGQ.Model.sample2 <- caret::train(stats::as.formula(paste(D, paste(G,paste(Q,collapse="+"),sep="+"), sep="~")), data=data_temp[sample2,], method="ranger",
+                                                                               trControl=caret::trainControl(method="cv", classProbs=TRUE)) )
+    }
+    if (algorithm=="gbm") {
+      message <- utils::capture.output( DgivenGQ.Model.sample1 <- caret::train(stats::as.formula(paste(D, paste(G,paste(Q,collapse="+"),sep="+"), sep="~")), data=data_temp[sample1,], method="gbm",
+                                                                               trControl=caret::trainControl(method="cv")) )
+      message <- utils::capture.output( DgivenGQ.Model.sample2 <- caret::train(stats::as.formula(paste(D, paste(G,paste(Q,collapse="+"),sep="+"), sep="~")), data=data_temp[sample2,], method="gbm",
+                                                                               trControl=caret::trainControl(method="cv")) )
+    }
+
+    DgivenQ.Pred_G0 <- DgivenQ.Pred_G1 <- rep(NA, nrow(data))
+
+    pred_data <- data
+    pred_data[,G] <- 0
+    DgivenQ.Pred_G0[sample2] <- stats::predict(DgivenGQ.Model.sample1, newdata = pred_data[sample2,], type="prob")[,2]
+    DgivenQ.Pred_G0[sample1] <- stats::predict(DgivenGQ.Model.sample2, newdata = pred_data[sample1,], type="prob")[,2]
+
+    pred_data <- data
+    pred_data[,G] <- 1
+    DgivenQ.Pred_G1[sample2] <- stats::predict(DgivenGQ.Model.sample1, newdata = pred_data[sample2,], type="prob")[,2]
+    DgivenQ.Pred_G1[sample1] <- stats::predict(DgivenGQ.Model.sample2, newdata = pred_data[sample1,], type="prob")[,2]
+
+  } else {
+
+    if (algorithm=="nnet") {
+      message <- utils::capture.output( DgivenGQ.Model.sample1 <- caret::train(stats::as.formula(paste(D, paste(G,paste(Q,collapse="+"),sep="+"), sep="~")), data=data_temp[sample1,], method="nnet",
+                                                                               preProc=c("center","scale"), trControl=caret::trainControl(method="cv"), linout=TRUE ))
+
+      message <- utils::capture.output( DgivenGQ.Model.sample2 <- caret::train(stats::as.formula(paste(D, paste(G,paste(Q,collapse="+"),sep="+"), sep="~")), data=data_temp[sample2,], method="nnet",
+                                                                               preProc=c("center","scale"), trControl=caret::trainControl(method="cv"), linout=TRUE ))
+    }
+    if (algorithm=="ranger") {
+      message <- utils::capture.output( DgivenGQ.Model.sample1 <- caret::train(stats::as.formula(paste(D, paste(G,paste(Q,collapse="+"),sep="+"), sep="~")), data=data_temp[sample1,], method="ranger",
+                                                                               trControl=caret::trainControl(method="cv")) )
+      message <- utils::capture.output( DgivenGQ.Model.sample2 <- caret::train(stats::as.formula(paste(D, paste(G,paste(Q,collapse="+"),sep="+"), sep="~")), data=data_temp[sample2,], method="ranger",
+                                                                               trControl=caret::trainControl(method="cv")) )
+    }
+    if (algorithm=="gbm") {
+      message <- utils::capture.output( DgivenGQ.Model.sample1 <- caret::train(stats::as.formula(paste(D, paste(G,paste(Q,collapse="+"),sep="+"), sep="~")), data=data_temp[sample1,], method="gbm",
+                                                                               trControl=caret::trainControl(method="cv")) )
+      message <- utils::capture.output( DgivenGQ.Model.sample2 <- caret::train(stats::as.formula(paste(D, paste(G,paste(Q,collapse="+"),sep="+"), sep="~")), data=data_temp[sample2,], method="gbm",
+                                                                               trControl=caret::trainControl(method="cv")) )
+    }
+
+    DgivenQ.Pred_G0 <- DgivenQ.Pred_G1 <- rep(NA, nrow(data))
+
+    pred_data <- data
+    pred_data[,G] <- 0
+    DgivenQ.Pred_G0[sample2] <- stats::predict(DgivenGQ.Model.sample1, newdata = pred_data[sample2,])
+    DgivenQ.Pred_G0[sample1] <- stats::predict(DgivenGQ.Model.sample2, newdata = pred_data[sample1,])
+
+    pred_data <- data
+    pred_data[,G] <- 1
+    DgivenQ.Pred_G1[sample2] <- stats::predict(DgivenGQ.Model.sample1, newdata = pred_data[sample2,])
+    DgivenQ.Pred_G1[sample1] <- stats::predict(DgivenGQ.Model.sample2, newdata = pred_data[sample1,])
+
   }
-  if (algorithm=="ranger") {
-    message <- utils::capture.output( DgivenGQ.Model.sample1 <- caret::train(stats::as.formula(paste(D, paste(G,paste(Q,collapse="+"),sep="+"), sep="~")), data=data[sample1,], method="ranger",
-                                                                             trControl=caret::trainControl(method="cv", classProbs=TRUE)) )
-    message <- utils::capture.output( DgivenGQ.Model.sample2 <- caret::train(stats::as.formula(paste(D, paste(G,paste(Q,collapse="+"),sep="+"), sep="~")), data=data[sample2,], method="ranger",
-                                                                             trControl=caret::trainControl(method="cv", classProbs=TRUE)) )
-  }
-  if (algorithm=="gbm") {
-    message <- utils::capture.output( DgivenGQ.Model.sample1 <- caret::train(stats::as.formula(paste(D, paste(G,paste(Q,collapse="+"),sep="+"), sep="~")), data=data[sample1,], method="gbm",
-                                                                             trControl=caret::trainControl(method="cv")) )
-    message <- utils::capture.output( DgivenGQ.Model.sample2 <- caret::train(stats::as.formula(paste(D, paste(G,paste(Q,collapse="+"),sep="+"), sep="~")), data=data[sample2,], method="gbm",
-                                                                             trControl=caret::trainControl(method="cv")) )
-  }
-
-  data[,D] <- as.numeric(data[,D])-1
-
-  DgivenQ.Pred_G0 <- DgivenQ.Pred_G1 <- rep(NA, nrow(data))
-
-  pred_data <- data
-  pred_data[,G] <- 0
-  DgivenQ.Pred_G0[sample2] <- stats::predict(DgivenGQ.Model.sample1, newdata = pred_data[sample2,], type="prob")[,2]
-  DgivenQ.Pred_G0[sample1] <- stats::predict(DgivenGQ.Model.sample2, newdata = pred_data[sample1,], type="prob")[,2]
-
-  pred_data <- data
-  pred_data[,G] <- 1
-  DgivenQ.Pred_G1[sample2] <- stats::predict(DgivenGQ.Model.sample1, newdata = pred_data[sample2,], type="prob")[,2]
-  DgivenQ.Pred_G1[sample1] <- stats::predict(DgivenGQ.Model.sample2, newdata = pred_data[sample1,], type="prob")[,2]
 
   ### The one-step estimate of \xi_{dg}
-  psi_00 <- mean( (1-data[,G])/(1-mean(data[,G]))*IPO_D0 )
-  psi_01 <- mean( data[,G]/mean(data[,G])*IPO_D0 )
+  weight0 <- (1-data[,G])/(1-mean(data[,G]))*weight/mean((1-data[,G])/(1-mean(data[,G]))*weight)
+  weight1 <- data[,G]/mean(data[,G])*weight/mean(data[,G]/mean(data[,G])*weight)
+  psi_00 <- mean( weight0*IPO_D0 )
+  psi_01 <- mean( weight1*IPO_D0 )
   # Note that this is basically DML2. We could also use DML1:
   #psi_00_S1 <- mean( (1-data[sample1,G])/(1-mean(data[sample1,G]))*IPO_D0[sample1] )     # sample 1 estimate
   #psi_00_S2 <- mean( (1-data[sample2,G])/(1-mean(data[sample2,G]))*IPO_D0[sample2] )     # sample 2 estimate
@@ -438,9 +487,11 @@ cdgd1_ml <- function(Y,D,G,X,Q,data,algorithm,alpha=0.05,trim1=0,trim2=0) {
     stab1 <- mean(as.numeric(data[,G]==g1)/mean(data[,G]==g3)*g3givenQ.Pred_arg/g1givenQ.Pred_arg)
     stab2 <- mean(as.numeric(data[,G]==g2)/mean(data[,G]==g3)*g3givenQ.Pred_arg/g2givenQ.Pred_arg)
 
-    psi_dggg <- mean( as.numeric(data[,G]==g3)/mean(data[,G]==g3)*YdgivenQ.Pred_arg*DgivenQ.Pred_arg +
-                        as.numeric(data[,G]==g1)/mean(data[,G]==g3)*g3givenQ.Pred_arg/g1givenQ.Pred_arg/stab1*(IPO_arg-YdgivenQ.Pred_arg)*DgivenQ.Pred_arg +
-                        as.numeric(data[,G]==g2)/mean(data[,G]==g3)*g3givenQ.Pred_arg/g2givenQ.Pred_arg/stab2*(data[,D]-DgivenQ.Pred_arg)*YdgivenQ.Pred_arg )
+    weight_g3 <- weight/mean(as.numeric(data[,G]==g3)/mean(data[,G]==g3)*weight)
+
+    psi_dggg <- mean( weight_g3*as.numeric(data[,G]==g3)/mean(data[,G]==g3)*YdgivenQ.Pred_arg*DgivenQ.Pred_arg +
+                        weight_g3*tr.weight*as.numeric(data[,G]==g1)/mean(data[,G]==g3)*g3givenQ.Pred_arg/g1givenQ.Pred_arg/stab1*(IPO_arg-YdgivenQ.Pred_arg)*DgivenQ.Pred_arg +
+                        weight_g3*tr.weight*as.numeric(data[,G]==g2)/mean(data[,G]==g3)*g3givenQ.Pred_arg/g2givenQ.Pred_arg/stab2*(data[,D]-DgivenQ.Pred_arg)*YdgivenQ.Pred_arg )
     # Note that this is basically DML2. We could also use DML1:
     #psi_dggg_S1 <- mean( as.numeric(data[sample1,G]==g3)/mean(data[sample1,G]==g3)*YdgivenQ.Pred_arg[sample1]*DgivenQ.Pred_arg[sample1] +
     #                       as.numeric(data[sample1,G]==g1)/mean(data[sample1,G]==g3)*g3givenQ.Pred_arg[sample1]/g1givenQ.Pred_arg[sample1]*(IPO_arg[sample1]-YdgivenQ.Pred_arg[sample1])*DgivenQ.Pred_arg[sample1] +
@@ -454,8 +505,8 @@ cdgd1_ml <- function(Y,D,G,X,Q,data,algorithm,alpha=0.05,trim1=0,trim2=0) {
   }
 
   ### point estimates
-  Y_G0 <- mean((1-data[,G])/(1-mean(data[,G]))*data[,Y])       # mean outcome estimate for group 0
-  Y_G1 <- mean(data[,G]/mean(data[,G])*data[,Y])               # mean outcome estimate for group 1
+  Y_G0 <- mean(weight0*data[,Y])       # mean outcome estimate for group 0
+  Y_G1 <- mean(weight1*data[,Y])       # mean outcome estimate for group 1
   total <- Y_G1-Y_G0
 
   baseline <- psi_01-psi_00
@@ -464,12 +515,12 @@ cdgd1_ml <- function(Y,D,G,X,Q,data,algorithm,alpha=0.05,trim1=0,trim2=0) {
   Q_dist <- psi_dggg(1,0,1,1)-psi_dggg(0,0,1,1)-psi_dggg(1,0,1,0)+psi_dggg(0,0,1,0)
   cond_selection <- total-baseline-cond_prevalence-cond_effect-Q_dist
 
-  cond_Jackson_reduction <- psi_00+psi_dggg(1,0,1,0)-psi_dggg(0,0,1,0)-mean((1-data[,G])/(1-mean(data[,G]))*data[,Y])
+  cond_Jackson_reduction <- psi_00+psi_dggg(1,0,1,0)-psi_dggg(0,0,1,0)-Y_G0
 
   ### standard error estimates
   se <- function(x) {sqrt( mean(x^2)/nrow(data) )}
-  total_se <- se( data[,G]/mean(data[,G])*(data[,Y]-Y_G1) - (1-data[,G])/(1-mean(data[,G]))*(data[,Y]-Y_G0) )
-  baseline_se <- se( data[,G]/mean(data[,G])*(IPO_D0-psi_01) - (1-data[,G])/(1-mean(data[,G]))*(IPO_D0-psi_00) )
+  total_se <- se( weight1*(data[,Y]-Y_G1) - weight0*(data[,Y]-Y_G0) )
+  baseline_se <- se( weight1*(IPO_D0-psi_01) - weight0*(IPO_D0-psi_00) )
   # Alternatively, we could use
   # se( c( data[sample1,G]/mean(data[sample1,G])*(IPO_D0[sample1]-psi_01) - (1-data[sample1,G])/(1-mean(data[sample1,G]))*(IPO_D0[sample1]-psi_00),
   #         data[sample2,G]/mean(data[sample2,G])*(IPO_D0[sample2]-psi_01) - (1-data[sample2,G])/(1-mean(data[sample2,G]))*(IPO_D0[sample2]-psi_00) ) )
@@ -513,23 +564,25 @@ cdgd1_ml <- function(Y,D,G,X,Q,data,algorithm,alpha=0.05,trim1=0,trim2=0) {
     stab1 <- mean(as.numeric(data[,G]==g1)/mean(data[,G]==g3)*g3givenQ.Pred_arg/g1givenQ.Pred_arg)
     stab2 <- mean(as.numeric(data[,G]==g2)/mean(data[,G]==g3)*g3givenQ.Pred_arg/g2givenQ.Pred_arg)
 
+    weight_g3 <- weight/mean(as.numeric(data[,G]==g3)/mean(data[,G]==g3)*weight)
+
     return(
-      as.numeric(data[,G]==g3)/mean(data[,G]==g3)*(YdgivenQ.Pred_arg*DgivenQ.Pred_arg-psi_dggg(d,g1,g2,g3)) +
-        as.numeric(data[,G]==g1)/mean(data[,G]==g3)*g3givenQ.Pred_arg/g1givenQ.Pred_arg/stab1*(IPO_arg-YdgivenQ.Pred_arg)*DgivenQ.Pred_arg +
-        as.numeric(data[,G]==g2)/mean(data[,G]==g3)*g3givenQ.Pred_arg/g2givenQ.Pred_arg/stab2*(data[,D]-DgivenQ.Pred_arg)*YdgivenQ.Pred_arg
+      weight_g3*as.numeric(data[,G]==g3)/mean(data[,G]==g3)*(YdgivenQ.Pred_arg*DgivenQ.Pred_arg-psi_dggg(d,g1,g2,g3)) +
+        weight_g3*tr.weight*as.numeric(data[,G]==g1)/mean(data[,G]==g3)*g3givenQ.Pred_arg/g1givenQ.Pred_arg/stab1*(IPO_arg-YdgivenQ.Pred_arg)*DgivenQ.Pred_arg +
+        weight_g3*tr.weight*as.numeric(data[,G]==g2)/mean(data[,G]==g3)*g3givenQ.Pred_arg/g2givenQ.Pred_arg/stab2*(data[,D]-DgivenQ.Pred_arg)*YdgivenQ.Pred_arg
     )
   }
 
   cond_prevalence_se <- se( EIF_dggg(1,0,1,0)-EIF_dggg(0,0,1,0)-EIF_dggg(1,0,0,0)+EIF_dggg(0,0,0,0) )
   cond_effect_se <- se( EIF_dggg(1,1,1,1)-EIF_dggg(0,1,1,1)-EIF_dggg(1,0,1,1)+EIF_dggg(0,0,1,1) )
   Q_dist_se <- se( EIF_dggg(1,0,1,1)-EIF_dggg(0,0,1,1)-EIF_dggg(1,0,1,0)+EIF_dggg(0,0,1,0) )
-  cond_selection_se <- se( data[,G]/mean(data[,G])*(data[,Y]-Y_G1) - (1-data[,G])/(1-mean(data[,G]))*(data[,Y]-Y_G0) -
-                             ( data[,G]/mean(data[,G])*(IPO_D0-psi_01) - (1-data[,G])/(1-mean(data[,G]))*(IPO_D0-psi_00) ) -
+  cond_selection_se <- se( weight1*(data[,Y]-Y_G1) - weight0*(data[,Y]-Y_G0) -
+                             ( weight1*(IPO_D0-psi_01) - weight0*(IPO_D0-psi_00) ) -
                              ( EIF_dggg(1,0,1,0)-EIF_dggg(0,0,1,0)-EIF_dggg(1,0,0,0)+EIF_dggg(0,0,0,0) ) -
                              ( EIF_dggg(1,1,1,1)-EIF_dggg(0,1,1,1)-EIF_dggg(1,0,1,1)+EIF_dggg(0,0,1,1) ) -
                              ( EIF_dggg(1,0,1,1)-EIF_dggg(0,0,1,1)-EIF_dggg(1,0,1,0)+EIF_dggg(0,0,1,0) ))
 
-  cond_Jackson_reduction_se <- se( (1-data[,G])/(1-mean(data[,G]))*(IPO_D0-psi_00)+EIF_dggg(1,0,1,0)-EIF_dggg(0,0,1,0)-(1-data[,G])/(1-mean(data[,G]))*(data[,Y]-Y_G0) )
+  cond_Jackson_reduction_se <- se( weight0*(IPO_D0-psi_00)+EIF_dggg(1,0,1,0)-EIF_dggg(0,0,1,0)-weight0*(data[,Y]-Y_G0) )
 
   ### output results
   point <- c(total,
