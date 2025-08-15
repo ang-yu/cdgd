@@ -272,12 +272,15 @@ cdgd1_manual <- function(Y,D,G,
   IPO_D0 <- (1-data[,D])/(1-DgivenGXQ.Pred)/mean((1-data[,D])/(1-DgivenGXQ.Pred))*(data[,Y]-YgivenGXQ.Pred_D0) + YgivenGXQ.Pred_D0
   IPO_D1 <- data[,D]/DgivenGXQ.Pred/mean(data[,D]/DgivenGXQ.Pred)*(data[,Y]-YgivenGXQ.Pred_D1) + YgivenGXQ.Pred_D1
 
+  data_temp <- data[,c(G,Q)]
+
   if (is.null(weight)) {
     weight <- rep(1, nrow(data))
     tr.weight <- rep(1, nrow(data))
   } else {
     weight <- data[,weight]
-    tr.weight <- weight/stats::predict(stats::lm(stats::as.formula(paste("weight", paste(paste("data[,G]","data[,Q]",sep="*"),collapse="+"), sep="~"))))
+    data_temp$weight <- weight
+    tr.weight <- weight/stats::predict(stats::lm(stats::as.formula(paste("weight", paste(paste(G,Q,sep="*"),collapse="+"), sep="~")), data=data_temp))
   }
   # tr.weight (transformed weight) is the original weight divided by E(weight|G,Q)
 

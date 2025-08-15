@@ -293,16 +293,18 @@ cdgd1_ml <- function(Y,D,G,X,Q,data,algorithm,alpha=0.05,trim1=0,trim2=0,weight=
   IPO_D0_ncf <- (1-data[,D])/(1-DgivenGXQ.Pred_ncf)/mean((1-data[,D])/(1-DgivenGXQ.Pred_ncf))*(data[,Y]-YgivenGXQ.Pred_D0_ncf) + YgivenGXQ.Pred_D0_ncf
   IPO_D1_ncf <- data[,D]/DgivenGXQ.Pred_ncf/mean(data[,D]/DgivenGXQ.Pred_ncf)*(data[,Y]-YgivenGXQ.Pred_D1_ncf) + YgivenGXQ.Pred_D1_ncf
 
+  data_temp <- data[,c(G,Q)]
+
   if (is.null(weight)) {
     weight <- rep(1, nrow(data))
     tr.weight <- rep(1, nrow(data))
   } else {
     weight <- data[,weight]
-    tr.weight <- weight/stats::predict(stats::lm(stats::as.formula(paste("weight", paste(paste("data[,G]","data[,Q]",sep="*"),collapse="+"), sep="~"))))
+    data_temp$weight <- weight
+    tr.weight <- weight/stats::predict(stats::lm(stats::as.formula(paste("weight", paste(paste(G,Q,sep="*"),collapse="+"), sep="~")), data=data_temp))
   }
   # tr.weight (transformed weight) is the original weight divided by E(weight|G,Q)
 
-  data_temp <- data[,c(G,Q)]
   data_temp$IPO_D0_ncf <- IPO_D0_ncf*tr.weight
   data_temp$IPO_D1_ncf <- IPO_D1_ncf*tr.weight
   data_temp[,D] <- data[,D]*tr.weight
