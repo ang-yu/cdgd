@@ -8,6 +8,7 @@ cdgd1_manual(
   Y,
   D,
   G,
+  Q,
   YgivenGXQ.Pred_D0,
   YgivenGXQ.Pred_D1,
   DgivenGXQ.Pred,
@@ -29,6 +30,8 @@ cdgd1_manual(
 \item{D}{Treatment status. The name of a binary numeric variable taking values of 0 and 1.}
 
 \item{G}{Advantaged group membership. The name of a binary numeric variable taking values of 0 and 1.}
+
+\item{Q}{Conditional set. A vector of variable names.}
 
 \item{YgivenGXQ.Pred_D0}{A numeric vector of predicted Y values given X, G, and D=0. Vector length=nrow(data).}
 
@@ -264,7 +267,7 @@ GgivenQ.Pred[sample1] <- stats::predict(GgivenQ.Model.sample2,
     newdata = data[sample1,], type="prob")[,2]
 
 
-results <- cdgd1_manual(Y=Y,D=D,G=G,
+results <- cdgd1_manual(Y=Y,D=D,G=G,Q=Q,
                         YgivenGXQ.Pred_D0=YgivenGXQ.Pred_D0,
                         YgivenGXQ.Pred_D1=YgivenGXQ.Pred_D1,
                         DgivenGXQ.Pred=DgivenGXQ.Pred,
