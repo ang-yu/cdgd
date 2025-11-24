@@ -227,7 +227,7 @@
 #'     newdata = data[sample1,], type="prob")[,2]
 #'
 #'
-#' results <- cdgd1_manual(Y=Y,D=D,G=G,
+#' results <- cdgd1_manual(Y=Y,D=D,G=G,Q=Q,
 #'                         YgivenGXQ.Pred_D0=YgivenGXQ.Pred_D0,
 #'                         YgivenGXQ.Pred_D1=YgivenGXQ.Pred_D1,
 #'                         DgivenGXQ.Pred=DgivenGXQ.Pred,
