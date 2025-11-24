@@ -1,1 +1,1 @@
-* This is a major release. The package now accommodates sampling weights. 
+* This is a minor release that fixes a bug in one function.
