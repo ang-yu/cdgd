@@ -1,5 +1,3 @@
-# cdgd (development version)
-
 # cdgd 1.0.1
 
 * Fixed a bug when Q has multiple variables and there are sampling weights.
